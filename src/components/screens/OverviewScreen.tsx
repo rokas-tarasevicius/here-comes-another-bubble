@@ -96,7 +96,6 @@ function bubbleProgressBarClass(index: number): string {
  */
 export function OverviewScreen() {
   const gameState = useGameStore((s) => s.gameState);
-  const setScreen = useGameStore((s) => s.setScreen);
 
   if (!gameState) return null;
 
@@ -234,40 +233,54 @@ export function OverviewScreen() {
             </div>
           </div>
 
-          {/* Quick Actions Card */}
-          <div className="retro-card flex flex-col gap-3">
-            <h3 className="retro-section-heading">Quick Actions</h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => setScreen('team')}
-                className="btn-glossy btn-silver"
-              >
-                Hire
-              </button>
-              <button
-                onClick={() => setScreen('product')}
-                className="btn-glossy btn-silver"
-              >
-                Start Feature
-              </button>
-              <button
-                onClick={() => setScreen('finances')}
-                className="btn-glossy btn-silver"
-              >
-                Set Pricing
-              </button>
-              <button
-                onClick={() => setScreen('funding')}
-                className="btn-glossy btn-silver"
-              >
-                Seek Funding
-              </button>
-              <button
-                onClick={() => setScreen('market')}
-                className="btn-glossy btn-silver"
-              >
-                Market Intel
-              </button>
+          {/* Company Summary Card */}
+          <div className="retro-card flex flex-col gap-4">
+            <h3 className="retro-section-heading">Company Summary</h3>
+
+            <div className="grid grid-cols-2 gap-3">
+              {/* Team Size */}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Team Size</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">
+                  {totalTeam} ({humanCount} human{humanCount !== 1 ? 's' : ''} + {aiCount} AI)
+                </span>
+              </div>
+
+              {/* Morale */}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Team Morale</span>
+                <span className={`text-sm font-[--font-retro-mono] ${
+                  team.avgMorale >= 60 ? 'text-[--color-retro-green]' : team.avgMorale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+                }`}>
+                  {Math.round(team.avgMorale)}/100
+                </span>
+              </div>
+
+              {/* Product Quality */}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Product Quality</span>
+                <span className={`text-sm font-[--font-retro-mono] ${
+                  product.overallQuality >= 60 ? 'text-[--color-retro-green]' : product.overallQuality >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+                }`}>
+                  {Math.round(product.overallQuality)}/100
+                </span>
+              </div>
+
+              {/* Features Shipped */}
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Features Shipped</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">
+                  {product.features.filter((f) => f.status === 'shipped').length} / {product.features.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Growth Strategy */}
+            <div className="border-t border-[--color-retro-border] pt-3">
+              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Growth Strategy</span>
+              <span className="retro-badge retro-badge-blue mt-1 inline-block">
+                {gameState.meta.growthStrategy?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'None'}
+              </span>
             </div>
           </div>
         </div>

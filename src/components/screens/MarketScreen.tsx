@@ -2,7 +2,6 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 import { BubbleIndexGauge } from '../shared/BubbleIndexGauge.tsx';
 import { CompetitorTable } from '../shared/CompetitorTable.tsx';
-import { MarketTrends } from '../shared/MarketTrends.tsx';
 
 /**
  * Market intelligence screen showing market overview, bubble index,
@@ -19,8 +18,8 @@ export function MarketScreen() {
     );
   }
 
-  const { market, company, finances, team, product, eventLog, meta } = gameState;
-  const { segmentData, competitors, bubbleIndex, bubbleTrend, talentMarketHeat, investorSentiment } = market;
+  const { market, company, finances, team, product, meta } = gameState;
+  const { segmentData, competitors, bubbleIndex, bubbleTrend } = market;
 
   // Player row for competitor table
   const playerRow = {
@@ -28,9 +27,9 @@ export function MarketScreen() {
     funding: finances.fundingHistory.reduce((sum, r) => sum + r.amount, 0),
     teamSize: team.employees.length + team.aiAgents.length,
     productQuality: product.overallQuality,
-    marketShare: competitors.length > 0
-      ? 1 - competitors.reduce((sum, c) => sum + c.marketShare, 0)
-      : 1,
+    marketShare: segmentData.size > 0
+      ? product.customers / segmentData.size
+      : 0,
     strategy: 'Player-controlled',
   };
 
@@ -129,20 +128,6 @@ export function MarketScreen() {
 
       {/* Competitor Table */}
       <CompetitorTable competitors={competitors} player={playerRow} />
-
-      {/* Market Trends */}
-      <div>
-        <h2 className="mb-4 text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">Market Trends</h2>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <MarketTrends
-            investorSentiment={investorSentiment}
-            talentMarketHeat={talentMarketHeat}
-            customerDemand={segmentData.customerDemand}
-            eventLog={eventLog}
-            currentWeek={meta.week}
-          />
-        </div>
-      </div>
     </div>
   );
 }

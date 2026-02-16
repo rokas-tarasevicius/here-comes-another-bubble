@@ -1,4 +1,4 @@
-import type { GameState, Feature, Employee, Competitor, HiringCandidate, EmployeeRole, EventLogEntry } from '../types/index.ts';
+import type { GameState, Feature, Employee, Competitor, HiringCandidate, EmployeeRole, EventLogEntry, PendingDecision, AIAgentType } from '../types/index.ts';
 import { calculateWeeklyBurn, calculatePMF } from './derived.ts';
 import { generateId } from '../utils/id.ts';
 
@@ -937,6 +937,268 @@ function simulateStageProgression(state: GameState): GameState {
   };
 }
 
+// ─── Auto Decision Generation ─────────────────────────────────────────
+
+/**
+ * Generate PendingDecision entries each week so the game is decision-driven.
+ * Players make choices about hiring, features, strategy, and AI agents
+ * through these generated decisions instead of navigating to separate screens.
+ */
+function generateAutoDecisions(state: GameState): GameState {
+  const newDecisions: PendingDecision[] = [];
+  const newLogEntries: EventLogEntry[] = [];
+  const week = state.meta.week;
+
+  // --- HIRING DECISIONS ---
+  // Every week, offer 1-2 candidates from the hiring pipeline as decisions
+  const pipeline = state.team.hiringPipeline;
+  const maxHireDecisions = Math.min(2, pipeline.length);
+  for (let i = 0; i < maxHireDecisions; i++) {
+    const candidate = pipeline[i];
+    // Skip if there's already a pending decision for this candidate
+    const alreadyPending = state.pendingDecisions.some(
+      (d) => d.eventId === `auto-hire-${candidate.id}`,
+    );
+    if (alreadyPending) continue;
+
+    const decisionId = generateId();
+    const roleLabel = candidate.role
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    newDecisions.push({
+      id: decisionId,
+      eventId: `auto-hire-${candidate.id}`,
+      prompt: `Resume on your desk: ${candidate.name}, ${roleLabel}. Skill level ${candidate.skill}/100, wants $${candidate.salaryExpectation.toLocaleString()}/week.`,
+      options: [
+        {
+          id: `hire_${candidate.id}`,
+          label: 'Hire Them',
+          description: `Add ${candidate.name} to the team at $${candidate.salaryExpectation.toLocaleString()}/wk`,
+          effects: [
+            { path: 'company.reputation', operation: 'add', value: 1 },
+          ],
+        },
+        {
+          id: 'pass',
+          label: 'Pass',
+          description: 'Not the right fit right now.',
+          effects: [],
+        },
+      ],
+      deadline: week + 3,
+      defaultOptionId: 'pass',
+    });
+
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: `auto-hire-${candidate.id}`,
+      title: `${candidate.name} Applied`,
+      description: `${candidate.name} wants to join as ${roleLabel}.`,
+      category: 'team',
+      decisionId,
+    });
+  }
+
+  // --- FEATURE DECISIONS (every 2-3 weeks) ---
+  if (week % 2 === 0 || Math.random() < 0.4) {
+    const demands = state.market.segmentData.customerDemand;
+    const existingNames = state.product.features.map((f) =>
+      f.name.toLowerCase(),
+    );
+    const unbuilt = demands.filter(
+      (d) =>
+        !existingNames.some((s) =>
+          s.includes(d.replace(/-/g, ' ')),
+        ),
+    );
+
+    if (unbuilt.length > 0) {
+      const feature = unbuilt[Math.floor(Math.random() * unbuilt.length)];
+      // Skip if there's already a pending decision for this feature
+      const alreadyPending = state.pendingDecisions.some(
+        (d) => d.eventId === `auto-feature-${feature}`,
+      );
+
+      if (!alreadyPending) {
+        const featureName = feature
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (c) => c.toUpperCase());
+        const relevance = 60 + Math.floor(Math.random() * 30); // 60-90
+        const decisionId = generateId();
+
+        newDecisions.push({
+          id: decisionId,
+          eventId: `auto-feature-${feature}`,
+          prompt: `Your team has a proposal: build "${featureName}". Customers are asking for it and it could improve product-market fit.`,
+          options: [
+            {
+              id: `feature_${feature}_${relevance}`,
+              label: 'Build It',
+              description: `Start development on ${featureName} (relevance: ${relevance}%)`,
+              effects: [
+                { path: 'company.reputation', operation: 'add', value: 1 },
+              ],
+            },
+            {
+              id: 'defer',
+              label: 'Not Now',
+              description: 'Focus on other priorities.',
+              effects: [],
+            },
+          ],
+          deadline: week + 3,
+          defaultOptionId: 'defer',
+        });
+
+        newLogEntries.push({
+          id: generateId(),
+          week,
+          eventId: `auto-feature-${feature}`,
+          title: `Feature Proposal: ${featureName}`,
+          description: `The team wants to build ${featureName}.`,
+          category: 'product',
+          decisionId,
+        });
+      }
+    }
+  }
+
+  // --- GROWTH STRATEGY DECISIONS (every 8-12 weeks) ---
+  if (week > 4 && week % 8 === 0) {
+    const alreadyPending = state.pendingDecisions.some(
+      (d) => d.eventId === 'auto-strategy-pivot',
+    );
+
+    if (!alreadyPending) {
+      const strategies = ['move-fast', 'quality-first', 'growth-hack', 'sustainable'];
+      const current = state.meta.growthStrategy;
+      const alternatives = strategies.filter((s) => s !== current);
+      const suggested =
+        alternatives[Math.floor(Math.random() * alternatives.length)];
+      const suggestedLabel = suggested
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const currentLabel = current
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const decisionId = generateId();
+
+      newDecisions.push({
+        id: decisionId,
+        eventId: 'auto-strategy-pivot',
+        prompt: `Your board advisor suggests switching from "${currentLabel}" to "${suggestedLabel}" strategy. The market conditions might favor a change.`,
+        options: [
+          {
+            id: `strategy_${suggested}`,
+            label: `Switch to ${suggestedLabel}`,
+            description: `Change growth strategy to ${suggestedLabel}`,
+            effects: [
+              { path: 'company.reputation', operation: 'add', value: 1 },
+            ],
+          },
+          {
+            id: 'keep',
+            label: 'Stay the Course',
+            description: `Keep running ${currentLabel}`,
+            effects: [],
+          },
+        ],
+        deadline: week + 4,
+        defaultOptionId: 'keep',
+      });
+
+      newLogEntries.push({
+        id: generateId(),
+        week,
+        eventId: 'auto-strategy-pivot',
+        title: 'Strategy Review',
+        description: 'Time to review your growth strategy.',
+        category: 'market',
+        decisionId,
+      });
+    }
+  }
+
+  // --- AI AGENT DECISIONS (every 4-6 weeks, after week 3) ---
+  if (week > 3 && (week % 5 === 0 || Math.random() < 0.15)) {
+    const providers = [
+      { name: 'OpenAI', cost: 500, capability: 75, reliability: 80 },
+      { name: 'Anthropic', cost: 600, capability: 80, reliability: 85 },
+      { name: 'Google DeepMind', cost: 450, capability: 70, reliability: 75 },
+      { name: 'Mistral', cost: 300, capability: 60, reliability: 70 },
+      { name: 'Cohere', cost: 250, capability: 55, reliability: 72 },
+    ];
+    const agentTypes: AIAgentType[] = [
+      'coding',
+      'design',
+      'marketing',
+      'analytics',
+      'support',
+    ];
+    const provider =
+      providers[Math.floor(Math.random() * providers.length)];
+    const agentType =
+      agentTypes[Math.floor(Math.random() * agentTypes.length)];
+    const typeLabel =
+      agentType.charAt(0).toUpperCase() + agentType.slice(1);
+
+    // Skip if there's already a pending decision for this provider
+    const alreadyPending = state.pendingDecisions.some(
+      (d) => d.eventId === `auto-ai-agent-${provider.name}`,
+    );
+
+    if (!alreadyPending) {
+      const decisionId = generateId();
+
+      newDecisions.push({
+        id: decisionId,
+        eventId: `auto-ai-agent-${provider.name}`,
+        prompt: `${provider.name} is offering their ${typeLabel} AI agent at $${provider.cost}/week. Capability: ${provider.capability}/100, Reliability: ${provider.reliability}/100.`,
+        options: [
+          {
+            id: `ai_${provider.name}_${agentType}_${provider.cost}_${provider.capability}_${provider.reliability}`,
+            label: `Deploy ${typeLabel} Agent`,
+            description: `Add ${provider.name} ${typeLabel} agent ($${provider.cost}/wk)`,
+            effects: [
+              {
+                path: 'finances.cash',
+                operation: 'add',
+                value: -provider.cost * 2,
+              }, // setup fee
+            ],
+          },
+          {
+            id: 'decline',
+            label: 'Decline',
+            description: 'Not interested right now.',
+            effects: [],
+          },
+        ],
+        deadline: week + 3,
+        defaultOptionId: 'decline',
+      });
+
+      newLogEntries.push({
+        id: generateId(),
+        week,
+        eventId: `auto-ai-agent-${provider.name}`,
+        title: `AI Agent Offer: ${provider.name}`,
+        description: `${provider.name} pitches their ${typeLabel} agent.`,
+        category: 'product',
+        decisionId,
+      });
+    }
+  }
+
+  return {
+    ...state,
+    pendingDecisions: [...state.pendingDecisions, ...newDecisions],
+    eventLog: [...state.eventLog, ...newLogEntries],
+  };
+}
+
 // ─── Main simulation entry point ──────────────────────────────────────
 
 /**
@@ -956,5 +1218,6 @@ export function simulateWeek(state: GameState): GameState {
   next = simulateEmployeeQuitting(next);
   next = simulateHiringPipeline(next);
   next = simulateStageProgression(next);
+  next = generateAutoDecisions(next);
   return next;
 }

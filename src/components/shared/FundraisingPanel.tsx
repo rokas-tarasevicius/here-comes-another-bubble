@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { CompanyStage, FundingRound, PricingModel } from '../../types/game.ts';
-import type { SeekFundingDecision, SetPricingDecision } from '../../types/decisions.ts';
+import type { SetPricingDecision } from '../../types/decisions.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 
 export interface FundraisingPanelProps {
@@ -9,7 +9,7 @@ export interface FundraisingPanelProps {
   fundingHistory: FundingRound[];
   pricingModel: PricingModel;
   pricePerUnit: number;
-  onSeekFunding: (decision: SeekFundingDecision) => void;
+  onSeekFunding: (targetStage: string) => void;
   onChangePricing: (decision: SetPricingDecision) => void;
 }
 
@@ -66,7 +66,7 @@ export function FundraisingPanel({
 
   function handleSeekFunding() {
     if (!nextStage) return;
-    onSeekFunding({ type: 'seek-funding', targetStage: nextStage });
+    onSeekFunding(nextStage);
   }
 
   function handleChangePricing() {

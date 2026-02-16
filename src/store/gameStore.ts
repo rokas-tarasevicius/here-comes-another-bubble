@@ -7,7 +7,7 @@ import type {
   Tone,
 } from '../types/index.ts';
 import type { PlayerDecision } from '../types/decisions.ts';
-import { createInitialState, advanceWeek } from '../engine/index.ts';
+import { createInitialState, advanceWeek, applySeekFunding } from '../engine/index.ts';
 
 // ─── Save slot metadata ──────────────────────────────────────────────
 
@@ -50,6 +50,7 @@ interface GameStoreActions {
   clearDecisions: () => void;
   setScreen: (screen: string) => void;
   setGrowthStrategy: (strategy: string) => void;
+  seekFunding: (targetStage: string) => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
   getSaveSlots: () => SaveSlot[];
@@ -132,6 +133,13 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         },
       },
     });
+  },
+
+  seekFunding(targetStage) {
+    const { gameState } = get();
+    if (!gameState) return;
+    const nextState = applySeekFunding(gameState, targetStage);
+    set({ gameState: nextState });
   },
 
   saveGame(slot = 0) {

@@ -266,6 +266,113 @@ function applyEventResponse(
     ),
   };
 
+  // --- Handle auto-generated decision side effects ---
+
+  // Hiring: create the employee from the hiring pipeline
+  if (optionId.startsWith('hire_')) {
+    const candidateId = optionId.replace('hire_', '');
+    const candidate = next.team.hiringPipeline.find(
+      (c) => c.id === candidateId,
+    );
+    if (candidate) {
+      const newEmployee = {
+        id: generateId(),
+        name: candidate.name,
+        role: candidate.role,
+        skill: candidate.skill,
+        salary: candidate.salaryExpectation,
+        morale: 75,
+        loyalty: 40,
+        aiSentiment: Math.round(Math.random() * 60 - 20), // -20 to 40
+        weekHired: next.meta.week,
+        assignedTo: null,
+      };
+      next = {
+        ...next,
+        team: {
+          ...next.team,
+          employees: [...next.team.employees, newEmployee],
+          hiringPipeline: next.team.hiringPipeline.filter(
+            (c) => c.id !== candidateId,
+          ),
+        },
+      };
+    }
+  }
+
+  // Feature: create a new in-progress feature
+  if (optionId.startsWith('feature_')) {
+    const parts = optionId.split('_');
+    // Format: feature_[slug-parts]_[relevance]
+    const relevance = parseInt(parts[parts.length - 1], 10);
+    const featureSlug = parts.slice(1, -1).join('-');
+    const featureName = featureSlug
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+    const newFeature: Feature = {
+      id: generateId(),
+      name: featureName,
+      description: `Auto-generated feature: ${featureName}`,
+      status: 'in-progress' as const,
+      progress: 0,
+      quality: 0,
+      techDebt: 0,
+      marketRelevance: isNaN(relevance) ? 70 : relevance,
+      assignedEmployees: [],
+      assignedAgents: [],
+    };
+    next = {
+      ...next,
+      product: {
+        ...next.product,
+        features: [...next.product.features, newFeature],
+      },
+    };
+  }
+
+  // Strategy: change the growth strategy
+  if (optionId.startsWith('strategy_')) {
+    const strategy = optionId.replace('strategy_', '');
+    next = {
+      ...next,
+      meta: {
+        ...next.meta,
+        growthStrategy: strategy,
+      },
+    };
+  }
+
+  // AI Agent: create and add the agent to the team
+  if (optionId.startsWith('ai_')) {
+    // Format: ai_[provider name]_[type]_[cost]_[capability]_[reliability]
+    const parts = optionId.split('_');
+    const reliability = parseInt(parts[parts.length - 1], 10);
+    const capability = parseInt(parts[parts.length - 2], 10);
+    const cost = parseInt(parts[parts.length - 3], 10);
+    const agentType = parts[parts.length - 4];
+    const providerName = parts.slice(1, -4).join(' ');
+    const typeLabel =
+      agentType.charAt(0).toUpperCase() + agentType.slice(1);
+
+    const newAgent = {
+      id: generateId(),
+      name: `${providerName} ${typeLabel} Agent`,
+      type: agentType as GameState['team']['aiAgents'][number]['type'],
+      provider: providerName,
+      capability: isNaN(capability) ? 70 : capability,
+      costPerWeek: isNaN(cost) ? 500 : cost,
+      reliability: isNaN(reliability) ? 75 : reliability,
+      assignedTo: null,
+    };
+    next = {
+      ...next,
+      team: {
+        ...next.team,
+        aiAgents: [...next.team.aiAgents, newAgent],
+      },
+    };
+  }
+
   return next;
 }
 
@@ -328,7 +435,7 @@ const INVESTOR_NAMES = [
   'Khosla Ventures', 'Bessemer Venture Partners', 'NEA', 'Spark Capital',
 ];
 
-function applySeekFunding(state: GameState, targetStage: string): GameState {
+export function applySeekFunding(state: GameState, targetStage: string): GameState {
   const currentStage = state.company.stage;
   const config = STAGE_TO_FUNDING[currentStage];
 

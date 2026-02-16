@@ -105,10 +105,10 @@ export function DecisionScreen() {
             ))}
           </div>
         ) : (
-          <div className="retro-card p-8 text-center">
-            <div className="mb-3">
+          <div className="retro-card p-10 text-center">
+            <div className="mb-4">
               <svg
-                className="mx-auto h-10 w-10 text-[--color-retro-text-light]"
+                className="mx-auto h-14 w-14 text-[--color-retro-green]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -121,11 +121,11 @@ export function DecisionScreen() {
                 />
               </svg>
             </div>
-            <p className="text-sm font-medium text-[--color-retro-text]">
-              No decisions pending.
+            <p className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+              All caught up!
             </p>
-            <p className="mt-1 text-xs text-[--color-retro-text-light]">
-              You're all caught up! Advance to the next week for new events.
+            <p className="mt-2 text-sm text-[--color-retro-text-muted]">
+              Press <kbd className="retro-badge retro-badge-gray mx-1">N</kbd> or advance to the next week for new opportunities.
             </p>
           </div>
         )}
@@ -182,7 +182,7 @@ export function DecisionScreen() {
               No actions queued for this week.
             </p>
             <p className="mt-1 text-xs text-[--color-retro-text-light]">
-              Make decisions above or use other screens to queue actions.
+              Respond to pending decisions above to queue actions for this week.
             </p>
           </div>
         )}

@@ -12,6 +12,7 @@ import { FundraisingPanel } from '../shared/FundraisingPanel.tsx';
 export function FinanceScreen() {
   const gameState = useGameStore((s) => s.gameState);
   const addDecision = useGameStore((s) => s.addDecision);
+  const seekFunding = useGameStore((s) => s.seekFunding);
 
   if (!gameState) {
     return (
@@ -197,7 +198,7 @@ export function FinanceScreen() {
           fundingHistory={finances.fundingHistory}
           pricingModel={finances.pricingModel}
           pricePerUnit={finances.pricePerUnit}
-          onSeekFunding={(decision) => addDecision(decision)}
+          onSeekFunding={(targetStage) => seekFunding(targetStage)}
           onChangePricing={(decision) => addDecision(decision)}
         />
       </div>

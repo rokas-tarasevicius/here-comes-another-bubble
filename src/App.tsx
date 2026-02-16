@@ -5,11 +5,8 @@ import { AppShell } from './components/layout/AppShell.tsx';
 import { MainMenuScreen } from './components/screens/MainMenuScreen.tsx';
 import { NewGameScreen } from './components/screens/NewGameScreen.tsx';
 import { OverviewScreen } from './components/screens/OverviewScreen.tsx';
-import { TeamScreen } from './components/screens/TeamScreen.tsx';
-import { ProductScreen } from './components/screens/ProductScreen.tsx';
 import { FinanceScreen } from './components/screens/FinanceScreen.tsx';
 import { MarketScreen } from './components/screens/MarketScreen.tsx';
-import { StrategyScreen } from './components/screens/StrategyScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
@@ -22,16 +19,10 @@ function GameplayScreen() {
   switch (currentScreen) {
     case 'overview':
       return <OverviewScreen />;
-    case 'team':
-      return <TeamScreen />;
-    case 'product':
-      return <ProductScreen />;
     case 'finance':
       return <FinanceScreen />;
     case 'market':
       return <MarketScreen />;
-    case 'strategy':
-      return <StrategyScreen />;
     case 'decisions':
       return <DecisionScreen />;
     default:
@@ -75,19 +66,11 @@ function App() {
         }
       }
 
-      // Number keys 1-7 for screen navigation
+      // Number keys 1-4 for screen navigation
       if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
-        const screens = [
-          'overview',
-          'team',
-          'product',
-          'finance',
-          'market',
-          'strategy',
-          'decisions',
-        ];
+        const screens = ['overview', 'finance', 'market', 'decisions'];
         const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 7) {
+        if (num >= 1 && num <= 4) {
           e.preventDefault();
           setScreen(screens[num - 1]);
         }
