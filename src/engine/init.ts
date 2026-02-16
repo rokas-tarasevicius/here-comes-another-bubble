@@ -84,7 +84,9 @@ export function createInitialState(
       tone,
       growthStrategy: 'sustainable',
       gameOver: false,
+      gameWon: false,
       score: 0,
+      regulatoryHeat: 0,
     },
     founder: {
       name: 'You',
@@ -128,6 +130,7 @@ export function createInitialState(
       fundingHistory: [],
       founderEquity: 1.0,
       monthlyExpenses: 0,
+      marketingSpend: 0,
     },
     market: {
       segment,

@@ -69,14 +69,14 @@ function App() {
 
       // N = Next Week (only during gameplay)
       if (e.key === 'n' || e.key === 'N') {
-        if (gameState && !gameState.meta.gameOver && !isSimulating) {
+        if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon && !isSimulating) {
           e.preventDefault();
           originalEndWeek();
         }
       }
 
       // Number keys 1-7 for screen navigation
-      if (gameState && !gameState.meta.gameOver) {
+      if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
         const screens = [
           'overview',
           'team',
@@ -104,16 +104,16 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState, isSimulating, originalEndWeek, setScreen]);
 
-  // Check for game over redirect
+  // Check for game over or game won redirect
   useEffect(() => {
     if (
-      gameState?.meta.gameOver &&
+      (gameState?.meta.gameOver || gameState?.meta.gameWon) &&
       currentScreen !== 'title' &&
       currentScreen !== 'gameover'
     ) {
       setScreen('gameover');
     }
-  }, [gameState?.meta.gameOver, currentScreen, setScreen]);
+  }, [gameState?.meta.gameOver, gameState?.meta.gameWon, currentScreen, setScreen]);
 
   // Title / New Game screens (no AppShell)
   if (currentScreen === 'title') {

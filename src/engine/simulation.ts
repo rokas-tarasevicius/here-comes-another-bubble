@@ -1,4 +1,4 @@
-import type { GameState, Feature, Employee, Competitor, HiringCandidate, EmployeeRole } from '../types/index.ts';
+import type { GameState, Feature, Employee, Competitor, HiringCandidate, EmployeeRole, EventLogEntry } from '../types/index.ts';
 import { calculateWeeklyBurn, calculatePMF } from './derived.ts';
 import { generateId } from '../utils/id.ts';
 
@@ -57,6 +57,19 @@ function simulateProductDevelopment(state: GameState): GameState {
     qualityMultiplier = 1.3;
   }
 
+  // Tech debt consequence: slows feature progress
+  const techDebtTotal = state.product.techDebtTotal;
+  let techDebtSlowdown = 1.0;
+  if (techDebtTotal > 50) {
+    techDebtSlowdown = 0.8; // 20% slower
+  }
+  if (techDebtTotal > 70) {
+    techDebtSlowdown = 0.6; // 40% slower
+  }
+  if (techDebtTotal > 85) {
+    techDebtSlowdown = 0.4; // 60% slower
+  }
+
   const updatedFeatures = state.product.features.map((feature): Feature => {
     if (feature.status !== 'in-progress') return feature;
 
@@ -91,8 +104,8 @@ function simulateProductDevelopment(state: GameState): GameState {
       0,
     );
 
-    // Apply strategy multipliers (BUG 7 fix)
-    const totalProgress = (humanProgress + aiProgress) * featureProgressMultiplier;
+    // Apply strategy multipliers and tech debt slowdown
+    const totalProgress = (humanProgress + aiProgress) * featureProgressMultiplier * techDebtSlowdown;
     const newProgress = clamp(feature.progress + totalProgress, 0, 100);
 
     // Quality trends toward human skill contribution, AI doesn't help much
@@ -142,7 +155,7 @@ function simulateProductDevelopment(state: GameState): GameState {
         shippedFeatures.reduce((s, f) => s + f.quality, 0) / shippedFeatures.length,
       )
     : 0;
-  const techDebtTotal = updatedFeatures.length > 0
+  const newTechDebtTotal = updatedFeatures.length > 0
     ? Math.round(
         updatedFeatures.reduce((s, f) => s + f.techDebt, 0) / updatedFeatures.length,
       )
@@ -151,7 +164,7 @@ function simulateProductDevelopment(state: GameState): GameState {
   // Bugs accumulate from tech debt
   const newBugs = Math.max(
     0,
-    state.product.bugs + Math.floor(techDebtTotal / 25) - (shippedFeatures.length > 0 ? 1 : 0),
+    state.product.bugs + Math.floor(newTechDebtTotal / 25) - (shippedFeatures.length > 0 ? 1 : 0),
   );
 
   return {
@@ -164,19 +177,182 @@ function simulateProductDevelopment(state: GameState): GameState {
       ...state.product,
       features: updatedFeatures,
       overallQuality,
-      techDebtTotal,
+      techDebtTotal: newTechDebtTotal,
       bugs: newBugs,
     },
   };
 }
 
+// ─── Tech Debt Consequences ──────────────────────────────────────────
+
+/**
+ * Apply consequences of accumulated tech debt beyond feature slowdown.
+ * - techDebt > 70: random production outage, 5-10% churn spike
+ * - techDebt > 85: team morale penalty
+ * - Natural tech debt reduction when engineers aren't building features (refactoring)
+ */
+function simulateTechDebtConsequences(state: GameState): GameState {
+  const techDebt = state.product.techDebtTotal;
+  let customers = state.product.customers;
+  let churnRate = state.product.churnRate;
+  const newLogEntries: EventLogEntry[] = [];
+  let moralePenalty = 0;
+
+  // Production outage risk at high tech debt
+  if (techDebt > 70 && Math.random() < 0.15) {
+    // 15% chance per week of a production outage
+    const churnSpike = 0.05 + Math.random() * 0.05; // 5-10% churn spike
+    const lostCustomers = Math.round(customers * churnSpike);
+    customers = Math.max(0, customers - lostCustomers);
+
+    newLogEntries.push({
+      id: generateId(),
+      week: state.meta.week,
+      eventId: 'tech-debt-outage',
+      title: 'Production Outage!',
+      description: `Your codebase buckled under its own weight. ${lostCustomers} customers churned during the downtime. Tech debt is ${techDebt}% — maybe it's time to refactor.`,
+      category: 'product',
+    });
+  }
+
+  // Engineers hate working on spaghetti code
+  if (techDebt > 85) {
+    moralePenalty = 3; // Applied per employee in morale simulation
+    newLogEntries.push({
+      id: generateId(),
+      week: state.meta.week,
+      eventId: 'tech-debt-morale',
+      title: 'Engineers Frustrated',
+      description: 'Your engineers are drowning in tech debt. Every small change breaks three other things. Morale is suffering.',
+      category: 'team',
+    });
+  }
+
+  // Natural tech debt reduction: unassigned engineers do refactoring
+  const assignedEmployeeIds = new Set(
+    state.product.features
+      .filter((f) => f.status === 'in-progress')
+      .flatMap((f) => f.assignedEmployees),
+  );
+  const unassignedEngineers = state.team.employees.filter(
+    (e) =>
+      !assignedEmployeeIds.has(e.id) &&
+      (e.role === 'engineer' || e.role === 'senior-engineer' || e.role === 'devops'),
+  );
+
+  // Each unassigned engineer reduces tech debt slightly
+  let techDebtReduction = 0;
+  for (const eng of unassignedEngineers) {
+    techDebtReduction += (eng.skill / 100) * 1.5; // 0.6-1.35 per engineer per week
+  }
+
+  // Apply tech debt reduction to all features
+  const updatedFeatures = state.product.features.map((feature): Feature => {
+    if (techDebtReduction <= 0) return feature;
+    return {
+      ...feature,
+      techDebt: Math.max(0, Math.round((feature.techDebt - techDebtReduction) * 10) / 10),
+    };
+  });
+
+  // Recalculate total tech debt after reduction
+  const newTechDebtTotal = updatedFeatures.length > 0
+    ? Math.round(
+        updatedFeatures.reduce((s, f) => s + f.techDebt, 0) / updatedFeatures.length,
+      )
+    : 0;
+
+  // Apply morale penalty to employees from high tech debt
+  const updatedEmployees = moralePenalty > 0
+    ? state.team.employees.map((emp) => {
+        if (emp.role === 'engineer' || emp.role === 'senior-engineer' || emp.role === 'devops') {
+          return { ...emp, morale: clamp(emp.morale - moralePenalty, 0, 100) };
+        }
+        return emp;
+      })
+    : state.team.employees;
+
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      employees: updatedEmployees,
+    },
+    product: {
+      ...state.product,
+      features: updatedFeatures,
+      techDebtTotal: newTechDebtTotal,
+      customers,
+      churnRate,
+    },
+    eventLog: [...state.eventLog, ...newLogEntries],
+  };
+}
+
 // ─── Revenue ──────────────────────────────────────────────────────────
 
+/**
+ * Better revenue model based on pricing type:
+ * - free: 0 revenue
+ * - freemium: 5% of users pay
+ * - subscription: stable recurring, customer count * price
+ * - usage-based: variable, tied to quality and customer activity
+ * - enterprise: fewer customers but high ARPU, longer sales cycles
+ * - one-time: burst then flat
+ */
 function simulateRevenue(state: GameState): GameState {
   const qualityModifier = state.product.overallQuality / 100;
   const bugPenalty = Math.max(0, 1 - state.product.bugs * 0.02);
-  const revenue =
-    state.product.customers * state.finances.pricePerUnit * qualityModifier * bugPenalty;
+  const customers = state.product.customers;
+  const pricePerUnit = state.finances.pricePerUnit;
+  let revenue = 0;
+
+  switch (state.finances.pricingModel) {
+    case 'free':
+      // No revenue but helps with growth (handled in simulateCustomers)
+      revenue = 0;
+      break;
+
+    case 'freemium': {
+      // 5% of users convert to paid
+      const payingUsers = Math.floor(customers * 0.05);
+      revenue = payingUsers * pricePerUnit * qualityModifier * bugPenalty;
+      break;
+    }
+
+    case 'subscription':
+      // Stable recurring revenue
+      revenue = customers * pricePerUnit * qualityModifier * bugPenalty;
+      break;
+
+    case 'usage-based': {
+      // Variable: tied to product quality and customer activity
+      // Higher quality = more engagement = more usage
+      const activityMultiplier = 0.5 + qualityModifier * 1.0; // 0.5x to 1.5x
+      const weeklyNoise = 1 + (Math.random() - 0.5) * 0.3; // ±15% variance
+      revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise;
+      break;
+    }
+
+    case 'enterprise': {
+      // Fewer customers but high ARPU (10x-20x multiplier on price)
+      // Longer sales cycles simulated by slower customer acquisition
+      const enterpriseMultiplier = 15;
+      revenue = customers * pricePerUnit * enterpriseMultiplier * qualityModifier * bugPenalty;
+      break;
+    }
+
+    case 'one-time': {
+      // Burst of revenue from new customers only, then flat
+      // Estimate: only new customers this week generate one-time revenue
+      const prevCustomers = state.weekHistory.length > 0
+        ? state.weekHistory[state.weekHistory.length - 1].customers
+        : 0;
+      const newCustomers = Math.max(0, customers - prevCustomers);
+      revenue = newCustomers * pricePerUnit * qualityModifier * bugPenalty;
+      break;
+    }
+  }
 
   return {
     ...state,
@@ -201,7 +377,10 @@ function simulateBurn(state: GameState): GameState {
     burnMultiplier = 0.85;
   }
 
-  const burn = Math.round(baseBurn * burnMultiplier);
+  // Add marketing spend to burn
+  const marketingBurn = state.finances.marketingSpend;
+
+  const burn = Math.round(baseBurn * burnMultiplier + marketingBurn);
   const netCashChange = state.finances.weeklyRevenue - burn;
 
   return {
@@ -218,10 +397,16 @@ function simulateBurn(state: GameState): GameState {
 // ─── Market ───────────────────────────────────────────────────────────
 
 function simulateMarket(state: GameState): GameState {
-  // Bubble index drifts with trend + noise
+  // Occasional "bubble event" — massive shift (±15-25 points)
+  let bubbleShock = 0;
+  if (Math.random() < 0.02) { // 2% chance per week
+    bubbleShock = (Math.random() < 0.5 ? 1 : -1) * rand(15, 25);
+  }
+
+  // Bubble index drifts with trend + noise + potential shock
   const bubbleNoise = rand(-3, 3);
   const newBubbleIndex = clamp(
-    state.market.bubbleIndex + state.market.bubbleTrend + bubbleNoise,
+    state.market.bubbleIndex + state.market.bubbleTrend + bubbleNoise + bubbleShock,
     0,
     100,
   );
@@ -233,18 +418,37 @@ function simulateMarket(state: GameState): GameState {
   if (newBubbleIndex < 10) newTrend += 0.5;
 
   // Talent market heat correlates with bubble
-  const newTalentHeat = clamp(
+  let newTalentHeat = clamp(
     state.market.talentMarketHeat * 0.9 + newBubbleIndex * 0.1 + rand(-2, 2),
     0,
     100,
   );
 
   // Investor sentiment correlates with bubble
-  const newInvestorSentiment = clamp(
+  let newInvestorSentiment = clamp(
     state.market.investorSentiment * 0.85 + newBubbleIndex * 0.15 + rand(-3, 3),
     0,
     100,
   );
+
+  // Irrational Exuberance: bubble > 85
+  let competitorDeathBoost = 0;
+  if (newBubbleIndex > 85) {
+    // Investor sentiment spikes
+    newInvestorSentiment = clamp(newInvestorSentiment + rand(2, 5), 0, 100);
+    // Talent market heats up (everyone wants to join startups)
+    newTalentHeat = clamp(newTalentHeat + rand(1, 3), 0, 100);
+    // Higher chance of competitors dying (overextended)
+    competitorDeathBoost = 0.03;
+  }
+
+  // Market Correction: bubble < 25
+  if (newBubbleIndex < 25) {
+    // Investors ghost everyone
+    newInvestorSentiment = clamp(newInvestorSentiment - rand(2, 5), 0, 100);
+    // Talent leaves for stable jobs
+    newTalentHeat = clamp(newTalentHeat - rand(2, 4), 0, 100);
+  }
 
   // Competitors evolve slightly
   const updatedCompetitors = state.market.competitors.map(
@@ -252,8 +456,9 @@ function simulateMarket(state: GameState): GameState {
       if (!comp.alive) return comp;
       const qualityDelta = rand(-1, 1.5);
       const shareDelta = rand(-0.005, 0.005);
-      // Small chance of competitor dying
-      const dies = comp.funding < 1_000_000 && Math.random() < 0.01;
+      // Small chance of competitor dying (boosted during exuberance)
+      const deathChance = (comp.funding < 1_000_000 ? 0.01 : 0) + competitorDeathBoost;
+      const dies = Math.random() < deathChance;
       return {
         ...comp,
         productQuality: clamp(comp.productQuality + qualityDelta, 0, 100),
@@ -262,6 +467,21 @@ function simulateMarket(state: GameState): GameState {
       };
     },
   );
+
+  // Generate event log entries for bubble events
+  const newLogEntries: EventLogEntry[] = [];
+  if (bubbleShock !== 0) {
+    newLogEntries.push({
+      id: generateId(),
+      week: state.meta.week,
+      eventId: bubbleShock > 0 ? 'market-shock-up' : 'market-shock-down',
+      title: bubbleShock > 0 ? 'Market Euphoria' : 'Market Panic',
+      description: bubbleShock > 0
+        ? 'A wave of AI hype swept through the market. Valuations are surging, VCs are throwing money around, and everyone thinks they\'re a genius.'
+        : 'Market shock hit. Investors are pulling back, valuations are compressing, and the word "sustainable" is suddenly trendy again.',
+      category: 'market',
+    });
+  }
 
   return {
     ...state,
@@ -273,6 +493,7 @@ function simulateMarket(state: GameState): GameState {
       investorSentiment: Math.round(newInvestorSentiment),
       competitors: updatedCompetitors,
     },
+    eventLog: [...state.eventLog, ...newLogEntries],
   };
 }
 
@@ -303,6 +524,17 @@ function simulateMorale(state: GameState): GameState {
     // Culture: good work-life balance helps
     moraleDelta += (state.company.culture.workLifeBalance - 50) * 0.01;
 
+    // Low bubble / market correction hurts morale (job insecurity)
+    if (state.market.bubbleIndex < 25) {
+      moraleDelta -= 1;
+    }
+
+    // High tech debt hurts engineering morale (already handled in tech debt consequences,
+    // but give a general mood penalty)
+    if (state.product.techDebtTotal > 60) {
+      moraleDelta -= 0.5;
+    }
+
     // Random noise
     moraleDelta += rand(-2, 2);
 
@@ -326,6 +558,98 @@ function simulateMorale(state: GameState): GameState {
       employees: updatedEmployees,
       avgMorale,
     },
+  };
+}
+
+// ─── Employee Quitting ───────────────────────────────────────────────
+
+/**
+ * Employees with very low morale may quit.
+ * - morale < 20: 30% chance of quitting each week
+ * - morale < 10: 60% chance of quitting
+ * - When employees quit: remaining employees get morale hit
+ * - Key person risk: if highest-skill employee quits, bigger morale hit
+ */
+function simulateEmployeeQuitting(state: GameState): GameState {
+  if (state.team.employees.length === 0) return state;
+
+  const employees = state.team.employees;
+  const highestSkill = Math.max(...employees.map((e) => e.skill));
+
+  const quitters: Employee[] = [];
+  const survivors: Employee[] = [];
+
+  for (const emp of employees) {
+    let quitChance = 0;
+    if (emp.morale < 10) {
+      quitChance = 0.60;
+    } else if (emp.morale < 20) {
+      quitChance = 0.30;
+    }
+
+    // Low loyalty increases quit chance
+    if (emp.loyalty < 20) {
+      quitChance += 0.10;
+    }
+
+    // Talent market heat: hot market = more options elsewhere
+    if (state.market.talentMarketHeat > 70) {
+      quitChance += 0.05;
+    }
+
+    if (quitChance > 0 && Math.random() < quitChance) {
+      quitters.push(emp);
+    } else {
+      survivors.push(emp);
+    }
+  }
+
+  if (quitters.length === 0) return state;
+
+  // Calculate morale hit on remaining employees
+  let baseMoraleHit = quitters.length * 3; // 3 points per quitter
+
+  // Key person risk: if the highest-skill employee quit
+  const keyPersonQuit = quitters.some((q) => q.skill === highestSkill);
+  if (keyPersonQuit) {
+    baseMoraleHit += 5; // Extra hit for losing your best person
+  }
+
+  const updatedSurvivors = survivors.map((emp) => ({
+    ...emp,
+    morale: clamp(emp.morale - baseMoraleHit, 0, 100),
+  }));
+
+  // Clean up feature assignments for quitters
+  const quitterIds = new Set(quitters.map((q) => q.id));
+  const updatedFeatures = state.product.features.map((feature) => ({
+    ...feature,
+    assignedEmployees: feature.assignedEmployees.filter((id) => !quitterIds.has(id)),
+  }));
+
+  // Generate event log entries
+  const newLogEntries: EventLogEntry[] = quitters.map((emp) => ({
+    id: generateId(),
+    week: state.meta.week,
+    eventId: 'employee-quit',
+    title: `${emp.name} Quit`,
+    description: emp.skill === highestSkill
+      ? `${emp.name} (${emp.role}), your highest-skilled team member, walked out. The team is shaken.`
+      : `${emp.name} (${emp.role}) quit. Morale was at ${emp.morale}%. They said something about "work-life balance" on their way out.`,
+    category: 'team',
+  }));
+
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      employees: updatedSurvivors,
+    },
+    product: {
+      ...state.product,
+      features: updatedFeatures,
+    },
+    eventLog: [...state.eventLog, ...newLogEntries],
   };
 }
 
@@ -401,9 +725,13 @@ function simulateHiringPipeline(state: GameState): GameState {
   const maxCandidates = Math.min(baseCount + reputationBonus + heatBonus, 3);
   const candidateCount = Math.max(1, Math.floor(rand(1, maxCandidates + 1)));
 
+  // Low bubble: talent leaves for stable jobs, fewer candidates
+  const bubblePenalty = state.market.bubbleIndex < 25 ? 0.5 : 1.0;
+  const adjustedCount = Math.max(1, Math.round(candidateCount * bubblePenalty));
+
   const newCandidates: HiringCandidate[] = [];
   // Cap pipeline at 8 to avoid unbounded growth
-  for (let i = 0; i < candidateCount && remaining.length + newCandidates.length < 8; i++) {
+  for (let i = 0; i < adjustedCount && remaining.length + newCandidates.length < 8; i++) {
     newCandidates.push(generateCandidate());
   }
 
@@ -438,14 +766,55 @@ function simulateCustomers(state: GameState): GameState {
   const marketGrowthRate = state.market.segmentData.growthRate / 52; // weekly
   const marketGrowth = currentCustomers * marketGrowthRate;
 
-  // Churn
-  const churned = currentCustomers * state.product.churnRate / 4; // weekly churn (monthly rate / 4)
+  // Bubble affects customer acquisition
+  let bubbleCustomerModifier = 1.0;
+  if (state.market.bubbleIndex > 85) {
+    // Irrational exuberance: more hype customers
+    bubbleCustomerModifier = 1.3;
+  } else if (state.market.bubbleIndex < 25) {
+    // Market correction: customers cancel, harder to acquire
+    bubbleCustomerModifier = 0.6;
+  }
 
-  // Must have shipped something and not be free to get paying customers
+  // Reputation-driven organic growth
+  const reputationGrowth = (state.company.reputation / 100) * 1.5; // 0-1.5 extra customers/week
+
+  // Word of mouth multiplier: based on shipped features quality
+  const shippedFeatures = state.product.features.filter((f) => f.status === 'shipped');
+  const avgShippedQuality = shippedFeatures.length > 0
+    ? shippedFeatures.reduce((s, f) => s + f.quality, 0) / shippedFeatures.length
+    : 0;
+  const wordOfMouthMultiplier = avgShippedQuality > 70
+    ? 1.0 + (avgShippedQuality - 70) / 100 // up to 1.3x for quality=100
+    : 1.0;
+
+  // Marketing spend effect
+  const marketingEffect = state.finances.marketingSpend > 0
+    ? Math.sqrt(state.finances.marketingSpend / 1000) * 2 // diminishing returns
+    : 0;
+
+  // Free pricing model: faster user growth (but no revenue)
+  const pricingGrowthBonus = state.finances.pricingModel === 'free' ? 1.5
+    : state.finances.pricingModel === 'freemium' ? 1.3
+    : state.finances.pricingModel === 'enterprise' ? 0.5 // fewer but bigger customers
+    : 1.0;
+
+  // Churn
+  let churnRate = state.product.churnRate;
+  // Tech debt > 70 causes churn spike (on top of outage churn from tech debt consequences)
+  if (state.product.techDebtTotal > 70) {
+    churnRate += 0.02; // extra 2% monthly churn
+  }
+  const churned = currentCustomers * churnRate / 4; // weekly churn (monthly rate / 4)
+
+  // Must have shipped something to get customers
   const hasShippedProduct = state.product.features.some(
     (f) => f.status === 'shipped',
   );
-  const growth = hasShippedProduct ? (pmfGrowth + marketGrowth) * customerGrowthMultiplier : 0;
+  const growth = hasShippedProduct
+    ? (pmfGrowth + marketGrowth + reputationGrowth + marketingEffect) *
+      customerGrowthMultiplier * bubbleCustomerModifier * wordOfMouthMultiplier * pricingGrowthBonus
+    : 0;
 
   const newCustomers = Math.max(0, Math.round(currentCustomers + growth - churned));
 
@@ -455,6 +824,49 @@ function simulateCustomers(state: GameState): GameState {
       ...state.product,
       customers: newCustomers,
       pmfScore: pmf,
+    },
+  };
+}
+
+// ─── Marketing Spend ─────────────────────────────────────────────────
+
+/**
+ * Simulate marketing spend adjustments based on growth strategy.
+ * growth-hack strategy increases marketing spend over time.
+ */
+function simulateMarketingSpend(state: GameState): GameState {
+  const strategy = state.meta.growthStrategy;
+  let marketingSpend = state.finances.marketingSpend;
+
+  if (strategy === 'growth-hack') {
+    // Auto-increase marketing spend weekly for growth-hack strategy
+    // Scale with company stage
+    const stageMultipliers: Record<string, number> = {
+      'garage': 200,
+      'pre-seed': 500,
+      'seed': 1000,
+      'series-a': 2500,
+      'series-b': 5000,
+      'series-c': 10000,
+      'growth': 20000,
+      'public': 30000,
+    };
+    const targetSpend = stageMultipliers[state.company.stage] ?? 200;
+    // Gradually ramp toward target
+    marketingSpend = marketingSpend + (targetSpend - marketingSpend) * 0.2;
+    marketingSpend = Math.round(marketingSpend);
+  } else if (strategy === 'sustainable') {
+    // Minimal marketing
+    marketingSpend = Math.max(0, marketingSpend * 0.8);
+    marketingSpend = Math.round(marketingSpend);
+  }
+  // Other strategies: marketing spend stays as-is unless modified by events
+
+  return {
+    ...state,
+    finances: {
+      ...state.finances,
+      marketingSpend,
     },
   };
 }
@@ -534,11 +946,14 @@ function simulateStageProgression(state: GameState): GameState {
 export function simulateWeek(state: GameState): GameState {
   let next = state;
   next = simulateProductDevelopment(next);
+  next = simulateTechDebtConsequences(next);
   next = simulateCustomers(next);
   next = simulateRevenue(next);
+  next = simulateMarketingSpend(next);
   next = simulateBurn(next);
   next = simulateMarket(next);
   next = simulateMorale(next);
+  next = simulateEmployeeQuitting(next);
   next = simulateHiringPipeline(next);
   next = simulateStageProgression(next);
   return next;

@@ -229,7 +229,10 @@ export function GameOverScreen() {
 
   if (!gameState || !score) return null;
 
-  const reason = gameState.meta.gameOverReason ?? 'Your startup journey has ended.';
+  const isWin = gameState.meta.gameWon === true;
+  const reason = isWin
+    ? (gameState.meta.gameWonReason ?? 'You won! Your startup journey was a success.')
+    : (gameState.meta.gameOverReason ?? 'Your startup journey has ended.');
   const categories = ['valuation', 'revenue', 'team', 'product', 'survival'] as const;
 
   return (
@@ -238,9 +241,9 @@ export function GameOverScreen() {
         {/* Header */}
         <div className="text-center">
           <h1 className="mb-2 text-4xl font-extrabold font-[--font-retro-heading] tracking-tight text-[--color-retro-text] sm:text-5xl">
-            Game Over
+            {isWin ? 'You Won!' : 'Game Over'}
           </h1>
-          <p className="text-lg text-[--color-retro-red]">{reason}</p>
+          <p className={`text-lg ${isWin ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>{reason}</p>
         </div>
 
         {/* Company summary */}

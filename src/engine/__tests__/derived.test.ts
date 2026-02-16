@@ -90,6 +90,7 @@ describe('calculateRunway', () => {
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
+        marketingSpend: 0,
       },
     });
 
@@ -110,6 +111,7 @@ describe('calculateRunway', () => {
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
+        marketingSpend: 0,
       },
     });
 
@@ -245,6 +247,7 @@ describe('calculateValuation', () => {
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 12_000,
+        marketingSpend: 0,
       },
       product: {
         name: 'TestCo',

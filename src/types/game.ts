@@ -96,7 +96,10 @@ export interface GameMeta {
   growthStrategy: string;
   gameOver: boolean;
   gameOverReason?: string;
+  gameWon: boolean;
+  gameWonReason?: string;
   score: number;
+  regulatoryHeat: number;  // 0-100, accumulates in regulated segments
 }
 
 export interface FounderProfile {
@@ -205,6 +208,7 @@ export interface FinancialState {
   fundingHistory: FundingRound[];
   founderEquity: number;    // 0-1
   monthlyExpenses: number;
+  marketingSpend: number;   // weekly marketing budget, increased by growth-hack strategy
 }
 
 export interface MarketSegmentData {
