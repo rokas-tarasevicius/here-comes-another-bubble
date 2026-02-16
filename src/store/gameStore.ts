@@ -120,6 +120,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
 
   saveGame(slot = 0) {
+    if (slot < 0 || slot >= MAX_SLOTS) return;
     const { gameState } = get();
     if (!gameState) return;
 
@@ -128,23 +129,32 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       savedAt: new Date().toISOString(),
     };
 
-    localStorage.setItem(
-      `${SAVE_KEY_PREFIX}${slot}`,
-      JSON.stringify(payload),
-    );
+    try {
+      localStorage.setItem(
+        `${SAVE_KEY_PREFIX}${slot}`,
+        JSON.stringify(payload),
+      );
+    } catch {
+      // Storage full or unavailable
+    }
   },
 
   loadGame(slot) {
+    if (slot < 0 || slot >= MAX_SLOTS) return;
     const raw = localStorage.getItem(`${SAVE_KEY_PREFIX}${slot}`);
     if (!raw) return;
 
-    const payload: SavePayload = JSON.parse(raw);
-    set({
-      gameState: payload.gameState,
-      currentScreen: 'overview',
-      decisionsThisTurn: [],
-      isSimulating: false,
-    });
+    try {
+      const payload: SavePayload = JSON.parse(raw);
+      set({
+        gameState: payload.gameState,
+        currentScreen: 'overview',
+        decisionsThisTurn: [],
+        isSimulating: false,
+      });
+    } catch {
+      // Corrupted save data
+    }
   },
 
   getSaveSlots() {
@@ -172,6 +182,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   },
 
   deleteSave(slot) {
+    if (slot < 0 || slot >= MAX_SLOTS) return;
     localStorage.removeItem(`${SAVE_KEY_PREFIX}${slot}`);
   },
 }));
