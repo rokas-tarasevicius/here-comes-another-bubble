@@ -209,6 +209,7 @@ export interface FinancialState {
 export interface MarketSegmentData {
   id: MarketSegment;
   name: string;
+  description: string;
   size: number;
   growthRate: number;          // fractional, e.g. 0.15 = 15%
   competitionIntensity: number; // 0-100
