@@ -250,6 +250,14 @@ export function MainMenuScreen() {
             Load Game
           </button>
 
+          {/* Leaderboard */}
+          <button
+            onClick={() => setScreen('leaderboard')}
+            className="rounded-lg border border-gray-800 bg-gray-900 px-6 py-4 text-base font-medium text-gray-300 transition-all hover:border-gray-700 hover:bg-gray-800 hover:text-gray-100 active:scale-[0.98]"
+          >
+            Leaderboard
+          </button>
+
           {/* About */}
           <button
             onClick={() => setShowAbout(true)}
