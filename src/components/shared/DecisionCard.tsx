@@ -88,14 +88,14 @@ function combineEffects(effects: StateEffect[]): StateEffect[] {
   return Array.from(map.values());
 }
 
-function effectColor(effect: StateEffect): string {
+function effectBadgeClass(effect: StateEffect): string {
   if (effect.operation === 'add') {
-    return effect.value >= 0 ? 'text-emerald-400' : 'text-red-400';
+    return effect.value >= 0 ? 'retro-badge retro-badge-green' : 'retro-badge retro-badge-red';
   }
   if (effect.operation === 'multiply') {
-    return effect.value >= 1 ? 'text-emerald-400' : 'text-red-400';
+    return effect.value >= 1 ? 'retro-badge retro-badge-green' : 'retro-badge retro-badge-red';
   }
-  return 'text-blue-400';
+  return 'retro-badge retro-badge-blue';
 }
 
 // ─── Deadline urgency helpers ────────────────────────────────────────────
@@ -107,18 +107,18 @@ function deadlineUrgency(deadline: number, currentWeek: number): 'critical' | 'w
   return 'normal';
 }
 
-const URGENCY_STYLES = {
-  critical: 'text-red-400 bg-red-900/20 border-red-800',
-  warning: 'text-amber-400 bg-amber-900/20 border-amber-800',
-  normal: 'text-gray-400 bg-gray-800 border-gray-700',
-} as const;
+const URGENCY_BADGE: Record<string, string> = {
+  critical: 'retro-badge retro-badge-red',
+  warning: 'retro-badge retro-badge-orange',
+  normal: 'retro-badge retro-badge-gray',
+};
 
 // ─── Tone badge ──────────────────────────────────────────────────────────
 
-const TONE_COLORS: Record<string, string> = {
-  realistic: 'text-blue-400 bg-blue-900/30',
-  satirical: 'text-amber-400 bg-amber-900/30',
-  mixed: 'text-violet-400 bg-violet-900/30',
+const TONE_BADGE: Record<string, string> = {
+  realistic: 'retro-badge retro-badge-blue',
+  satirical: 'retro-badge retro-badge-orange',
+  mixed: 'retro-badge retro-badge-purple',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────
@@ -160,15 +160,13 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-5">
+    <div className="retro-card-raised" style={{ padding: '20px' }}>
       {/* Header row: deadline badge */}
       <div className="mb-3 flex items-start justify-between gap-3">
-        <p className="text-sm leading-relaxed font-medium text-gray-100">
+        <p className="text-sm leading-relaxed font-bold text-[--color-retro-text]">
           {decision.prompt}
         </p>
-        <span
-          className={`shrink-0 rounded-md border px-2.5 py-1 text-xs font-medium ${URGENCY_STYLES[urgency]}`}
-        >
+        <span className={`shrink-0 ${URGENCY_BADGE[urgency]}`}>
           {weeksLeft <= 0
             ? 'Due now!'
             : weeksLeft === 1
@@ -186,15 +184,16 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
             <button
               key={option.id}
               onClick={() => handleSelect(option)}
-              className={`group relative rounded-lg border p-4 text-left transition-all ${
+              className={`retro-card group relative text-left transition-all ${
                 isSelected
-                  ? 'border-emerald-600 bg-emerald-900/15 ring-1 ring-emerald-600/40'
-                  : 'border-gray-700 bg-gray-800/60 hover:border-gray-600 hover:bg-gray-800'
+                  ? 'border-[--color-retro-blue] ring-2 ring-[--color-retro-blue-light] bg-[--color-retro-blue-pale]'
+                  : 'hover:border-[--color-retro-border-dark] hover:bg-[--color-retro-bg-alt]'
               }`}
             >
               {/* Selected check mark */}
               {isSelected && (
-                <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600">
+                <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full"
+                  style={{ background: '#336699' }}>
                   <svg
                     className="h-3 w-3 text-white"
                     fill="none"
@@ -213,30 +212,29 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
 
               {/* Label + tone badge */}
               <div className="mb-1 flex items-center gap-2 pr-6">
-                <span className="text-sm font-semibold text-gray-100">
+                <span className="text-sm font-bold text-[--color-retro-text]">
                   {option.label}
                 </span>
                 {option.tone && (
-                  <span
-                    className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${TONE_COLORS[option.tone] ?? 'text-gray-400 bg-gray-800'}`}
-                  >
+                  <span className={TONE_BADGE[option.tone] ?? 'retro-badge retro-badge-gray'}>
                     {option.tone}
                   </span>
                 )}
               </div>
 
               {/* Description */}
-              <p className="mb-2 text-xs leading-relaxed text-gray-400">
+              <p className="mb-2 text-xs leading-relaxed text-[--color-retro-text-muted]">
                 {option.description}
               </p>
 
               {/* Effect previews */}
               {option.effects.length > 0 && (
-                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                <div className="flex flex-wrap gap-x-2 gap-y-1">
                   {combineEffects(option.effects).map((eff, i) => (
                     <span
                       key={i}
-                      className={`text-xs font-mono ${effectColor(eff)}`}
+                      className={`${effectBadgeClass(eff)} font-[--font-retro-mono]`}
+                      style={{ fontSize: '10px' }}
                     >
                       {formatEffectValue(eff)}
                     </span>

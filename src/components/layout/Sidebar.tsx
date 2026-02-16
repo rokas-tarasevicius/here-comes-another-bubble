@@ -25,7 +25,7 @@ export function Sidebar() {
   const pendingCount = gameState?.pendingDecisions.length ?? 0;
 
   return (
-    <aside className="flex w-48 flex-col border-r border-gray-800 bg-gray-900">
+    <aside className="retro-sidebar flex w-48 flex-col">
       {/* Navigation links */}
       <nav className="flex-1 px-2 py-4">
         <ul className="space-y-1">
@@ -37,14 +37,14 @@ export function Sidebar() {
                   onClick={() => setScreen(item.id)}
                   className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-blue-600/20 text-blue-400'
-                      : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                      ? 'bg-white/15 text-[--color-retro-orange]'
+                      : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
                   <span>{item.label}</span>
                   {item.id === 'decisions' && pendingCount > 0 && (
-                    <span className="ml-auto rounded-full bg-amber-600 px-1.5 py-0.5 text-xs font-bold text-white">
+                    <span className="retro-badge retro-badge-orange ml-auto text-[10px]">
                       {pendingCount}
                     </span>
                   )}
@@ -56,17 +56,17 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Save & Menu */}
-      <div className="border-t border-gray-800 px-2 py-4 space-y-1">
+      <div className="border-t border-white/10 px-2 py-4 space-y-1 bg-black/10">
         <button
           onClick={() => saveGame()}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <span className="text-base">{'\u{1F4BE}'}</span>
           <span>Save Game</span>
         </button>
         <button
           onClick={() => setScreen('title')}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-gray-400 transition-colors hover:bg-gray-800 hover:text-gray-200"
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <span className="text-base">{'\u{1F3E0}'}</span>
           <span>Main Menu</span>

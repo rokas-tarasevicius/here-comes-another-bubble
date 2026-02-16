@@ -3,16 +3,16 @@ import { EmployeeTable } from '../shared/EmployeeTable.tsx';
 import { AIAgentPanel } from '../shared/AIAgentPanel.tsx';
 import { HiringPipeline } from '../shared/HiringPipeline.tsx';
 
-function moraleBarColor(morale: number): string {
-  if (morale < 30) return 'bg-red-500';
-  if (morale <= 60) return 'bg-amber-500';
-  return 'bg-emerald-500';
+function moraleBarClass(morale: number): string {
+  if (morale < 30) return 'retro-progress-bar retro-progress-bar-red';
+  if (morale <= 60) return 'retro-progress-bar retro-progress-bar-orange';
+  return 'retro-progress-bar retro-progress-bar-green';
 }
 
 function moraleTextColor(morale: number): string {
-  if (morale < 30) return 'text-red-400';
-  if (morale <= 60) return 'text-amber-400';
-  return 'text-emerald-400';
+  if (morale < 30) return 'text-[--color-retro-red]';
+  if (morale <= 60) return 'text-[--color-retro-orange]';
+  return 'text-[--color-retro-green]';
 }
 
 function formatCost(amount: number): string {
@@ -47,76 +47,76 @@ export function TeamScreen() {
   return (
     <div className="space-y-6">
       {/* Page title */}
-      <h2 className="text-xl font-bold text-gray-100">Team Management</h2>
+      <h2 className="text-xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Team Management</h2>
 
       {/* Summary cards */}
       <div className="grid grid-cols-4 gap-4">
         {/* Total Team */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
             Total Team
           </p>
-          <p className="text-2xl font-bold text-gray-100">{totalTeam}</p>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="text-2xl font-bold text-[--color-retro-text]">{totalTeam}</p>
+          <p className="mt-1 text-xs text-[--color-retro-text-light]">
             {employeeCount} {employeeCount === 1 ? 'employee' : 'employees'} + {agentCount} AI {agentCount === 1 ? 'agent' : 'agents'}
           </p>
         </div>
 
         {/* Average Morale */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
             Average Morale
           </p>
           <p className={`text-2xl font-bold ${moraleTextColor(avgMorale)}`}>
             {avgMorale}
           </p>
-          <div className="mt-2 h-2 w-full rounded-full bg-gray-700">
+          <div className="retro-progress mt-2 !h-2">
             <div
-              className={`h-2 rounded-full ${moraleBarColor(avgMorale)} transition-all`}
+              className={moraleBarClass(avgMorale)}
               style={{ width: `${avgMorale}%` }}
             />
           </div>
         </div>
 
         {/* Weekly Cost */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
             Weekly Cost
           </p>
-          <p className="text-2xl font-bold font-mono text-gray-100">
+          <p className="text-2xl font-bold font-[--font-retro-mono] text-[--color-retro-text]">
             {formatCost(totalWeeklyCost)}
           </p>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-[--color-retro-text-light]">
             Salaries: {formatCost(totalSalary)} | AI: {formatCost(totalAgentCost)}
           </p>
         </div>
 
         {/* AI/Human Ratio */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
             AI / Human Ratio
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <div className="h-3 flex-1 overflow-hidden rounded-full bg-gray-700">
+            <div className="retro-progress !h-3 flex-1">
               <div className="flex h-full">
                 <div
-                  className="h-full bg-blue-500 transition-all"
-                  style={{ width: `${humanRatio}%` }}
+                  className="h-full rounded-l-[7px] transition-all"
+                  style={{ width: `${humanRatio}%`, background: 'linear-gradient(to bottom, #6699cc, #336699)' }}
                 />
                 <div
-                  className="h-full bg-violet-500 transition-all"
-                  style={{ width: `${aiRatio}%` }}
+                  className="h-full rounded-r-[7px] transition-all"
+                  style={{ width: `${aiRatio}%`, background: 'linear-gradient(to bottom, #9966cc, #663399)' }}
                 />
               </div>
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between text-xs">
-            <span className="flex items-center gap-1 text-blue-400">
-              <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+            <span className="flex items-center gap-1 text-[--color-retro-blue]">
+              <span className="retro-dot retro-dot-green" style={{ background: 'radial-gradient(circle at 30% 30%, #6699cc, #336699)' }} />
               Human {humanRatio.toFixed(0)}%
             </span>
-            <span className="flex items-center gap-1 text-violet-400">
-              <span className="inline-block h-2 w-2 rounded-full bg-violet-500" />
+            <span className="flex items-center gap-1 text-[--color-retro-purple]">
+              <span className="retro-dot" style={{ background: 'radial-gradient(circle at 30% 30%, #9966cc, #663399)' }} />
               AI {aiRatio.toFixed(0)}%
             </span>
           </div>
@@ -125,7 +125,7 @@ export function TeamScreen() {
 
       {/* Employees section */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-gray-300">
+        <h3 className="retro-section-heading">
           Employees ({employeeCount})
         </h3>
         <EmployeeTable />
@@ -133,7 +133,7 @@ export function TeamScreen() {
 
       {/* AI Agents section */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-gray-300">
+        <h3 className="retro-section-heading">
           AI Agents ({agentCount})
         </h3>
         <AIAgentPanel />
@@ -141,7 +141,7 @@ export function TeamScreen() {
 
       {/* Hiring Pipeline section */}
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-gray-300">
+        <h3 className="retro-section-heading">
           Hiring Pipeline ({gameState.team.hiringPipeline.length})
         </h3>
         <HiringPipeline />

@@ -34,8 +34,8 @@ function CustomTooltip({
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="rounded-lg border border-gray-700 bg-gray-900 px-3 py-2 shadow-lg">
-      <p className="mb-1 text-xs font-medium text-gray-400">Week {label}</p>
+    <div className="retro-card" style={{ padding: '8px 12px' }}>
+      <p className="mb-1 text-xs font-bold text-[--color-retro-text-muted]">Week {label}</p>
       {payload.map((entry) => (
         <p key={entry.name} className="text-sm" style={{ color: entry.color }}>
           {entry.name}: {formatCurrency(entry.value)}
@@ -65,63 +65,63 @@ export function CashFlowChart({ weekHistory }: CashFlowChartProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <p className="text-sm text-gray-500">No financial history yet. End a week to see data.</p>
+      <div className="retro-card flex h-64 items-center justify-center">
+        <p className="text-sm text-[--color-retro-text-muted]">No financial history yet. End a week to see data.</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+    <div className="retro-card">
+      <h3 className="retro-section-heading">
         Cash Flow Over Time
       </h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
             <XAxis
               dataKey="week"
-              stroke="#6b7280"
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
-              label={{ value: 'Week', position: 'insideBottomRight', offset: -5, fill: '#6b7280', fontSize: 11 }}
+              stroke="#999999"
+              tick={{ fill: '#666666', fontSize: 12 }}
+              label={{ value: 'Week', position: 'insideBottomRight', offset: -5, fill: '#999999', fontSize: 11 }}
             />
             <YAxis
-              stroke="#6b7280"
-              tick={{ fill: '#9ca3af', fontSize: 12 }}
+              stroke="#999999"
+              tick={{ fill: '#666666', fontSize: 12 }}
               tickFormatter={formatYAxis}
               width={60}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
-              wrapperStyle={{ fontSize: 12, color: '#9ca3af' }}
+              wrapperStyle={{ fontSize: 12, color: '#666666' }}
             />
             <Line
               type="monotone"
               dataKey="cash"
               name="Cash"
-              stroke="#10b981"
+              stroke="#336699"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#10b981' }}
+              activeDot={{ r: 4, fill: '#336699' }}
             />
             <Line
               type="monotone"
               dataKey="revenue"
               name="Revenue"
-              stroke="#3b82f6"
+              stroke="#339933"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#3b82f6' }}
+              activeDot={{ r: 4, fill: '#339933' }}
             />
             <Line
               type="monotone"
               dataKey="burn"
               name="Burn"
-              stroke="#ef4444"
+              stroke="#cc3333"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#ef4444' }}
+              activeDot={{ r: 4, fill: '#cc3333' }}
             />
           </LineChart>
         </ResponsiveContainer>

@@ -94,125 +94,121 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
   const maxShare = Math.max(...rows.map((r) => r.marketShare), 0.01);
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-      <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+    <div className="retro-card" style={{ padding: 0 }}>
+      <h3 className="retro-section-heading" style={{ margin: '16px 16px 12px' }}>
         Competitors
       </h3>
 
       {rows.length === 0 ? (
-        <p className="text-sm text-gray-500">No competitors in this market yet.</p>
+        <p className="text-sm text-[--color-retro-text-muted]" style={{ padding: '16px' }}>No competitors in this market yet.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="retro-table">
             <thead>
-              <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
+              <tr>
                 <th
-                  className="cursor-pointer pb-2 pr-3 hover:text-gray-300"
+                  className="cursor-pointer"
                   onClick={() => handleSort('name')}
                 >
                   Name{sortIndicator('name')}
                 </th>
                 <th
-                  className="cursor-pointer pb-2 pr-3 hover:text-gray-300"
+                  className="cursor-pointer"
                   onClick={() => handleSort('funding')}
                 >
                   Funding{sortIndicator('funding')}
                 </th>
                 <th
-                  className="cursor-pointer pb-2 pr-3 hover:text-gray-300"
+                  className="cursor-pointer"
                   onClick={() => handleSort('teamSize')}
                 >
                   Team{sortIndicator('teamSize')}
                 </th>
                 <th
-                  className="cursor-pointer pb-2 pr-3 hover:text-gray-300"
+                  className="cursor-pointer"
                   onClick={() => handleSort('productQuality')}
                 >
                   Quality{sortIndicator('productQuality')}
                 </th>
                 <th
-                  className="cursor-pointer pb-2 pr-3 hover:text-gray-300"
+                  className="cursor-pointer"
                   onClick={() => handleSort('marketShare')}
                 >
                   Share{sortIndicator('marketShare')}
                 </th>
-                <th className="pb-2 pr-3">Strategy</th>
-                <th className="pb-2">Status</th>
+                <th>Strategy</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((row) => {
                 const rowOpacity = row.alive ? '' : 'opacity-40';
-                const playerHighlight = row.isPlayer
-                  ? 'bg-emerald-500/5 border-l-2 border-l-emerald-500'
-                  : '';
 
                 return (
                   <tr
                     key={row.id}
-                    className={`border-b border-gray-800/50 ${rowOpacity} ${playerHighlight}`}
+                    className={rowOpacity}
+                    style={row.isPlayer ? { background: '#d8e6f3' } : undefined}
                   >
                     {/* Name */}
-                    <td className="py-2 pr-3">
-                      <span className={`font-medium ${row.isPlayer ? 'text-emerald-400' : 'text-gray-300'}`}>
+                    <td>
+                      <span className={`font-semibold ${row.isPlayer ? 'text-[--color-retro-blue]' : 'text-[--color-retro-text]'}`}>
                         {row.name}
                       </span>
                       {row.isPlayer && (
-                        <span className="ml-1 text-xs text-emerald-600">(You)</span>
+                        <span className="ml-1 text-xs text-[--color-retro-blue-light]">(You)</span>
                       )}
                     </td>
 
                     {/* Funding */}
-                    <td className="py-2 pr-3 font-mono text-gray-300">
+                    <td className="font-[--font-retro-mono] text-[--color-retro-text]">
                       {formatCurrency(row.funding)}
                     </td>
 
                     {/* Team Size */}
-                    <td className="py-2 pr-3 text-gray-300">{row.teamSize}</td>
+                    <td className="text-[--color-retro-text]">{row.teamSize}</td>
 
                     {/* Product Quality Bar */}
-                    <td className="py-2 pr-3">
+                    <td>
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-800">
+                        <div className="retro-progress" style={{ width: '64px', height: '10px' }}>
                           <div
-                            className="h-full rounded-full bg-blue-500 transition-all duration-300"
+                            className="retro-progress-bar"
                             style={{ width: `${row.productQuality}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400">{Math.round(row.productQuality)}</span>
+                        <span className="text-xs text-[--color-retro-text-muted]">{Math.round(row.productQuality)}</span>
                       </div>
                     </td>
 
                     {/* Market Share Bar */}
-                    <td className="py-2 pr-3">
+                    <td>
                       <div className="flex items-center gap-2">
-                        <div className="h-2 w-16 overflow-hidden rounded-full bg-gray-800">
+                        <div className="retro-progress" style={{ width: '64px', height: '10px' }}>
                           <div
-                            className="h-full rounded-full transition-all duration-300"
+                            className={`retro-progress-bar ${row.isPlayer ? 'retro-progress-bar-green' : 'retro-progress-bar-purple'}`}
                             style={{
                               width: `${(row.marketShare / maxShare) * 100}%`,
-                              backgroundColor: row.isPlayer ? '#10b981' : '#6366f1',
-                              opacity: 0.5 + (row.marketShare / maxShare) * 0.5,
                             }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-[--color-retro-text-muted]">
                           {formatPercent(row.marketShare * 100)}
                         </span>
                       </div>
                     </td>
 
                     {/* Strategy */}
-                    <td className="py-2 pr-3 text-xs text-gray-400">{row.strategy}</td>
+                    <td className="text-xs text-[--color-retro-text-muted]">{row.strategy}</td>
 
                     {/* Status */}
-                    <td className="py-2">
+                    <td>
                       {row.alive ? (
-                        <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-xs font-medium text-emerald-400">
+                        <span className="retro-badge retro-badge-green">
                           Active
                         </span>
                       ) : (
-                        <span className="rounded-full bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-400">
+                        <span className="retro-badge retro-badge-red">
                           Dead
                         </span>
                       )}

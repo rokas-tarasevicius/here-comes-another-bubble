@@ -8,37 +8,25 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-amber-300';
-    case 'A': return 'text-emerald-400';
-    case 'B': return 'text-blue-400';
-    case 'C': return 'text-gray-300';
-    case 'D': return 'text-orange-400';
-    case 'F': return 'text-red-400';
-    default: return 'text-gray-300';
+    case 'S': return 'text-[--color-retro-orange]';
+    case 'A': return 'text-[--color-retro-green]';
+    case 'B': return 'text-[--color-retro-blue]';
+    case 'C': return 'text-[--color-retro-text-muted]';
+    case 'D': return 'text-[--color-retro-orange]';
+    case 'F': return 'text-[--color-retro-red]';
+    default: return 'text-[--color-retro-text-muted]';
   }
 }
 
 function gradeBorderColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'border-amber-500/60';
-    case 'A': return 'border-emerald-500/60';
-    case 'B': return 'border-blue-500/60';
-    case 'C': return 'border-gray-500/60';
-    case 'D': return 'border-orange-500/60';
-    case 'F': return 'border-red-500/60';
-    default: return 'border-gray-500/60';
-  }
-}
-
-function gradeGlow(grade: string): string {
-  switch (grade) {
-    case 'S': return 'shadow-amber-500/30';
-    case 'A': return 'shadow-emerald-500/30';
-    case 'B': return 'shadow-blue-500/30';
-    case 'C': return 'shadow-gray-500/30';
-    case 'D': return 'shadow-orange-500/30';
-    case 'F': return 'shadow-red-500/30';
-    default: return 'shadow-gray-500/30';
+    case 'S': return 'border-[--color-retro-orange]';
+    case 'A': return 'border-[--color-retro-green]';
+    case 'B': return 'border-[--color-retro-blue]';
+    case 'C': return 'border-[--color-retro-border-dark]';
+    case 'D': return 'border-[--color-retro-orange]';
+    case 'F': return 'border-[--color-retro-red]';
+    default: return 'border-[--color-retro-border-dark]';
   }
 }
 
@@ -56,25 +44,14 @@ function gradeLabel(grade: string): string {
 
 // ─── Bar colors per category ─────────────────────────────────────────────
 
-function categoryBarColor(category: string): string {
+function categoryBarClass(category: string): string {
   switch (category) {
-    case 'valuation': return 'bg-emerald-500';
-    case 'revenue': return 'bg-blue-500';
-    case 'team': return 'bg-violet-500';
-    case 'product': return 'bg-amber-500';
-    case 'survival': return 'bg-gray-400';
-    default: return 'bg-gray-500';
-  }
-}
-
-function categoryBarTrack(category: string): string {
-  switch (category) {
-    case 'valuation': return 'bg-emerald-950';
-    case 'revenue': return 'bg-blue-950';
-    case 'team': return 'bg-violet-950';
-    case 'product': return 'bg-amber-950';
-    case 'survival': return 'bg-gray-900';
-    default: return 'bg-gray-900';
+    case 'valuation': return 'retro-progress-bar retro-progress-bar-green';
+    case 'revenue': return 'retro-progress-bar';
+    case 'team': return 'retro-progress-bar retro-progress-bar-purple';
+    case 'product': return 'retro-progress-bar retro-progress-bar-orange';
+    case 'survival': return 'retro-progress-bar';
+    default: return 'retro-progress-bar';
   }
 }
 
@@ -100,28 +77,6 @@ function categoryLabel(category: string): string {
   }
 }
 
-// ─── Floating bubbles background ─────────────────────────────────────────
-
-function BubblesBackground() {
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-red-900/15 blur-3xl" />
-      <div className="absolute top-1/3 -right-32 h-80 w-80 rounded-full bg-blue-900/15 blur-3xl" />
-      <div className="absolute -bottom-20 left-1/4 h-72 w-72 rounded-full bg-violet-900/15 blur-3xl" />
-      <div className="absolute top-1/4 left-1/2 h-64 w-64 rounded-full bg-amber-900/10 blur-3xl" />
-
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-        }}
-      />
-    </div>
-  );
-}
-
 // ─── Score breakdown bar ─────────────────────────────────────────────────
 
 function ScoreBar({
@@ -138,16 +93,16 @@ function ScoreBar({
 
   return (
     <div className="flex items-center gap-3">
-      <div className="w-20 text-right text-sm font-medium text-gray-400">
+      <div className="w-20 text-right text-sm font-medium text-[--color-retro-text-muted]">
         {categoryLabel(category)}
       </div>
-      <div className={`relative h-6 flex-1 overflow-hidden rounded-full ${categoryBarTrack(category)}`}>
+      <div className="retro-progress relative flex-1 !h-6">
         <div
-          className={`h-full rounded-full ${categoryBarColor(category)} transition-all duration-1000 ease-out`}
-          style={{ width: animate ? `${pct}%` : '0%' }}
+          className={categoryBarClass(category)}
+          style={{ width: animate ? `${pct}%` : '0%', transition: 'width 1s ease-out' }}
         />
       </div>
-      <div className="w-16 text-right font-mono text-sm text-gray-300">
+      <div className="w-16 text-right font-[--font-retro-mono] text-sm text-[--color-retro-text]">
         {value}/{max}
       </div>
     </div>
@@ -168,49 +123,50 @@ function LeaderboardMini({
   if (top10.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-      <h3 className="mb-3 text-sm font-semibold tracking-wide text-gray-400 uppercase">
+    <div className="retro-card">
+      <h3 className="retro-section-heading">
         Leaderboard
       </h3>
-      <div className="space-y-1">
-        <div className="grid grid-cols-[2rem_1fr_3.5rem_2.5rem] gap-2 border-b border-gray-800 pb-1 text-xs font-medium text-gray-600">
-          <div>#</div>
-          <div>Company</div>
-          <div className="text-right">Score</div>
-          <div className="text-right">Grade</div>
-        </div>
-        {top10.map((entry, i) => {
-          const isHighlight = entry.score === currentScore && i === top10.findIndex(e => e.score === currentScore);
-          const rankColor =
-            i === 0 ? 'text-amber-400' :
-            i === 1 ? 'text-gray-300' :
-            i === 2 ? 'text-orange-400' :
-            'text-gray-600';
-
-          return (
-            <div
-              key={`${entry.companyName}-${entry.date}-${i}`}
-              className={`grid grid-cols-[2rem_1fr_3.5rem_2.5rem] gap-2 rounded px-1 py-1 text-sm ${
-                isHighlight ? 'bg-gray-800/80 text-gray-100' : 'text-gray-400'
-              }`}
-            >
-              <div className={`font-mono font-bold ${rankColor}`}>
-                {i + 1}
-              </div>
-              <div className="truncate">
-                {entry.companyName}
-                {isHighlight && (
-                  <span className="ml-1 text-xs text-emerald-500">NEW</span>
-                )}
-              </div>
-              <div className="text-right font-mono">{entry.score}</div>
-              <div className={`text-right font-bold ${gradeColor(entry.grade)}`}>
-                {entry.grade}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <table className="retro-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Company</th>
+            <th className="text-right">Score</th>
+            <th className="text-right">Grade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {top10.map((entry, i) => {
+            const isHighlight = entry.score === currentScore && i === top10.findIndex(e => e.score === currentScore);
+            return (
+              <tr
+                key={`${entry.companyName}-${entry.date}-${i}`}
+                style={isHighlight ? { background: 'var(--color-retro-blue-pale)' } : undefined}
+              >
+                <td className={`font-[--font-retro-mono] font-bold ${
+                  i === 0 ? 'text-[--color-retro-orange]' :
+                  i === 1 ? 'text-[--color-retro-text-muted]' :
+                  i === 2 ? 'text-[--color-retro-orange]' :
+                  'text-[--color-retro-text-light]'
+                }`}>
+                  {i + 1}
+                </td>
+                <td className="text-[--color-retro-text]">
+                  {entry.companyName}
+                  {isHighlight && (
+                    <span className="ml-1 retro-badge retro-badge-green">NEW</span>
+                  )}
+                </td>
+                <td className="text-right font-[--font-retro-mono]">{entry.score}</td>
+                <td className={`text-right font-bold ${gradeColor(entry.grade)}`}>
+                  {entry.grade}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -219,14 +175,14 @@ function LeaderboardMini({
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
   const styles: Record<string, string> = {
-    easy: 'bg-emerald-900/40 text-emerald-400 border-emerald-800/50',
-    normal: 'bg-blue-900/40 text-blue-400 border-blue-800/50',
-    hard: 'bg-orange-900/40 text-orange-400 border-orange-800/50',
-    nightmare: 'bg-red-900/40 text-red-400 border-red-800/50',
+    easy: 'retro-badge retro-badge-green',
+    normal: 'retro-badge retro-badge-blue',
+    hard: 'retro-badge retro-badge-orange',
+    nightmare: 'retro-badge retro-badge-red',
   };
 
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-xs font-medium capitalize ${styles[difficulty] ?? styles.normal}`}>
+    <span className={`capitalize ${styles[difficulty] ?? styles.normal}`}>
       {difficulty}
     </span>
   );
@@ -277,31 +233,29 @@ export function GameOverScreen() {
   const categories = ['valuation', 'revenue', 'team', 'product', 'survival'] as const;
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center bg-gray-950 px-4 py-12">
-      <BubblesBackground />
-
+    <div className="relative flex min-h-screen flex-col items-center bg-[--color-retro-bg] px-4 py-12">
       <div className="relative z-10 w-full max-w-2xl space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-gray-100 sm:text-5xl">
+          <h1 className="mb-2 text-4xl font-extrabold font-[--font-retro-heading] tracking-tight text-[--color-retro-text] sm:text-5xl">
             Game Over
           </h1>
-          <p className="text-lg text-red-400/80">{reason}</p>
+          <p className="text-lg text-[--color-retro-red]">{reason}</p>
         </div>
 
         {/* Company summary */}
-        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-400">
-          <div className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-2">
-            <span className="text-gray-500">Company </span>
-            <span className="font-semibold text-gray-200">{gameState.company.name}</span>
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[--color-retro-text-muted]">
+          <div className="retro-card !py-2 !px-4">
+            <span className="text-[--color-retro-text-light]">Company </span>
+            <span className="font-semibold text-[--color-retro-text]">{gameState.company.name}</span>
           </div>
-          <div className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-2">
-            <span className="text-gray-500">Weeks </span>
-            <span className="font-semibold text-gray-200">{gameState.meta.week}</span>
+          <div className="retro-card !py-2 !px-4">
+            <span className="text-[--color-retro-text-light]">Weeks </span>
+            <span className="font-semibold text-[--color-retro-text]">{gameState.meta.week}</span>
           </div>
-          <div className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-2">
-            <span className="text-gray-500">Valuation </span>
-            <span className="font-semibold text-emerald-400">
+          <div className="retro-card !py-2 !px-4">
+            <span className="text-[--color-retro-text-light]">Valuation </span>
+            <span className="font-semibold text-[--color-retro-green]">
               {formatCurrency(gameState.company.valuation)}
             </span>
           </div>
@@ -311,23 +265,27 @@ export function GameOverScreen() {
         {/* Grade circle + total score */}
         <div className="flex flex-col items-center gap-3">
           <div
-            className={`flex h-32 w-32 items-center justify-center rounded-full border-4 shadow-lg ${gradeBorderColor(score.grade)} ${gradeGlow(score.grade)}`}
+            className={`flex h-32 w-32 items-center justify-center rounded-full border-4 ${gradeBorderColor(score.grade)}`}
+            style={{
+              background: 'linear-gradient(to bottom, #ffffff, #f0f0f0)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
+            }}
           >
             <div className="text-center">
               <div className={`text-5xl font-black ${gradeColor(score.grade)}`}>
                 {score.grade}
               </div>
-              <div className="text-xs font-medium text-gray-500">
+              <div className="text-xs font-medium text-[--color-retro-text-light]">
                 {gradeLabel(score.grade)}
               </div>
             </div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-extrabold text-gray-100">{score.total}</div>
-            <div className="text-sm text-gray-500">
+            <div className="text-3xl font-extrabold text-[--color-retro-text]">{score.total}</div>
+            <div className="text-sm text-[--color-retro-text-light]">
               Total Score
               {score.difficultyMultiplier !== 1.0 && (
-                <span className="ml-1 text-xs text-gray-600">
+                <span className="ml-1 text-xs text-[--color-retro-text-light]">
                   (x{score.difficultyMultiplier} difficulty)
                 </span>
               )}
@@ -336,8 +294,8 @@ export function GameOverScreen() {
         </div>
 
         {/* Score breakdown */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-6">
-          <h2 className="mb-4 text-sm font-semibold tracking-wide text-gray-400 uppercase">
+        <div className="retro-card-raised p-6">
+          <h2 className="retro-section-heading">
             Score Breakdown
           </h2>
           <div className="space-y-3">
@@ -351,9 +309,9 @@ export function GameOverScreen() {
             ))}
           </div>
           {score.difficultyMultiplier !== 1.0 && (
-            <div className="mt-4 border-t border-gray-800 pt-3 text-right text-sm text-gray-500">
+            <div className="mt-4 border-t border-[--color-retro-border] pt-3 text-right text-sm text-[--color-retro-text-light]">
               Difficulty multiplier:{' '}
-              <span className="font-mono font-semibold text-gray-300">
+              <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
                 x{score.difficultyMultiplier}
               </span>
             </div>
@@ -367,14 +325,13 @@ export function GameOverScreen() {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button
             onClick={() => setScreen('newgame')}
-            className="group relative overflow-hidden rounded-lg bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-lg shadow-emerald-900/30 transition-all hover:bg-emerald-500 hover:shadow-emerald-900/50 active:scale-[0.98]"
+            className="btn-glossy btn-glossy-lg btn-green"
           >
-            <span className="relative z-10">New Game</span>
-            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full" />
+            New Game
           </button>
           <button
             onClick={() => setScreen('title')}
-            className="rounded-lg border border-gray-800 bg-gray-900 px-8 py-3 text-base font-medium text-gray-300 transition-all hover:border-gray-700 hover:bg-gray-800 hover:text-gray-100 active:scale-[0.98]"
+            className="btn-glossy btn-glossy-lg btn-silver"
           >
             Main Menu
           </button>

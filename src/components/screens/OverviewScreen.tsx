@@ -18,16 +18,16 @@ const STAGE_LABELS: Record<CompanyStage, string> = {
   'dead': 'Dead',
 };
 
-const STAGE_BADGE_COLORS: Record<CompanyStage, string> = {
-  'garage': 'bg-gray-700 text-gray-300',
-  'pre-seed': 'bg-gray-600 text-gray-200',
-  'seed': 'bg-amber-900/60 text-amber-300',
-  'series-a': 'bg-blue-900/60 text-blue-300',
-  'series-b': 'bg-violet-900/60 text-violet-300',
-  'series-c': 'bg-violet-800/60 text-violet-200',
-  'growth': 'bg-emerald-900/60 text-emerald-300',
-  'public': 'bg-emerald-800/60 text-emerald-200',
-  'dead': 'bg-red-900/60 text-red-300',
+const STAGE_BADGE_CLASSES: Record<CompanyStage, string> = {
+  'garage': 'retro-badge retro-badge-gray',
+  'pre-seed': 'retro-badge retro-badge-gray',
+  'seed': 'retro-badge retro-badge-orange',
+  'series-a': 'retro-badge retro-badge-blue',
+  'series-b': 'retro-badge retro-badge-purple',
+  'series-c': 'retro-badge retro-badge-purple',
+  'growth': 'retro-badge retro-badge-green',
+  'public': 'retro-badge retro-badge-green',
+  'dead': 'retro-badge retro-badge-red',
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────
@@ -77,15 +77,15 @@ function pmfColor(score: number): 'red' | 'amber' | 'emerald' {
 }
 
 function bubbleColor(index: number): string {
-  if (index < 30) return 'text-emerald-400';
-  if (index < 60) return 'text-amber-400';
-  return 'text-red-400';
+  if (index < 30) return 'text-[--color-retro-green]';
+  if (index < 60) return 'text-[--color-retro-orange]';
+  return 'text-[--color-retro-red]';
 }
 
-function bubbleBarColor(index: number): string {
-  if (index < 30) return 'bg-emerald-500';
-  if (index < 60) return 'bg-amber-500';
-  return 'bg-red-500';
+function bubbleProgressBarClass(index: number): string {
+  if (index < 30) return 'retro-progress-bar retro-progress-bar-green';
+  if (index < 60) return 'retro-progress-bar retro-progress-bar-orange';
+  return 'retro-progress-bar retro-progress-bar-red';
 }
 
 // ─── OverviewScreen ──────────────────────────────────────────────────
@@ -170,15 +170,15 @@ export function OverviewScreen() {
         {/* Left Column */}
         <div className="flex flex-col gap-4">
           {/* Company Stats Card */}
-          <div className="rounded-lg border border-gray-800 bg-gray-900 p-4 flex flex-col gap-4">
-            <h3 className="text-sm font-semibold text-gray-100">Company Stats</h3>
+          <div className="retro-card flex flex-col gap-4">
+            <h3 className="retro-section-heading">Company Stats</h3>
 
             <div className="grid grid-cols-2 gap-3">
               {/* Stage */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wider">Stage</span>
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Stage</span>
                 <span
-                  className={`inline-flex w-fit rounded-full px-2.5 py-0.5 text-xs font-medium ${STAGE_BADGE_COLORS[company.stage] ?? 'bg-gray-700 text-gray-300'}`}
+                  className={STAGE_BADGE_CLASSES[company.stage] ?? 'retro-badge retro-badge-gray'}
                 >
                   {STAGE_LABELS[company.stage] ?? company.stage}
                 </span>
@@ -186,30 +186,30 @@ export function OverviewScreen() {
 
               {/* Valuation */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wider">Valuation</span>
-                <span className="text-sm font-mono text-gray-100">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Valuation</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">
                   {formatCurrency(company.valuation)}
                 </span>
               </div>
 
               {/* Founder Equity */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wider">Founder Equity</span>
-                <span className="text-sm font-mono text-gray-100">
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Founder Equity</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">
                   {formatPercent(finances.founderEquity * 100)}
                 </span>
               </div>
 
               {/* Bubble Index */}
               <div className="flex flex-col gap-1">
-                <span className="text-xs text-gray-500 uppercase tracking-wider">Bubble Index</span>
+                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Bubble Index</span>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-mono ${bubbleColor(market.bubbleIndex)}`}>
+                  <span className={`text-sm font-[--font-retro-mono] ${bubbleColor(market.bubbleIndex)}`}>
                     {market.bubbleIndex}
                   </span>
-                  <div className="flex-1 h-2 rounded-full bg-gray-800 overflow-hidden">
+                  <div className="retro-progress flex-1 !h-2">
                     <div
-                      className={`h-full rounded-full transition-all ${bubbleBarColor(market.bubbleIndex)}`}
+                      className={bubbleProgressBarClass(market.bubbleIndex)}
                       style={{ width: `${Math.min(market.bubbleIndex, 100)}%` }}
                     />
                   </div>
@@ -218,53 +218,53 @@ export function OverviewScreen() {
             </div>
 
             {/* Extra stats row */}
-            <div className="grid grid-cols-3 gap-3 border-t border-gray-800 pt-3">
+            <div className="grid grid-cols-3 gap-3 border-t border-[--color-retro-border] pt-3">
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-gray-500">Reputation</span>
-                <span className="text-sm font-mono text-gray-200">{company.reputation}/100</span>
+                <span className="text-xs text-[--color-retro-text-light]">Reputation</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text-muted]">{company.reputation}/100</span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-gray-500">Investor Mood</span>
-                <span className="text-sm font-mono text-gray-200">{market.investorSentiment}/100</span>
+                <span className="text-xs text-[--color-retro-text-light]">Investor Mood</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text-muted]">{market.investorSentiment}/100</span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-gray-500">Team Morale</span>
-                <span className="text-sm font-mono text-gray-200">{Math.round(team.avgMorale)}/100</span>
+                <span className="text-xs text-[--color-retro-text-light]">Team Morale</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text-muted]">{Math.round(team.avgMorale)}/100</span>
               </div>
             </div>
           </div>
 
           {/* Quick Actions Card */}
-          <div className="rounded-lg border border-gray-800 bg-gray-900 p-4 flex flex-col gap-3">
-            <h3 className="text-sm font-semibold text-gray-100">Quick Actions</h3>
+          <div className="retro-card flex flex-col gap-3">
+            <h3 className="retro-section-heading">Quick Actions</h3>
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setScreen('team')}
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-gray-700 hover:text-gray-100"
+                className="btn-glossy btn-silver"
               >
                 Hire
               </button>
               <button
                 onClick={() => setScreen('product')}
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-gray-700 hover:text-gray-100"
+                className="btn-glossy btn-silver"
               >
                 Start Feature
               </button>
               <button
                 onClick={() => setScreen('finances')}
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-gray-700 hover:text-gray-100"
+                className="btn-glossy btn-silver"
               >
                 Set Pricing
               </button>
               <button
                 onClick={() => setScreen('funding')}
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-gray-700 hover:text-gray-100"
+                className="btn-glossy btn-silver"
               >
                 Seek Funding
               </button>
               <button
                 onClick={() => setScreen('market')}
-                className="rounded-lg bg-gray-800 px-4 py-2 text-sm font-medium text-gray-200 transition-colors hover:bg-gray-700 hover:text-gray-100"
+                className="btn-glossy btn-silver"
               >
                 Market Intel
               </button>
@@ -277,36 +277,24 @@ export function OverviewScreen() {
       </div>
 
       {/* ── Bottom: Recent History Table ────────────────────────── */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4 flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-100">Recent History</h3>
+      <div className="retro-card flex flex-col gap-3">
+        <h3 className="retro-section-heading">Recent History</h3>
 
         {weekHistory.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-[--color-retro-text-light]">
             No history yet. Complete your first week to see trends.
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="retro-table">
               <thead>
-                <tr className="border-b border-gray-800 text-left">
-                  <th className="pb-2 pr-4 text-xs font-medium uppercase tracking-wider text-gray-500">
-                    Week
-                  </th>
-                  <th className="pb-2 pr-4 text-xs font-medium uppercase tracking-wider text-gray-500 text-right">
-                    Cash
-                  </th>
-                  <th className="pb-2 pr-4 text-xs font-medium uppercase tracking-wider text-gray-500 text-right">
-                    Revenue
-                  </th>
-                  <th className="pb-2 pr-4 text-xs font-medium uppercase tracking-wider text-gray-500 text-right">
-                    Customers
-                  </th>
-                  <th className="pb-2 pr-4 text-xs font-medium uppercase tracking-wider text-gray-500 text-right">
-                    Team
-                  </th>
-                  <th className="pb-2 text-xs font-medium uppercase tracking-wider text-gray-500 text-right">
-                    PMF
-                  </th>
+                <tr>
+                  <th>Week</th>
+                  <th className="text-right">Cash</th>
+                  <th className="text-right">Revenue</th>
+                  <th className="text-right">Customers</th>
+                  <th className="text-right">Team</th>
+                  <th className="text-right">PMF</th>
                 </tr>
               </thead>
               <tbody>
@@ -314,28 +302,28 @@ export function OverviewScreen() {
                   .slice(-5)
                   .reverse()
                   .map((w) => (
-                    <tr key={w.week} className="border-b border-gray-800/50 last:border-0">
-                      <td className="py-2 pr-4 font-mono text-gray-300">
+                    <tr key={w.week}>
+                      <td className="font-[--font-retro-mono] text-[--color-retro-text-muted]">
                         W{w.week}
                       </td>
-                      <td className="py-2 pr-4 font-mono text-emerald-400 text-right">
+                      <td className="font-[--font-retro-mono] text-[--color-retro-green] text-right">
                         {formatCurrency(w.cash)}
                       </td>
-                      <td className="py-2 pr-4 font-mono text-emerald-400 text-right">
+                      <td className="font-[--font-retro-mono] text-[--color-retro-green] text-right">
                         {formatCurrency(w.revenue)}
                       </td>
-                      <td className="py-2 pr-4 font-mono text-gray-300 text-right">
+                      <td className="font-[--font-retro-mono] text-[--color-retro-text-muted] text-right">
                         {formatNumber(w.customers)}
                       </td>
-                      <td className="py-2 pr-4 font-mono text-blue-400 text-right">
+                      <td className="font-[--font-retro-mono] text-[--color-retro-blue] text-right">
                         {w.teamSize}
                       </td>
-                      <td className={`py-2 font-mono text-right ${
+                      <td className={`font-[--font-retro-mono] text-right ${
                         w.pmfScore < 30
-                          ? 'text-red-400'
+                          ? 'text-[--color-retro-red]'
                           : w.pmfScore < 60
-                            ? 'text-amber-400'
-                            : 'text-emerald-400'
+                            ? 'text-[--color-retro-orange]'
+                            : 'text-[--color-retro-green]'
                       }`}>
                         {formatPercent(w.pmfScore)}
                       </td>

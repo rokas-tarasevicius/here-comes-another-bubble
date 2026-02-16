@@ -3,11 +3,11 @@ export interface BubbleIndexGaugeProps {
   trend: number;   // positive = inflating, negative = deflating
 }
 
-function getZone(value: number): { label: string; color: string; bgColor: string; glowColor: string } {
-  if (value < 30) return { label: 'Cool', color: 'text-blue-400', bgColor: 'bg-blue-500', glowColor: 'shadow-blue-500/20' };
-  if (value < 60) return { label: 'Warm', color: 'text-amber-400', bgColor: 'bg-amber-500', glowColor: 'shadow-amber-500/20' };
-  if (value < 80) return { label: 'Hot', color: 'text-orange-400', bgColor: 'bg-orange-500', glowColor: 'shadow-orange-500/20' };
-  return { label: 'BUBBLE!', color: 'text-red-400', bgColor: 'bg-red-500', glowColor: 'shadow-red-500/20' };
+function getZone(value: number): { label: string; color: string; arcColor: string } {
+  if (value < 30) return { label: 'Cool', color: 'text-[--color-retro-blue]', arcColor: '#336699' };
+  if (value < 60) return { label: 'Warm', color: 'text-[--color-retro-orange]', arcColor: '#ff6600' };
+  if (value < 80) return { label: 'Hot', color: 'text-[--color-retro-orange-dark]', arcColor: '#cc5500' };
+  return { label: 'BUBBLE!', color: 'text-[--color-retro-red]', arcColor: '#cc3333' };
 }
 
 /**
@@ -23,12 +23,12 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
   const needleRotation = -90 + (clamped / 100) * 180;
 
   const trendArrow = trend > 0 ? '\u2191' : trend < 0 ? '\u2193' : '\u2192';
-  const trendColor = trend > 0 ? 'text-red-400' : trend < 0 ? 'text-blue-400' : 'text-gray-400';
+  const trendColor = trend > 0 ? 'text-[--color-retro-red]' : trend < 0 ? 'text-[--color-retro-blue]' : 'text-[--color-retro-text-muted]';
   const trendLabel = trend > 0 ? 'Inflating' : trend < 0 ? 'Deflating' : 'Stable';
 
   return (
-    <div className={`rounded-lg border border-gray-800 bg-gray-900 p-4 shadow-lg ${zone.glowColor}`}>
-      <h3 className="mb-2 text-sm font-medium uppercase tracking-wider text-gray-400">
+    <div className="retro-card">
+      <h3 className="retro-section-heading">
         Bubble Index
       </h3>
 
@@ -40,25 +40,25 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 20 100 A 80 80 0 0 1 47.15 34.34"
             fill="none"
-            stroke="#1e40af"
+            stroke="#336699"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
           />
-          {/* Warm zone: 30-60 (amber) */}
+          {/* Warm zone: 30-60 (orange) */}
           <path
             d="M 47.15 34.34 A 80 80 0 0 1 100 20"
             fill="none"
-            stroke="#d97706"
+            stroke="#ff6600"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
           />
-          {/* Hot zone: 60-80 (orange) */}
+          {/* Hot zone: 60-80 (dark orange) */}
           <path
             d="M 100 20 A 80 80 0 0 1 146.63 30.72"
             fill="none"
-            stroke="#ea580c"
+            stroke="#cc5500"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -67,7 +67,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 146.63 30.72 A 80 80 0 0 1 180 100"
             fill="none"
-            stroke="#dc2626"
+            stroke="#cc3333"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -80,28 +80,27 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
               y1="100"
               x2="100"
               y2="30"
-              stroke="currentColor"
+              stroke={zone.arcColor}
               strokeWidth="2.5"
-              className={zone.color}
             />
-            <circle cx="100" cy="100" r="5" fill="currentColor" className={zone.color} />
+            <circle cx="100" cy="100" r="5" fill={zone.arcColor} />
           </g>
 
           {/* Min/Max labels */}
-          <text x="15" y="115" className="fill-gray-500" fontSize="10">0</text>
-          <text x="175" y="115" className="fill-gray-500" fontSize="10">100</text>
+          <text x="15" y="115" fill="#999999" fontSize="10">0</text>
+          <text x="175" y="115" fill="#999999" fontSize="10">100</text>
         </svg>
 
         {/* Value display */}
         <div className="mt-1 text-center">
-          <span className={`text-2xl font-bold font-mono ${zone.color}`}>
+          <span className={`text-2xl font-bold font-[--font-retro-mono] ${zone.color}`}>
             {Math.round(clamped)}
           </span>
-          <span className="text-sm text-gray-500">/100</span>
+          <span className="text-sm text-[--color-retro-text-light]">/100</span>
         </div>
 
         {/* Zone label */}
-        <span className={`mt-1 text-sm font-semibold ${zone.color}`}>
+        <span className={`mt-1 text-sm font-bold ${zone.color}`}>
           {zone.label}
         </span>
 

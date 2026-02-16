@@ -2,7 +2,7 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 export interface SparklineChartProps {
   data: number[];
-  color?: string;   // hex color string, e.g. "#10b981"
+  color?: string;   // hex color string, e.g. "#336699"
   height?: number;  // default 40
   width?: number;   // default 120
 }
@@ -13,7 +13,7 @@ export interface SparklineChartProps {
  */
 export function SparklineChart({
   data,
-  color = '#10b981',
+  color = '#336699',
   height = 40,
   width = 120,
 }: SparklineChartProps) {

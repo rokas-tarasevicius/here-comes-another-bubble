@@ -1,16 +1,16 @@
 import { useGameStore } from '../../store/index.ts';
 import type { EventCategory } from '../../types/game.ts';
 
-const CATEGORY_DOT_COLORS: Record<EventCategory, string> = {
-  market: 'bg-blue-400',
-  team: 'bg-violet-400',
-  product: 'bg-emerald-400',
-  funding: 'bg-amber-400',
-  competitor: 'bg-red-400',
-  regulation: 'bg-gray-400',
-  culture: 'bg-pink-400',
-  personal: 'bg-cyan-400',
-  random: 'bg-gray-500',
+const CATEGORY_BADGE_STYLES: Record<EventCategory, string> = {
+  market: 'retro-badge retro-badge-blue',
+  team: 'retro-badge retro-badge-purple',
+  product: 'retro-badge retro-badge-green',
+  funding: 'retro-badge retro-badge-orange',
+  competitor: 'retro-badge retro-badge-red',
+  regulation: 'retro-badge retro-badge-gray',
+  culture: 'retro-badge retro-badge-purple',
+  personal: 'retro-badge retro-badge-blue',
+  random: 'retro-badge retro-badge-gray',
 };
 
 const CATEGORY_LABELS: Record<EventCategory, string> = {
@@ -43,46 +43,47 @@ export function EventFeed() {
     });
 
   return (
-    <aside className="flex w-80 flex-col border-l border-gray-800 bg-gray-900">
-      <div className="border-b border-gray-800 px-4 py-3">
-        <h2 className="text-sm font-semibold text-gray-300">Event Feed</h2>
+    <aside className="flex w-80 flex-col border-l border-[--color-retro-border] bg-[--color-retro-card]">
+      <div className="px-4 py-3">
+        <h2 className="retro-section-heading">Event Feed</h2>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {recentEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[--color-retro-text-muted]">
               No events yet. Advance to the next week.
             </p>
           </div>
         ) : (
-          <ul className="space-y-3">
-            {recentEvents.map((event) => {
-              const dotColor =
-                CATEGORY_DOT_COLORS[event.category] ?? 'bg-gray-500';
+          <ul className="space-y-2">
+            {recentEvents.map((event, index) => {
+              const badgeStyle =
+                CATEGORY_BADGE_STYLES[event.category] ?? 'retro-badge retro-badge-gray';
               const categoryLabel =
                 CATEGORY_LABELS[event.category] ?? event.category;
 
               return (
                 <li
                   key={event.id}
-                  className="rounded-lg border border-gray-800 bg-gray-900 p-3"
+                  className={`rounded-lg border border-[--color-retro-border] p-3 ${
+                    index % 2 === 0 ? 'bg-[--color-retro-card]' : 'bg-[--color-retro-card-alt]'
+                  }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span
-                      className={`inline-block h-2 w-2 rounded-full ${dotColor}`}
-                    />
-                    <span className="text-xs font-medium text-gray-500">
+                      className={`text-[10px] ${badgeStyle}`}
+                    >
                       {categoryLabel}
                     </span>
-                    <span className="ml-auto text-xs font-mono text-gray-600">
+                    <span className="ml-auto text-xs font-[--font-retro-mono] text-[--color-retro-text-light]">
                       W{event.week}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-gray-200">
+                  <p className="text-sm font-medium text-[--color-retro-text]">
                     {event.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">
+                  <p className="mt-0.5 text-xs text-[--color-retro-text-muted] line-clamp-2">
                     {event.description}
                   </p>
                 </li>

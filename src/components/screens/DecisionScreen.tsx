@@ -50,18 +50,18 @@ function decisionTypeLabel(type: string): string {
   }
 }
 
-const TYPE_BADGE_COLORS: Record<string, string> = {
-  'respond-to-event': 'text-amber-400 bg-amber-900/30',
-  hire: 'text-emerald-400 bg-emerald-900/30',
-  fire: 'text-red-400 bg-red-900/30',
-  'assign-team': 'text-blue-400 bg-blue-900/30',
-  'start-feature': 'text-blue-400 bg-blue-900/30',
-  'set-pricing': 'text-emerald-400 bg-emerald-900/30',
-  'hire-ai-agent': 'text-violet-400 bg-violet-900/30',
-  'fire-ai-agent': 'text-violet-400 bg-violet-900/30',
-  'seek-funding': 'text-amber-400 bg-amber-900/30',
-  'change-segment': 'text-blue-400 bg-blue-900/30',
-  'post-job': 'text-emerald-400 bg-emerald-900/30',
+const TYPE_BADGE_CLASSES: Record<string, string> = {
+  'respond-to-event': 'retro-badge retro-badge-orange',
+  hire: 'retro-badge retro-badge-green',
+  fire: 'retro-badge retro-badge-red',
+  'assign-team': 'retro-badge retro-badge-blue',
+  'start-feature': 'retro-badge retro-badge-blue',
+  'set-pricing': 'retro-badge retro-badge-green',
+  'hire-ai-agent': 'retro-badge retro-badge-purple',
+  'fire-ai-agent': 'retro-badge retro-badge-purple',
+  'seek-funding': 'retro-badge retro-badge-orange',
+  'change-segment': 'retro-badge retro-badge-blue',
+  'post-job': 'retro-badge retro-badge-green',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────
@@ -81,15 +81,15 @@ export function DecisionScreen() {
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-100">
+          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
             Pending Decisions
             {pendingDecisions.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-amber-900/40 px-2.5 py-0.5 text-sm font-semibold text-amber-400">
+              <span className="ml-2 retro-badge retro-badge-orange">
                 {pendingDecisions.length}
               </span>
             )}
           </h2>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-[--color-retro-text-light]">
             Week {currentWeek}
           </span>
         </div>
@@ -105,10 +105,10 @@ export function DecisionScreen() {
             ))}
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
+          <div className="retro-card p-8 text-center">
             <div className="mb-3">
               <svg
-                className="mx-auto h-10 w-10 text-gray-600"
+                className="mx-auto h-10 w-10 text-[--color-retro-text-light]"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -121,10 +121,10 @@ export function DecisionScreen() {
                 />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-300">
+            <p className="text-sm font-medium text-[--color-retro-text]">
               No decisions pending.
             </p>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-[--color-retro-text-light]">
               You're all caught up! Advance to the next week for new events.
             </p>
           </div>
@@ -134,43 +134,41 @@ export function DecisionScreen() {
       {/* ── Queued Actions ─────────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold text-gray-100">
+          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
             Queued Actions
             {decisionsThisTurn.length > 0 && (
-              <span className="ml-2 inline-flex items-center justify-center rounded-full bg-blue-900/40 px-2.5 py-0.5 text-sm font-semibold text-blue-400">
+              <span className="ml-2 retro-badge retro-badge-blue">
                 {decisionsThisTurn.length}
               </span>
             )}
           </h2>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-[--color-retro-text-light]">
             Actions for this week
           </span>
         </div>
 
         {decisionsThisTurn.length > 0 ? (
-          <div className="rounded-lg border border-gray-800 bg-gray-900 divide-y divide-gray-800">
+          <div className="retro-card divide-y divide-[--color-retro-border] !p-0">
             {decisionsThisTurn.map((decision, index) => {
-              const badgeColor =
-                TYPE_BADGE_COLORS[decision.type] ?? 'text-gray-400 bg-gray-800';
+              const badgeClass =
+                TYPE_BADGE_CLASSES[decision.type] ?? 'retro-badge retro-badge-gray';
 
               return (
                 <div
                   key={index}
-                  className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-gray-800/40"
+                  className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-[--color-retro-bg-alt]"
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${badgeColor}`}
-                    >
+                    <span className={`shrink-0 ${badgeClass}`}>
                       {decisionTypeLabel(decision.type)}
                     </span>
-                    <span className="truncate text-sm text-gray-300">
+                    <span className="truncate text-sm text-[--color-retro-text]">
                       {describeDecision(decision)}
                     </span>
                   </div>
                   <button
                     onClick={() => removeDecision(index)}
-                    className="shrink-0 rounded px-2.5 py-1 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+                    className="btn-glossy btn-red shrink-0 !px-2.5 !py-1 text-xs"
                   >
                     Remove
                   </button>
@@ -179,11 +177,11 @@ export function DecisionScreen() {
             })}
           </div>
         ) : (
-          <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="retro-card p-8 text-center">
+            <p className="text-sm text-[--color-retro-text-light]">
               No actions queued for this week.
             </p>
-            <p className="mt-1 text-xs text-gray-600">
+            <p className="mt-1 text-xs text-[--color-retro-text-light]">
               Make decisions above or use other screens to queue actions.
             </p>
           </div>

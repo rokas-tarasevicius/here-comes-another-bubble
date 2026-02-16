@@ -16,7 +16,7 @@ export function FinanceScreen() {
   if (!gameState) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-gray-500">No active game. Start a new game first.</p>
+        <p className="text-[--color-retro-text-light]">No active game. Start a new game first.</p>
       </div>
     );
   }
@@ -62,8 +62,8 @@ export function FinanceScreen() {
     <div className="space-y-6 p-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-100">Finances</h1>
-        <p className="text-sm text-gray-500">Week {gameState.meta.week} financial overview</p>
+        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Finances</h1>
+        <p className="text-sm text-[--color-retro-text-light]">Week {gameState.meta.week} financial overview</p>
       </div>
 
       {/* Top Row: Key Metrics */}
@@ -102,33 +102,33 @@ export function FinanceScreen() {
       {/* P&L + Fundraising */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* P&L Section */}
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card">
+          <h3 className="retro-section-heading">
             Weekly P&L
           </h3>
 
           {/* Revenue Breakdown */}
           <div className="mb-4">
-            <h4 className="mb-2 text-xs font-semibold uppercase text-emerald-400">Revenue</h4>
+            <h4 className="mb-2 text-xs font-semibold uppercase text-[--color-retro-green]">Revenue</h4>
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">
+                <span className="text-[--color-retro-text-muted]">
                   {pricingLabels[finances.pricingModel] ?? finances.pricingModel}{' '}
                   ({product.customers.toLocaleString()} customers)
                 </span>
-                <span className="font-mono text-emerald-400">
+                <span className="font-[--font-retro-mono] text-[--color-retro-green]">
                   {formatCurrency(finances.weeklyRevenue)}
                 </span>
               </div>
               {finances.pricePerUnit > 0 && (
-                <p className="text-xs text-gray-600">
+                <p className="text-xs text-[--color-retro-text-light]">
                   {formatCurrency(finances.pricePerUnit)}/unit
                 </p>
               )}
             </div>
-            <div className="mt-2 border-t border-gray-800 pt-1 flex items-center justify-between text-sm font-semibold">
-              <span className="text-gray-300">Total Revenue</span>
-              <span className="font-mono text-emerald-400">
+            <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
+              <span className="text-[--color-retro-text]">Total Revenue</span>
+              <span className="font-[--font-retro-mono] text-[--color-retro-green]">
                 {formatCurrency(finances.weeklyRevenue)}
               </span>
             </div>
@@ -136,55 +136,55 @@ export function FinanceScreen() {
 
           {/* Expense Breakdown */}
           <div className="mb-4">
-            <h4 className="mb-2 text-xs font-semibold uppercase text-red-400">Expenses</h4>
+            <h4 className="mb-2 text-xs font-semibold uppercase text-[--color-retro-red]">Expenses</h4>
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">
+                <span className="text-[--color-retro-text-muted]">
                   Salaries ({team.employees.length} employees)
                 </span>
-                <span className="font-mono text-red-400">
+                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
                   {formatCurrency(totalSalaries)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">
+                <span className="text-[--color-retro-text-muted]">
                   AI Agents ({team.aiAgents.length} agents)
                 </span>
-                <span className="font-mono text-red-400">
+                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
                   {formatCurrency(totalAICosts)}
                 </span>
               </div>
               {overheadEstimate > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-400">Overhead</span>
-                  <span className="font-mono text-red-400">
+                  <span className="text-[--color-retro-text-muted]">Overhead</span>
+                  <span className="font-[--font-retro-mono] text-[--color-retro-red]">
                     {formatCurrency(overheadEstimate)}
                   </span>
                 </div>
               )}
             </div>
-            <div className="mt-2 border-t border-gray-800 pt-1 flex items-center justify-between text-sm font-semibold">
-              <span className="text-gray-300">Total Expenses</span>
-              <span className="font-mono text-red-400">
+            <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
+              <span className="text-[--color-retro-text]">Total Expenses</span>
+              <span className="font-[--font-retro-mono] text-[--color-retro-red]">
                 {formatCurrency(totalExpenses)}
               </span>
             </div>
           </div>
 
           {/* Net Income */}
-          <div className="border-t-2 border-gray-700 pt-3">
+          <div className="retro-inset">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-gray-200">Net Income</span>
+              <span className="text-sm font-bold text-[--color-retro-text]">Net Income</span>
               <span
-                className={`text-lg font-bold font-mono ${
-                  netIncome >= 0 ? 'text-emerald-400' : 'text-red-400'
+                className={`text-lg font-bold font-[--font-retro-mono] ${
+                  netIncome >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'
                 }`}
               >
                 {netIncome >= 0 ? '+' : ''}
                 {formatCurrency(netIncome)}
               </span>
             </div>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-[--color-retro-text-light]">
               {netIncome >= 0 ? 'You are operating profitably this week' : 'You are burning cash this week'}
             </p>
           </div>

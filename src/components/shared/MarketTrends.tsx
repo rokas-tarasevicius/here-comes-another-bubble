@@ -16,36 +16,36 @@ function MeterBar({ label, value, description, color }: {
 }) {
   const clamped = Math.max(0, Math.min(100, value));
 
-  const barColors: Record<typeof color, string> = {
-    emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
-    blue: 'bg-blue-500',
-    violet: 'bg-violet-500',
+  const barClasses: Record<typeof color, string> = {
+    emerald: 'retro-progress-bar retro-progress-bar-green',
+    amber: 'retro-progress-bar retro-progress-bar-orange',
+    red: 'retro-progress-bar retro-progress-bar-red',
+    blue: 'retro-progress-bar',
+    violet: 'retro-progress-bar retro-progress-bar-purple',
   };
   const textColors: Record<typeof color, string> = {
-    emerald: 'text-emerald-400',
-    amber: 'text-amber-400',
-    red: 'text-red-400',
-    blue: 'text-blue-400',
-    violet: 'text-violet-400',
+    emerald: 'text-[--color-retro-green]',
+    amber: 'text-[--color-retro-orange]',
+    red: 'text-[--color-retro-red]',
+    blue: 'text-[--color-retro-blue]',
+    violet: 'text-[--color-retro-purple]',
   };
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
+    <div className="retro-card">
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-300">{label}</span>
-        <span className={`text-sm font-mono font-semibold ${textColors[color]}`}>
+        <span className="text-sm font-semibold text-[--color-retro-text]">{label}</span>
+        <span className={`text-sm font-[--font-retro-mono] font-bold ${textColors[color]}`}>
           {Math.round(clamped)}/100
         </span>
       </div>
-      <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-gray-800">
+      <div className="retro-progress mb-2">
         <div
-          className={`h-full rounded-full ${barColors[color]} transition-all duration-300`}
+          className={barClasses[color]}
           style={{ width: `${clamped}%` }}
         />
       </div>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-xs text-[--color-retro-text-muted]">{description}</p>
     </div>
   );
 }
@@ -59,7 +59,6 @@ export function MarketTrends({
   talentMarketHeat,
   customerDemand,
   eventLog,
-  currentWeek,
 }: MarketTrendsProps) {
   // Filter market events, show last 5
   const marketEvents = eventLog
@@ -99,18 +98,18 @@ export function MarketTrends({
       />
 
       {/* Customer Demand */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+      <div className="retro-card">
+        <h3 className="retro-section-heading">
           Customer Demand
         </h3>
         {customerDemand.length === 0 ? (
-          <p className="text-sm text-gray-500">No specific demands identified yet.</p>
+          <p className="text-sm text-[--color-retro-text-muted]">No specific demands identified yet.</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {customerDemand.map((feature) => (
               <span
                 key={feature}
-                className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-400"
+                className="retro-badge retro-badge-blue"
               >
                 {feature}
               </span>
@@ -120,21 +119,21 @@ export function MarketTrends({
       </div>
 
       {/* Recent Market Events */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+      <div className="retro-card">
+        <h3 className="retro-section-heading">
           Recent Market Events
         </h3>
         {marketEvents.length === 0 ? (
-          <p className="text-sm text-gray-500">No market events yet.</p>
+          <p className="text-sm text-[--color-retro-text-muted]">No market events yet.</p>
         ) : (
           <div className="space-y-2">
             {marketEvents.map((event) => (
-              <div key={event.id} className="border-l-2 border-blue-500/40 pl-3">
+              <div key={event.id} className="border-l-2 border-[--color-retro-blue] pl-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">Week {event.week}</span>
-                  <span className="text-sm font-medium text-gray-300">{event.title}</span>
+                  <span className="retro-badge retro-badge-gray" style={{ fontSize: '10px' }}>Week {event.week}</span>
+                  <span className="text-sm font-semibold text-[--color-retro-text]">{event.title}</span>
                 </div>
-                <p className="text-xs text-gray-500">{event.description}</p>
+                <p className="text-xs text-[--color-retro-text-muted]">{event.description}</p>
               </div>
             ))}
           </div>

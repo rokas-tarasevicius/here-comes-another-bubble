@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex h-screen min-w-[1024px] flex-col bg-gray-950 text-gray-100">
+    <div className="flex h-screen min-w-[1024px] flex-col bg-[--color-retro-bg] text-[--color-retro-text]">
       {/* Top bar */}
       <Header />
 

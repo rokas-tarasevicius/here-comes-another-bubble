@@ -11,27 +11,27 @@ export interface KPICardProps {
 }
 
 const BORDER_COLORS: Record<NonNullable<KPICardProps['color']>, string> = {
-  emerald: 'border-l-emerald-500',
-  red: 'border-l-red-500',
-  amber: 'border-l-amber-500',
-  blue: 'border-l-blue-500',
-  violet: 'border-l-violet-500',
+  emerald: 'border-l-[--color-retro-green]',
+  red: 'border-l-[--color-retro-red]',
+  amber: 'border-l-[--color-retro-orange]',
+  blue: 'border-l-[--color-retro-blue]',
+  violet: 'border-l-[--color-retro-purple]',
 };
 
 const SPARKLINE_HEX: Record<NonNullable<KPICardProps['color']>, string> = {
-  emerald: '#10b981',
-  red: '#ef4444',
-  amber: '#f59e0b',
-  blue: '#3b82f6',
-  violet: '#8b5cf6',
+  emerald: '#339933',
+  red: '#cc3333',
+  amber: '#ff6600',
+  blue: '#336699',
+  violet: '#663399',
 };
 
 const VALUE_COLORS: Record<NonNullable<KPICardProps['color']>, string> = {
-  emerald: 'text-emerald-400',
-  red: 'text-red-400',
-  amber: 'text-amber-400',
-  blue: 'text-blue-400',
-  violet: 'text-violet-400',
+  emerald: 'text-[--color-retro-green]',
+  red: 'text-[--color-retro-red]',
+  amber: 'text-[--color-retro-orange]',
+  blue: 'text-[--color-retro-blue]',
+  violet: 'text-[--color-retro-purple]',
 };
 
 const TREND_ICONS: Record<NonNullable<KPICardProps['trend']>, string> = {
@@ -41,9 +41,9 @@ const TREND_ICONS: Record<NonNullable<KPICardProps['trend']>, string> = {
 };
 
 const TREND_COLORS: Record<NonNullable<KPICardProps['trend']>, string> = {
-  up: 'text-emerald-400',
-  down: 'text-red-400',
-  flat: 'text-gray-400',
+  up: 'text-[--color-retro-green]',
+  down: 'text-[--color-retro-red]',
+  flat: 'text-[--color-retro-text-muted]',
 };
 
 /**
@@ -64,16 +64,16 @@ export function KPICard({
 
   return (
     <div
-      className={`rounded-lg border border-gray-800 border-l-4 ${borderColor} bg-gray-900 p-4 flex flex-col gap-2`}
+      className={`retro-card border-l-4 ${borderColor} flex flex-col gap-2`}
     >
       {/* Title */}
-      <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+      <span className="text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
         {title}
       </span>
 
       {/* Main value + trend row */}
       <div className="flex items-end justify-between gap-2">
-        <span className={`text-2xl font-bold font-mono ${valueColor}`}>
+        <span className={`text-2xl font-bold font-[--font-retro-mono] ${valueColor}`}>
           {value}
         </span>
         {trend && (
@@ -85,12 +85,12 @@ export function KPICard({
 
       {/* Subtitle */}
       {subtitle && (
-        <span className="text-xs text-gray-500">{subtitle}</span>
+        <span className="text-xs text-[--color-retro-text-light]">{subtitle}</span>
       )}
 
       {/* Sparkline */}
       {sparklineData && sparklineData.length >= 2 && (
-        <div className="mt-1">
+        <div className="mt-1 rounded bg-[--color-retro-bg-alt] p-1">
           <SparklineChart
             data={sparklineData}
             color={sparkHex}

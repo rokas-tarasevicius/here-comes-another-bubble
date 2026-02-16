@@ -27,8 +27,8 @@ export function AIAgentPanel() {
 
   if (aiAgents.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
-        <p className="text-sm text-gray-500">No AI agents deployed. Hire your first AI agent!</p>
+      <div className="retro-card text-center" style={{ padding: '32px 16px' }}>
+        <p className="text-sm text-[--color-retro-text-muted]">No AI agents deployed. Hire your first AI agent!</p>
       </div>
     );
   }
@@ -47,15 +47,16 @@ export function AIAgentPanel() {
         return (
           <div
             key={agent.id}
-            className="rounded-lg border border-violet-800/50 bg-gray-900 p-4 transition-colors hover:border-violet-700/60"
+            className="retro-card"
+            style={{ borderColor: '#9988aa', borderLeftWidth: '3px', borderLeftColor: '#663399' }}
           >
             {/* Header */}
             <div className="mb-3 flex items-start justify-between">
               <div>
-                <h4 className="text-sm font-semibold text-gray-100">{agent.name}</h4>
-                <p className="text-xs text-gray-500">{agent.provider}</p>
+                <h4 className="text-sm font-bold text-[--color-retro-text]">{agent.name}</h4>
+                <p className="text-xs text-[--color-retro-text-light]">{agent.provider}</p>
               </div>
-              <span className="rounded-full bg-violet-900/60 px-2 py-0.5 text-xs font-medium text-violet-300">
+              <span className="retro-badge retro-badge-purple">
                 {AGENT_TYPE_LABELS[agent.type] ?? agent.type}
               </span>
             </div>
@@ -65,12 +66,12 @@ export function AIAgentPanel() {
               {/* Capability */}
               <div>
                 <div className="mb-0.5 flex items-center justify-between">
-                  <span className="text-xs text-gray-400">Capability</span>
-                  <span className="text-xs font-mono text-violet-300">{agent.capability}</span>
+                  <span className="text-xs text-[--color-retro-text-muted]">Capability</span>
+                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-purple]">{agent.capability}</span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-gray-700">
+                <div className="retro-progress" style={{ height: '10px' }}>
                   <div
-                    className="h-1.5 rounded-full bg-violet-500"
+                    className="retro-progress-bar retro-progress-bar-purple"
                     style={{ width: `${agent.capability}%` }}
                   />
                 </div>
@@ -79,12 +80,12 @@ export function AIAgentPanel() {
               {/* Reliability */}
               <div>
                 <div className="mb-0.5 flex items-center justify-between">
-                  <span className="text-xs text-gray-400">Reliability</span>
-                  <span className="text-xs font-mono text-violet-300">{agent.reliability}</span>
+                  <span className="text-xs text-[--color-retro-text-muted]">Reliability</span>
+                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-purple]">{agent.reliability}</span>
                 </div>
-                <div className="h-1.5 w-full rounded-full bg-gray-700">
+                <div className="retro-progress" style={{ height: '10px' }}>
                   <div
-                    className="h-1.5 rounded-full bg-violet-400"
+                    className="retro-progress-bar retro-progress-bar-purple"
                     style={{ width: `${agent.reliability}%` }}
                   />
                 </div>
@@ -93,12 +94,12 @@ export function AIAgentPanel() {
 
             {/* Cost + Assignment */}
             <div className="mb-3 flex items-center justify-between text-xs">
-              <span className="text-gray-400">
-                Cost: <span className="font-mono text-gray-300">{formatCost(agent.costPerWeek)}/wk</span>
+              <span className="text-[--color-retro-text-muted]">
+                Cost: <span className="font-[--font-retro-mono] text-[--color-retro-text]">{formatCost(agent.costPerWeek)}/wk</span>
               </span>
               {featureName && (
-                <span className="text-gray-500">
-                  on <span className="text-gray-300">{featureName}</span>
+                <span className="text-[--color-retro-text-light]">
+                  on <span className="text-[--color-retro-text]">{featureName}</span>
                 </span>
               )}
             </div>
@@ -106,7 +107,8 @@ export function AIAgentPanel() {
             {/* Remove button */}
             <button
               onClick={() => handleRemove(agent.id)}
-              className="w-full rounded bg-gray-800 px-3 py-1.5 text-xs font-medium text-red-400 transition-colors hover:bg-red-900/30 hover:text-red-300"
+              className="btn-glossy btn-red w-full"
+              style={{ fontSize: '11px', padding: '6px 12px' }}
             >
               Remove Agent
             </button>

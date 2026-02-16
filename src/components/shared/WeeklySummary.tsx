@@ -17,6 +17,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   random: '\uD83C\uDFB2',
 };
 
+const CATEGORY_BADGE: Record<string, string> = {
+  market: 'retro-badge retro-badge-blue',
+  team: 'retro-badge retro-badge-green',
+  product: 'retro-badge retro-badge-purple',
+  funding: 'retro-badge retro-badge-green',
+  competitor: 'retro-badge retro-badge-red',
+  regulation: 'retro-badge retro-badge-gray',
+  culture: 'retro-badge retro-badge-orange',
+  personal: 'retro-badge retro-badge-gray',
+  random: 'retro-badge retro-badge-gray',
+};
+
 /**
  * Weekly summary component showing last week's key events and metric changes.
  */
@@ -27,9 +39,9 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
   // Week 1: no history yet
   if (currentWeek <= 1 && weekHistory.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h3 className="text-sm font-semibold text-gray-100 mb-3">Weekly Summary</h3>
-        <p className="text-sm text-gray-400">
+      <div className="retro-card">
+        <h3 className="retro-section-heading">Weekly Summary</h3>
+        <p className="text-sm text-[--color-retro-text-muted]">
           Welcome! Advance to your first week to get started.
         </p>
       </div>
@@ -51,32 +63,32 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
   const pendingCount = pendingDecisions.length;
 
   return (
-    <div className="rounded-lg border border-gray-800 bg-gray-900 p-4 flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-gray-100">
+    <div className="retro-card flex flex-col gap-3">
+      <h3 className="retro-section-heading">
         Week {lastWeek} Recap
       </h3>
 
       {/* Metric Changes */}
-      <div className="flex flex-col gap-1.5">
+      <div className="retro-inset flex flex-col gap-1.5">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Cash</span>
-          <span className={`font-mono ${cashDelta !== null && cashDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="text-[--color-retro-text-muted]">Cash</span>
+          <span className={`font-[--font-retro-mono] font-semibold ${cashDelta !== null && cashDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
             {cashDelta !== null
               ? `${cashDelta >= 0 ? '+' : ''}${formatCurrency(cashDelta)}`
               : formatCurrency(finances.cash)}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Revenue</span>
-          <span className={`font-mono ${revenueDelta !== null && revenueDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="text-[--color-retro-text-muted]">Revenue</span>
+          <span className={`font-[--font-retro-mono] font-semibold ${revenueDelta !== null && revenueDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
             {revenueDelta !== null
               ? `${revenueDelta >= 0 ? '+' : ''}${formatCurrency(revenueDelta)}`
               : formatCurrency(finances.weeklyRevenue)}
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-400">Customers</span>
-          <span className={`font-mono ${customerDelta !== null && customerDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          <span className="text-[--color-retro-text-muted]">Customers</span>
+          <span className={`font-[--font-retro-mono] font-semibold ${customerDelta !== null && customerDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
             {customerDelta !== null
               ? `${customerDelta >= 0 ? '+' : ''}${formatNumber(customerDelta)}`
               : formatNumber(product.customers)}
@@ -85,46 +97,46 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-800" />
+      <div className="retro-hr" />
 
       {/* Recent Events */}
       {lastWeekEvents.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
+          <span className="text-xs font-bold uppercase tracking-wider text-[--color-retro-text-muted]">
             Events
           </span>
           {lastWeekEvents.slice(0, 5).map((event) => (
             <div key={event.id} className="flex items-start gap-2">
-              <span className="text-sm flex-shrink-0" aria-hidden="true">
-                {CATEGORY_ICONS[event.category] ?? '\u2022'}
+              <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-gray'} style={{ flexShrink: 0, fontSize: '10px' }}>
+                {CATEGORY_ICONS[event.category] ?? '\u2022'} {event.category}
               </span>
               <div className="flex flex-col">
-                <span className="text-sm text-gray-200">{event.title}</span>
-                <span className="text-xs text-gray-500 line-clamp-2">
+                <span className="text-sm text-[--color-retro-text]">{event.title}</span>
+                <span className="text-xs text-[--color-retro-text-light] line-clamp-2">
                   {event.description}
                 </span>
               </div>
             </div>
           ))}
           {lastWeekEvents.length > 5 && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[--color-retro-text-light]">
               +{lastWeekEvents.length - 5} more events
             </span>
           )}
         </div>
       ) : (
-        <p className="text-sm text-gray-500">No events last week.</p>
+        <p className="text-sm text-[--color-retro-text-muted]">No events last week.</p>
       )}
 
       {/* Pending decisions */}
       {pendingCount > 0 && (
         <>
-          <div className="border-t border-gray-800" />
+          <div className="retro-hr" />
           <div className="flex items-center justify-between">
-            <span className="text-sm text-amber-400 font-medium">
+            <span className="text-sm text-[--color-retro-orange] font-bold">
               {pendingCount} pending decision{pendingCount > 1 ? 's' : ''}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-[--color-retro-text-light]">
               Resolve before advancing
             </span>
           </div>

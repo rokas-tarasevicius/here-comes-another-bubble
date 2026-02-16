@@ -2,23 +2,23 @@ import { useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import type { Feature, FeatureStatus } from '../../types/game.ts';
 
-const COLUMNS: { status: FeatureStatus; label: string; accent: string }[] = [
-  { status: 'planned', label: 'Planned', accent: 'border-t-blue-500' },
-  { status: 'in-progress', label: 'In Progress', accent: 'border-t-amber-500' },
-  { status: 'shipped', label: 'Shipped', accent: 'border-t-emerald-500' },
-  { status: 'deprecated', label: 'Deprecated', accent: 'border-t-gray-600' },
+const COLUMNS: { status: FeatureStatus; label: string; badgeClass: string }[] = [
+  { status: 'planned', label: 'Planned', badgeClass: 'retro-badge retro-badge-gray' },
+  { status: 'in-progress', label: 'In Progress', badgeClass: 'retro-badge retro-badge-blue' },
+  { status: 'shipped', label: 'Shipped', badgeClass: 'retro-badge retro-badge-green' },
+  { status: 'deprecated', label: 'Deprecated', badgeClass: 'retro-badge retro-badge-red' },
 ];
 
 function qualityColor(quality: number): string {
-  if (quality < 30) return 'text-red-400';
-  if (quality <= 60) return 'text-amber-400';
-  return 'text-emerald-400';
+  if (quality < 30) return 'text-[--color-retro-red]';
+  if (quality <= 60) return 'text-[--color-retro-orange]';
+  return 'text-[--color-retro-green]';
 }
 
 function techDebtColor(debt: number): string {
-  if (debt < 30) return 'text-emerald-400';
-  if (debt <= 60) return 'text-amber-400';
-  return 'text-red-400';
+  if (debt < 30) return 'text-[--color-retro-green]';
+  if (debt <= 60) return 'text-[--color-retro-orange]';
+  return 'text-[--color-retro-red]';
 }
 
 interface NewFeatureFormState {
@@ -80,10 +80,10 @@ export function FeatureBoard() {
     <div>
       {/* Header with new feature button */}
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-300">Features</h3>
+        <h3 className="retro-section-heading" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>Features</h3>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-500 active:bg-blue-700"
+          className="btn-glossy btn-primary"
         >
           {showForm ? 'Cancel' : '+ New Feature'}
         </button>
@@ -93,30 +93,30 @@ export function FeatureBoard() {
       {showForm && (
         <form
           onSubmit={handleSubmitFeature}
-          className="mb-4 rounded-lg border border-gray-800 bg-gray-900 p-4"
+          className="retro-card mb-4"
         >
           <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-gray-400">Feature Name</label>
+            <label className="mb-1 block text-xs font-bold text-[--color-retro-text-muted]">Feature Name</label>
             <input
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="e.g., User Dashboard"
-              className="w-full rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-100 border border-gray-700 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
+              className="retro-input w-full"
             />
           </div>
           <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-gray-400">Description</label>
+            <label className="mb-1 block text-xs font-bold text-[--color-retro-text-muted]">Description</label>
             <input
               type="text"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="Brief description..."
-              className="w-full rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-100 border border-gray-700 placeholder-gray-600 focus:border-blue-500 focus:outline-none"
+              className="retro-input w-full"
             />
           </div>
           <div className="mb-3">
-            <label className="mb-1 block text-xs font-medium text-gray-400">
+            <label className="mb-1 block text-xs font-bold text-[--color-retro-text-muted]">
               Market Relevance (0-100)
             </label>
             <input
@@ -125,13 +125,13 @@ export function FeatureBoard() {
               max={100}
               value={form.marketRelevance}
               onChange={(e) => setForm({ ...form, marketRelevance: e.target.value })}
-              className="w-24 rounded bg-gray-800 px-3 py-1.5 text-sm text-gray-100 border border-gray-700 focus:border-blue-500 focus:outline-none"
+              className="retro-input w-24"
             />
           </div>
           <button
             type="submit"
             disabled={!form.name.trim()}
-            className="rounded bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-gray-700 disabled:text-gray-500"
+            className="btn-glossy btn-green disabled:cursor-not-allowed disabled:opacity-50"
           >
             Start Feature
           </button>
@@ -146,24 +146,20 @@ export function FeatureBoard() {
           return (
             <div key={col.status} className="flex flex-col">
               {/* Column header */}
-              <div
-                className={`mb-3 rounded-t-lg border-t-2 ${col.accent} bg-gray-900 px-3 py-2`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-                    {col.label}
-                  </span>
-                  <span className="rounded-full bg-gray-800 px-1.5 py-0.5 text-xs font-mono text-gray-500">
-                    {colFeatures.length}
-                  </span>
-                </div>
+              <div className="retro-inset mb-3 flex items-center justify-between" style={{ padding: '8px 12px' }}>
+                <span className={col.badgeClass}>
+                  {col.label}
+                </span>
+                <span className="rounded-full bg-[--color-retro-card] border border-[--color-retro-border] px-1.5 py-0.5 text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
+                  {colFeatures.length}
+                </span>
               </div>
 
               {/* Cards */}
               <div className="flex-1 space-y-3">
                 {colFeatures.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-gray-800 p-3 text-center">
-                    <p className="text-xs text-gray-600">No features</p>
+                  <div className="rounded-lg border border-dashed border-[--color-retro-border] p-3 text-center">
+                    <p className="text-xs text-[--color-retro-text-light]">No features</p>
                   </div>
                 )}
                 {colFeatures.map((feature) => {
@@ -173,12 +169,12 @@ export function FeatureBoard() {
                   return (
                     <div
                       key={feature.id}
-                      className="rounded-lg border border-gray-800 bg-gray-900 p-3"
+                      className="retro-card-raised"
                     >
                       {/* Feature name */}
-                      <h4 className="mb-1 text-sm font-medium text-gray-100">{feature.name}</h4>
+                      <h4 className="mb-1 text-sm font-bold text-[--color-retro-text]">{feature.name}</h4>
                       {feature.description && (
-                        <p className="mb-2 text-xs text-gray-500 line-clamp-2">
+                        <p className="mb-2 text-xs text-[--color-retro-text-light] line-clamp-2">
                           {feature.description}
                         </p>
                       )}
@@ -187,14 +183,14 @@ export function FeatureBoard() {
                       {(col.status === 'in-progress' || col.status === 'planned') && (
                         <div className="mb-2">
                           <div className="mb-0.5 flex items-center justify-between">
-                            <span className="text-xs text-gray-500">Progress</span>
-                            <span className="text-xs font-mono text-gray-400">
+                            <span className="text-xs text-[--color-retro-text-muted]">Progress</span>
+                            <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
                               {feature.progress}%
                             </span>
                           </div>
-                          <div className="h-1.5 w-full rounded-full bg-gray-700">
+                          <div className="retro-progress" style={{ height: '10px' }}>
                             <div
-                              className="h-1.5 rounded-full bg-blue-500 transition-all"
+                              className="retro-progress-bar"
                               style={{ width: `${feature.progress}%` }}
                             />
                           </div>
@@ -202,14 +198,14 @@ export function FeatureBoard() {
                       )}
 
                       {/* Stats row */}
-                      <div className="mb-2 flex items-center gap-3 text-xs">
+                      <div className="mb-2 flex items-center gap-3 text-xs font-semibold">
                         <span className={qualityColor(feature.quality)}>
                           Q:{feature.quality}
                         </span>
                         <span className={techDebtColor(feature.techDebt)}>
                           TD:{feature.techDebt}
                         </span>
-                        <span className="text-blue-400">
+                        <span className="text-[--color-retro-blue]">
                           MR:{feature.marketRelevance}
                         </span>
                       </div>
@@ -221,13 +217,13 @@ export function FeatureBoard() {
                             assignedNames.map((name, i) => (
                               <span
                                 key={i}
-                                className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-gray-400"
+                                className="retro-badge retro-badge-gray"
                               >
                                 {name}
                               </span>
                             ))
                           ) : (
-                            <span className="rounded bg-gray-800 px-1.5 py-0.5 text-xs text-gray-400">
+                            <span className="retro-badge retro-badge-gray">
                               {totalAssigned} assigned
                             </span>
                           )}

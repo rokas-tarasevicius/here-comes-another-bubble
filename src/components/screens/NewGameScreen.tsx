@@ -28,7 +28,7 @@ const DIFFICULTY_OPTIONS: DifficultyOption[] = [
     value: 'easy',
     label: 'Easy',
     description: 'Forgiving economy, slower burn rate, kinder investors. Good for learning the ropes.',
-    color: 'emerald',
+    color: 'green',
   },
   {
     value: 'normal',
@@ -40,7 +40,7 @@ const DIFFICULTY_OPTIONS: DifficultyOption[] = [
     value: 'hard',
     label: 'Hard',
     description: 'Aggressive competition, fickle investors, and engineers who keep getting poached.',
-    color: 'amber',
+    color: 'orange',
   },
   {
     value: 'nightmare',
@@ -98,27 +98,27 @@ function formatMarketSize(size: number): string {
   return `$${size}K`;
 }
 
-// ─── Stat Bar ───────────────────────────────────────────────────────────
+// ─── Stat Bar (retro glossy progress bar) ───────────────────────────────
 
 function StatBar({ label, value, color }: { label: string; value: number; color: string }) {
-  const colorClasses: Record<string, string> = {
-    blue: 'bg-blue-500',
-    emerald: 'bg-emerald-500',
-    violet: 'bg-violet-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
+  const barClasses: Record<string, string> = {
+    blue: 'retro-progress-bar',
+    green: 'retro-progress-bar retro-progress-bar-green',
+    purple: 'retro-progress-bar retro-progress-bar-purple',
+    orange: 'retro-progress-bar retro-progress-bar-orange',
+    red: 'retro-progress-bar retro-progress-bar-red',
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="w-20 text-xs text-gray-500 shrink-0">{label}</span>
-      <div className="h-1.5 flex-1 rounded-full bg-gray-800">
+      <span className="w-20 shrink-0 font-[--font-retro] text-xs text-retro-text-muted">{label}</span>
+      <div className="retro-progress h-3 flex-1">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${colorClasses[color] ?? 'bg-blue-500'}`}
+          className={barClasses[color] ?? 'retro-progress-bar'}
           style={{ width: `${Math.min(value, 100)}%` }}
         />
       </div>
-      <span className="w-7 text-right text-xs font-mono text-gray-500">{value}</span>
+      <span className="w-7 text-right font-[--font-retro-mono] text-xs text-retro-text-muted">{value}</span>
     </div>
   );
 }
@@ -127,24 +127,24 @@ function StatBar({ label, value, color }: { label: string; value: number; color:
 
 function MarketStat({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = Math.min((value / max) * 100, 100);
-  const colorClasses: Record<string, string> = {
-    emerald: 'bg-emerald-500',
-    blue: 'bg-blue-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
+  const barClasses: Record<string, string> = {
+    green: 'retro-progress-bar retro-progress-bar-green',
+    blue: 'retro-progress-bar',
+    orange: 'retro-progress-bar retro-progress-bar-orange',
+    red: 'retro-progress-bar retro-progress-bar-red',
   };
 
   return (
     <div>
       <div className="mb-1 flex items-center justify-between">
-        <span className="text-xs text-gray-500">{label}</span>
-        <span className="text-xs font-mono text-gray-400">
+        <span className="font-[--font-retro] text-xs text-retro-text-muted">{label}</span>
+        <span className="font-[--font-retro-mono] text-xs text-retro-text-light">
           {typeof value === 'number' && value <= 1 ? `${(value * 100).toFixed(0)}%` : value}
         </span>
       </div>
-      <div className="h-1 rounded-full bg-gray-800">
+      <div className="retro-progress h-2">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${colorClasses[color] ?? 'bg-blue-500'}`}
+          className={barClasses[color] ?? 'retro-progress-bar'}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -152,7 +152,7 @@ function MarketStat({ label, value, max, color }: { label: string; value: number
   );
 }
 
-// ─── Step Indicator ─────────────────────────────────────────────────────
+// ─── Step Indicator (Web 2.0 numbered circles with connecting lines) ────
 
 function StepIndicator({ current, total }: { current: number; total: number }) {
   return (
@@ -166,20 +166,36 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
           <div key={i} className="flex items-center gap-2">
             {i > 0 && (
               <div
-                className={`h-px w-6 transition-colors sm:w-10 ${
-                  isCompleted ? 'bg-emerald-600' : 'bg-gray-800'
-                }`}
+                className="h-0.5 w-6 rounded sm:w-10"
+                style={{
+                  background: isCompleted
+                    ? 'linear-gradient(to right, #339933, #55bb55)'
+                    : '#cccccc',
+                }}
               />
             )}
             <div className="flex flex-col items-center gap-1">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/40'
+                className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                style={{
+                  background: isActive
+                    ? 'linear-gradient(to bottom, #5588bb, #336699)'
                     : isCompleted
-                      ? 'bg-emerald-900/60 text-emerald-400'
-                      : 'bg-gray-800 text-gray-600'
-                }`}
+                      ? 'linear-gradient(to bottom, #55bb55, #339933)'
+                      : 'linear-gradient(to bottom, #ffffff, #e0e0e0)',
+                  border: isActive
+                    ? '2px solid #2a5580'
+                    : isCompleted
+                      ? '2px solid #2a802a'
+                      : '1px solid #b0b0b0',
+                  color: isActive || isCompleted ? '#ffffff' : '#999999',
+                  boxShadow: isActive
+                    ? '0 2px 6px rgba(51,102,153,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
+                    : '0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5)',
+                  textShadow: isActive || isCompleted
+                    ? '0 -1px 0 rgba(0,0,0,0.3)'
+                    : 'none',
+                }}
               >
                 {isCompleted ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -190,8 +206,8 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                 )}
               </div>
               <span
-                className={`hidden text-[10px] sm:block ${
-                  isActive ? 'text-gray-300' : 'text-gray-600'
+                className={`hidden font-[--font-retro] text-[10px] sm:block ${
+                  isActive ? 'font-bold text-retro-blue' : 'text-retro-text-light'
                 }`}
               >
                 {STEP_LABELS[i]}
@@ -215,13 +231,13 @@ function StepCompanyName({
 }) {
   return (
     <div className="flex flex-col items-center">
-      <div className="mb-2 text-4xl">
-        <svg className="mx-auto h-12 w-12 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="mb-2 text-retro-blue">
+        <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008zm0 3h.008v.008h-.008v-.008z" />
         </svg>
       </div>
-      <h2 className="mb-2 text-2xl font-bold text-gray-100">Name Your Startup</h2>
-      <p className="mb-8 text-sm text-gray-500">
+      <h2 className="mb-2 font-[--font-retro-heading] text-2xl font-bold text-retro-text">Name Your Startup</h2>
+      <p className="mb-8 font-[--font-retro] text-sm text-retro-text-muted">
         Choose wisely. This name will appear on pitch decks, Hacker News roasts, and your Series A term sheet.
       </p>
 
@@ -232,10 +248,10 @@ function StepCompanyName({
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your startup name..."
           maxLength={40}
-          className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-center text-lg font-medium text-gray-100 placeholder-gray-600 outline-none transition-colors focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600"
+          className="retro-input w-full px-4 py-3 text-center text-lg font-medium"
           autoFocus
         />
-        <p className="mt-2 text-center text-xs text-gray-600">
+        <p className="mt-2 text-center font-[--font-retro-mono] text-xs text-retro-text-light">
           {value.length}/40 characters
         </p>
       </div>
@@ -255,8 +271,8 @@ function StepFounder({
   return (
     <div>
       <div className="mb-6 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-gray-100">Choose Your Founder</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="mb-2 font-[--font-retro-heading] text-2xl font-bold text-retro-text">Choose Your Founder</h2>
+        <p className="font-[--font-retro] text-sm text-retro-text-muted">
           Each archetype plays differently. Pick the one that matches your strategy.
         </p>
       </div>
@@ -269,50 +285,56 @@ function StepFounder({
             <button
               key={founder.archetype}
               onClick={() => onSelect(founder.archetype)}
-              className={`group cursor-pointer rounded-lg border p-4 text-left transition-all ${
+              className={`cursor-pointer rounded-lg border p-4 text-left transition-all ${
                 isSelected
-                  ? 'border-blue-500 bg-blue-950/30 shadow-lg shadow-blue-900/20'
-                  : 'border-gray-800 bg-gray-900 hover:border-gray-700 hover:bg-gray-800/80'
+                  ? 'retro-card-raised border-retro-blue shadow-lg'
+                  : 'retro-card hover:shadow-md'
               }`}
+              style={isSelected ? {
+                borderColor: '#336699',
+                background: 'linear-gradient(to bottom, #ffffff, #eef4fb)',
+              } : undefined}
             >
               {/* Header */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-gray-100">{founder.displayName}</h3>
+                  <h3 className="font-[--font-retro-heading] font-bold text-retro-text">{founder.displayName}</h3>
                   {isSelected && (
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500">
-                      <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                    <div className="flex h-5 w-5 items-center justify-center rounded-full text-white"
+                      style={{ background: 'linear-gradient(to bottom, #5588bb, #336699)' }}
+                    >
+                      <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   )}
                 </div>
-                <span className="text-xs font-medium text-blue-400">{founder.tagline}</span>
+                <span className="font-[--font-retro] text-xs font-medium text-retro-blue">{founder.tagline}</span>
               </div>
 
               {/* Description */}
-              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+              <p className="mb-4 font-[--font-retro] text-xs leading-relaxed text-retro-text-muted">
                 {founder.description}
               </p>
 
               {/* Stats */}
               <div className="mb-3 space-y-1.5">
                 <StatBar label="Tech" value={founder.stats.techSkill} color="blue" />
-                <StatBar label="Business" value={founder.stats.bizSkill} color="emerald" />
-                <StatBar label="Network" value={founder.stats.network} color="violet" />
-                <StatBar label="Reputation" value={founder.stats.reputation} color="amber" />
+                <StatBar label="Business" value={founder.stats.bizSkill} color="green" />
+                <StatBar label="Network" value={founder.stats.network} color="purple" />
+                <StatBar label="Reputation" value={founder.stats.reputation} color="orange" />
                 <StatBar label="Learning" value={founder.stats.learning} color="red" />
               </div>
 
               {/* Footer info */}
-              <div className="border-t border-gray-800 pt-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-500">Starting Cash</span>
-                  <span className="font-mono font-bold text-emerald-400">
+              <div className="border-t border-retro-border pt-3">
+                <div className="flex items-center justify-between font-[--font-retro] text-xs">
+                  <span className="text-retro-text-muted">Starting Cash</span>
+                  <span className="font-[--font-retro-mono] font-bold text-retro-green">
                     {formatCash(founder.startingCash)}
                   </span>
                 </div>
-                <div className="mt-2 rounded bg-gray-800/60 px-2 py-1.5 text-[11px] leading-relaxed text-gray-400">
+                <div className="retro-inset mt-2 px-2 py-1.5 font-[--font-retro] text-[11px] leading-relaxed text-retro-text-muted">
                   {founder.specialAbility}
                 </div>
               </div>
@@ -336,8 +358,8 @@ function StepMarket({
   return (
     <div>
       <div className="mb-6 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-gray-100">Choose Your Market</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="mb-2 font-[--font-retro-heading] text-2xl font-bold text-retro-text">Choose Your Market</h2>
+        <p className="font-[--font-retro] text-sm text-retro-text-muted">
           Where will you compete? Each segment has different risks and rewards.
         </p>
       </div>
@@ -353,16 +375,22 @@ function StepMarket({
               onClick={() => onSelect(segKey)}
               className={`cursor-pointer rounded-lg border p-4 text-left transition-all ${
                 isSelected
-                  ? 'border-blue-500 bg-blue-950/30 shadow-lg shadow-blue-900/20'
-                  : 'border-gray-800 bg-gray-900 hover:border-gray-700 hover:bg-gray-800/80'
+                  ? 'retro-card-raised border-retro-blue shadow-lg'
+                  : 'retro-card hover:shadow-md'
               }`}
+              style={isSelected ? {
+                borderColor: '#336699',
+                background: 'linear-gradient(to bottom, #ffffff, #eef4fb)',
+              } : undefined}
             >
               {/* Header */}
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="font-bold text-gray-100">{seg.name}</h3>
+                <h3 className="font-[--font-retro-heading] font-bold text-retro-text">{seg.name}</h3>
                 {isSelected && (
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500">
-                    <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full text-white"
+                    style={{ background: 'linear-gradient(to bottom, #5588bb, #336699)' }}
+                  >
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
@@ -370,7 +398,7 @@ function StepMarket({
               </div>
 
               {/* Description */}
-              <p className="mb-4 text-xs leading-relaxed text-gray-500">
+              <p className="mb-4 font-[--font-retro] text-xs leading-relaxed text-retro-text-muted">
                 {seg.description}
               </p>
 
@@ -380,7 +408,7 @@ function StepMarket({
                   label="Market Size"
                   value={seg.size}
                   max={100_000}
-                  color="emerald"
+                  color="green"
                 />
                 <MarketStat
                   label="Growth Rate"
@@ -392,7 +420,7 @@ function StepMarket({
                   label="Competition"
                   value={seg.competitionIntensity}
                   max={100}
-                  color="amber"
+                  color="orange"
                 />
                 <MarketStat
                   label="Regulatory Risk"
@@ -403,9 +431,9 @@ function StepMarket({
               </div>
 
               {/* Market size callout */}
-              <div className="mt-3 border-t border-gray-800 pt-3 text-center">
-                <span className="text-[10px] uppercase tracking-wider text-gray-600">TAM</span>
-                <div className="font-mono text-sm font-bold text-emerald-400">
+              <div className="mt-3 border-t border-retro-border pt-3 text-center">
+                <span className="font-[--font-retro] text-[10px] uppercase tracking-wider text-retro-text-light">TAM</span>
+                <div className="font-[--font-retro-mono] text-sm font-bold text-retro-green">
                   {formatMarketSize(seg.size)}
                 </div>
               </div>
@@ -430,18 +458,18 @@ function StepSettings({
   onDifficulty: (d: Difficulty) => void;
   onTone: (t: Tone) => void;
 }) {
-  const difficultyBorderColors: Record<string, string> = {
-    emerald: 'border-emerald-500 bg-emerald-950/30',
-    blue: 'border-blue-500 bg-blue-950/30',
-    amber: 'border-amber-500 bg-amber-950/30',
-    red: 'border-red-500 bg-red-950/30',
+  const difficultySelectedStyles: Record<string, { borderColor: string; background: string }> = {
+    green: { borderColor: '#339933', background: 'linear-gradient(to bottom, #ffffff, #e8f5e8)' },
+    blue: { borderColor: '#336699', background: 'linear-gradient(to bottom, #ffffff, #eef4fb)' },
+    orange: { borderColor: '#ff6600', background: 'linear-gradient(to bottom, #ffffff, #fff5eb)' },
+    red: { borderColor: '#cc3333', background: 'linear-gradient(to bottom, #ffffff, #fbeef0)' },
   };
 
   const difficultyDotColors: Record<string, string> = {
-    emerald: 'bg-emerald-500',
-    blue: 'bg-blue-500',
-    amber: 'bg-amber-500',
-    red: 'bg-red-500',
+    green: '#339933',
+    blue: '#336699',
+    orange: '#ff6600',
+    red: '#cc3333',
   };
 
   return (
@@ -449,13 +477,13 @@ function StepSettings({
       {/* Difficulty */}
       <div className="mb-8">
         <div className="mb-4 text-center">
-          <h2 className="mb-2 text-2xl font-bold text-gray-100">Game Settings</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="mb-2 font-[--font-retro-heading] text-2xl font-bold text-retro-text">Game Settings</h2>
+          <p className="font-[--font-retro] text-sm text-retro-text-muted">
             How punishing should the market be, and how seriously should we take it?
           </p>
         </div>
 
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+        <h3 className="retro-section-heading">
           Difficulty
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -468,19 +496,24 @@ function StepSettings({
                 onClick={() => onDifficulty(opt.value)}
                 className={`cursor-pointer rounded-lg border p-4 text-left transition-all ${
                   isSelected
-                    ? difficultyBorderColors[opt.color]
-                    : 'border-gray-800 bg-gray-900 hover:border-gray-700 hover:bg-gray-800/80'
+                    ? 'retro-card-raised shadow-md'
+                    : 'retro-card hover:shadow-md'
                 }`}
+                style={isSelected ? difficultySelectedStyles[opt.color] : undefined}
               >
                 <div className="mb-1 flex items-center gap-2">
                   <div
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      isSelected ? difficultyDotColors[opt.color] : 'bg-gray-700'
-                    }`}
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      background: isSelected
+                        ? `radial-gradient(circle at 30% 30%, ${difficultyDotColors[opt.color]}88, ${difficultyDotColors[opt.color]})`
+                        : '#cccccc',
+                      boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
+                    }}
                   />
-                  <span className="font-bold text-gray-100">{opt.label}</span>
+                  <span className="font-[--font-retro-heading] font-bold text-retro-text">{opt.label}</span>
                 </div>
-                <p className="text-xs leading-relaxed text-gray-500">
+                <p className="font-[--font-retro] text-xs leading-relaxed text-retro-text-muted">
                   {opt.description}
                 </p>
               </button>
@@ -491,7 +524,7 @@ function StepSettings({
 
       {/* Tone */}
       <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
+        <h3 className="retro-section-heading">
           Narrative Tone
         </h3>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -504,19 +537,27 @@ function StepSettings({
                 onClick={() => onTone(opt.value)}
                 className={`cursor-pointer rounded-lg border p-4 text-left transition-all ${
                   isSelected
-                    ? 'border-violet-500 bg-violet-950/30'
-                    : 'border-gray-800 bg-gray-900 hover:border-gray-700 hover:bg-gray-800/80'
+                    ? 'retro-card-raised shadow-md'
+                    : 'retro-card hover:shadow-md'
                 }`}
+                style={isSelected ? {
+                  borderColor: '#663399',
+                  background: 'linear-gradient(to bottom, #ffffff, #f3eef8)',
+                } : undefined}
               >
                 <div className="mb-1 flex items-center gap-2">
                   <div
-                    className={`h-2.5 w-2.5 rounded-full ${
-                      isSelected ? 'bg-violet-500' : 'bg-gray-700'
-                    }`}
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{
+                      background: isSelected
+                        ? 'radial-gradient(circle at 30% 30%, #8855bb, #663399)'
+                        : '#cccccc',
+                      boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
+                    }}
                   />
-                  <span className="font-bold text-gray-100">{opt.label}</span>
+                  <span className="font-[--font-retro-heading] font-bold text-retro-text">{opt.label}</span>
                 </div>
-                <p className="text-xs leading-relaxed text-gray-500">
+                <p className="font-[--font-retro] text-xs leading-relaxed text-retro-text-muted">
                   {opt.description}
                 </p>
               </button>
@@ -559,65 +600,69 @@ function StepSummary({
     mixed: 'Mixed',
   };
 
-  const difficultyColors: Record<Difficulty, string> = {
-    easy: 'text-emerald-400',
-    normal: 'text-blue-400',
-    hard: 'text-amber-400',
-    nightmare: 'text-red-400',
+  const difficultyBadgeClass: Record<Difficulty, string> = {
+    easy: 'retro-badge retro-badge-green',
+    normal: 'retro-badge retro-badge-blue',
+    hard: 'retro-badge retro-badge-orange',
+    nightmare: 'retro-badge retro-badge-red',
   };
 
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-8 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-gray-100">Ready to Launch</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="mb-2 font-[--font-retro-heading] text-2xl font-bold text-retro-text">Ready to Launch</h2>
+        <p className="font-[--font-retro] text-sm text-retro-text-muted">
           Review your choices. There is no going back after this. Well, there is, but it costs VC credibility.
         </p>
       </div>
 
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-6">
+      <div className="retro-card-raised p-6">
         {/* Company Name */}
         <div className="mb-6 text-center">
-          <span className="text-[10px] uppercase tracking-widest text-gray-600">Company</span>
-          <h3 className="mt-1 text-3xl font-extrabold text-gray-100">{companyName}</h3>
+          <span className="font-[--font-retro] text-[10px] uppercase tracking-widest text-retro-text-light">Company</span>
+          <h3 className="mt-1 font-[--font-retro-heading] text-3xl font-extrabold text-retro-blue-dark">{companyName}</h3>
         </div>
 
         <div className="space-y-4">
           {/* Founder */}
-          <div className="flex items-start justify-between rounded-md bg-gray-800/50 p-3">
+          <div className="retro-inset flex items-start justify-between p-3">
             <div>
-              <span className="text-[10px] uppercase tracking-wider text-gray-600">Founder</span>
-              <div className="font-semibold text-gray-200">
+              <span className="font-[--font-retro] text-[10px] uppercase tracking-wider text-retro-text-light">Founder</span>
+              <div className="font-[--font-retro-heading] font-semibold text-retro-text">
                 {founder?.displayName ?? archetype}
               </div>
-              <div className="text-xs text-blue-400">{founder?.tagline}</div>
+              <div className="font-[--font-retro] text-xs text-retro-blue">{founder?.tagline}</div>
             </div>
-            <span className="font-mono text-sm font-bold text-emerald-400">
+            <span className="font-[--font-retro-mono] text-sm font-bold text-retro-green">
               {founder ? formatCash(founder.startingCash) : ''}
             </span>
           </div>
 
           {/* Market */}
-          <div className="rounded-md bg-gray-800/50 p-3">
-            <span className="text-[10px] uppercase tracking-wider text-gray-600">Market Segment</span>
-            <div className="font-semibold text-gray-200">{market.name}</div>
-            <div className="mt-1 text-xs text-gray-500">
+          <div className="retro-inset p-3">
+            <span className="font-[--font-retro] text-[10px] uppercase tracking-wider text-retro-text-light">Market Segment</span>
+            <div className="font-[--font-retro-heading] font-semibold text-retro-text">{market.name}</div>
+            <div className="mt-1 font-[--font-retro] text-xs text-retro-text-muted">
               TAM: {formatMarketSize(market.size)} &middot; Growth: {(market.growthRate * 100).toFixed(0)}%
             </div>
           </div>
 
           {/* Settings */}
           <div className="flex gap-3">
-            <div className="flex-1 rounded-md bg-gray-800/50 p-3">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600">Difficulty</span>
-              <div className={`font-semibold ${difficultyColors[difficulty]}`}>
-                {difficultyLabels[difficulty]}
+            <div className="retro-inset flex-1 p-3">
+              <span className="font-[--font-retro] text-[10px] uppercase tracking-wider text-retro-text-light">Difficulty</span>
+              <div className="mt-1">
+                <span className={difficultyBadgeClass[difficulty]}>
+                  {difficultyLabels[difficulty]}
+                </span>
               </div>
             </div>
-            <div className="flex-1 rounded-md bg-gray-800/50 p-3">
-              <span className="text-[10px] uppercase tracking-wider text-gray-600">Tone</span>
-              <div className="font-semibold text-violet-400">
-                {toneLabels[tone]}
+            <div className="retro-inset flex-1 p-3">
+              <span className="font-[--font-retro] text-[10px] uppercase tracking-wider text-retro-text-light">Tone</span>
+              <div className="mt-1">
+                <span className="retro-badge retro-badge-purple">
+                  {toneLabels[tone]}
+                </span>
               </div>
             </div>
           </div>
@@ -687,11 +732,11 @@ export function NewGameScreen() {
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-gray-950"
+      className="flex min-h-screen flex-col bg-retro-bg"
       onKeyDown={handleKeyDown}
     >
       {/* Top bar with step indicator */}
-      <div className="border-b border-gray-800 bg-gray-950 px-6 py-4">
+      <div className="retro-header px-6 py-4">
         <StepIndicator current={step} total={TOTAL_STEPS} />
       </div>
 
@@ -728,12 +773,14 @@ export function NewGameScreen() {
       </div>
 
       {/* Bottom navigation */}
-      <div className="border-t border-gray-800 bg-gray-950 px-6 py-4">
+      <div className="retro-header border-t border-retro-border px-6 py-4"
+        style={{ borderBottom: 'none', borderTop: '1px solid #b0b0b0' }}
+      >
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           {/* Back */}
           <button
             onClick={handleBack}
-            className="flex items-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-medium text-gray-400 transition-colors hover:bg-gray-900 hover:text-gray-200"
+            className="btn-glossy btn-silver flex items-center gap-1.5"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -746,10 +793,10 @@ export function NewGameScreen() {
             <button
               onClick={handleNext}
               disabled={!canAdvance()}
-              className={`flex items-center gap-1.5 rounded-lg px-6 py-2.5 text-sm font-semibold transition-all ${
+              className={`btn-glossy flex items-center gap-1.5 ${
                 canAdvance()
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 active:scale-[0.98]'
-                  : 'cursor-not-allowed bg-gray-800 text-gray-600'
+                  ? 'btn-primary'
+                  : 'cursor-not-allowed opacity-50 btn-silver'
               }`}
             >
               Next
@@ -760,15 +807,12 @@ export function NewGameScreen() {
           ) : (
             <button
               onClick={handleLaunch}
-              className="group relative overflow-hidden rounded-lg bg-emerald-600 px-8 py-3 text-base font-bold text-white shadow-lg shadow-emerald-900/40 transition-all hover:bg-emerald-500 hover:shadow-emerald-900/60 active:scale-[0.98]"
+              className="btn-glossy btn-glossy-lg btn-green flex items-center gap-2"
             >
-              <span className="relative z-10 flex items-center gap-2">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.841m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
-                </svg>
-                Launch Your Startup
-              </span>
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.841m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
+              </svg>
+              Launch Your Startup
             </button>
           )}
         </div>

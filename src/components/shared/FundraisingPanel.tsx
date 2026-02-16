@@ -78,33 +78,33 @@ export function FundraisingPanel({
   return (
     <div className="space-y-4">
       {/* Stage & Equity */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+      <div className="retro-card">
+        <h3 className="retro-section-heading">
           Fundraising
         </h3>
 
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm text-gray-300">Company Stage</span>
-          <span className="rounded-full bg-gray-800 px-3 py-1 text-sm font-semibold text-emerald-400">
+          <span className="text-sm text-[--color-retro-text]">Company Stage</span>
+          <span className="retro-badge retro-badge-green">
             {STAGE_LABELS[stage]}
           </span>
         </div>
 
         {/* Founder Equity Bar */}
-        <div className="mb-3">
+        <div className="retro-inset mb-3">
           <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm text-gray-300">Founder Equity</span>
-            <span className="text-sm font-mono font-semibold text-emerald-400">
+            <span className="text-sm text-[--color-retro-text]">Founder Equity</span>
+            <span className="text-sm font-[--font-retro-mono] font-bold text-[--color-retro-green]">
               {formatPercent(equityPercent)}
             </span>
           </div>
-          <div className="h-3 w-full overflow-hidden rounded-full bg-gray-800">
+          <div className="retro-progress">
             <div
-              className="h-full rounded-full bg-emerald-500 transition-all duration-300"
+              className="retro-progress-bar retro-progress-bar-green"
               style={{ width: `${equityPercent}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-[--color-retro-text-light]">
             {formatPercent(dilutionPercent)} diluted to investors
           </p>
         </div>
@@ -113,7 +113,7 @@ export function FundraisingPanel({
         {nextStage && stage !== 'dead' && stage !== 'public' && (
           <button
             onClick={handleSeekFunding}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+            className="btn-glossy btn-green w-full"
           >
             Seek Funding ({nextStage.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())})
           </button>
@@ -122,35 +122,35 @@ export function FundraisingPanel({
 
       {/* Funding History Table */}
       {fundingHistory.length > 0 && (
-        <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-          <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+        <div className="retro-card" style={{ padding: 0 }}>
+          <h3 className="retro-section-heading" style={{ margin: '16px 16px 12px' }}>
             Funding History
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="retro-table">
               <thead>
-                <tr className="border-b border-gray-800 text-xs uppercase tracking-wider text-gray-500">
-                  <th className="pb-2 pr-3">Stage</th>
-                  <th className="pb-2 pr-3">Amount</th>
-                  <th className="pb-2 pr-3">Valuation</th>
-                  <th className="pb-2 pr-3">Investor</th>
-                  <th className="pb-2">Week</th>
+                <tr>
+                  <th>Stage</th>
+                  <th>Amount</th>
+                  <th>Valuation</th>
+                  <th>Investor</th>
+                  <th>Week</th>
                 </tr>
               </thead>
               <tbody>
                 {fundingHistory.map((round, i) => (
-                  <tr key={i} className="border-b border-gray-800/50">
-                    <td className="py-2 pr-3 font-medium text-gray-300">
+                  <tr key={i}>
+                    <td className="font-semibold text-[--color-retro-text]">
                       {round.stage.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                     </td>
-                    <td className="py-2 pr-3 font-mono text-emerald-400">
+                    <td className="font-[--font-retro-mono] text-[--color-retro-green] font-semibold">
                       {formatCurrency(round.amount)}
                     </td>
-                    <td className="py-2 pr-3 font-mono text-gray-300">
+                    <td className="font-[--font-retro-mono] text-[--color-retro-text]">
                       {formatCurrency(round.valuation)}
                     </td>
-                    <td className="py-2 pr-3 text-gray-400">{round.investorName}</td>
-                    <td className="py-2 text-gray-500">{round.weekClosed}</td>
+                    <td className="text-[--color-retro-text-muted]">{round.investorName}</td>
+                    <td className="text-[--color-retro-text-light]">{round.weekClosed}</td>
                   </tr>
                 ))}
               </tbody>
@@ -160,32 +160,33 @@ export function FundraisingPanel({
       )}
 
       {/* Pricing Section */}
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-4">
-        <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-gray-400">
+      <div className="retro-card">
+        <h3 className="retro-section-heading">
           Pricing
         </h3>
 
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm text-gray-300">Current Model</span>
-          <span className="rounded-full bg-gray-800 px-3 py-1 text-sm font-semibold text-blue-400">
+          <span className="text-sm text-[--color-retro-text]">Current Model</span>
+          <span className="retro-badge retro-badge-blue">
             {PRICING_MODELS.find((m) => m.value === pricingModel)?.label ?? pricingModel}
           </span>
         </div>
 
         <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm text-gray-300">Price per Unit</span>
-          <span className="text-sm font-mono font-semibold text-blue-400">
+          <span className="text-sm text-[--color-retro-text]">Price per Unit</span>
+          <span className="text-sm font-[--font-retro-mono] font-bold text-[--color-retro-blue]">
             {formatCurrency(pricePerUnit)}
           </span>
         </div>
 
         {/* Change Pricing Controls */}
-        <div className="space-y-2 border-t border-gray-800 pt-3">
-          <label className="block text-xs text-gray-500">Change Pricing Model</label>
+        <div className="retro-hr" />
+        <div className="space-y-2 pt-2">
+          <label className="block text-xs font-bold text-[--color-retro-text-muted]">Change Pricing Model</label>
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value as PricingModel)}
-            className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
+            className="retro-input w-full"
           >
             {PRICING_MODELS.map((model) => (
               <option key={model.value} value={model.value}>
@@ -194,19 +195,19 @@ export function FundraisingPanel({
             ))}
           </select>
 
-          <label className="block text-xs text-gray-500">Price per Unit ($)</label>
+          <label className="block text-xs font-bold text-[--color-retro-text-muted]">Price per Unit ($)</label>
           <input
             type="number"
             min="0"
             step="1"
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}
-            className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-200 focus:border-blue-500 focus:outline-none"
+            className="retro-input w-full"
           />
 
           <button
             onClick={handleChangePricing}
-            className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+            className="btn-glossy btn-primary w-full"
           >
             Update Pricing
           </button>

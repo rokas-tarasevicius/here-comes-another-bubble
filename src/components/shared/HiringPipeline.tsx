@@ -30,8 +30,8 @@ export function HiringPipeline() {
 
   if (hiringPipeline.length === 0) {
     return (
-      <div className="rounded-lg border border-gray-800 bg-gray-900 p-8 text-center">
-        <p className="text-sm text-gray-500">No candidates in pipeline. Post a job listing!</p>
+      <div className="retro-card text-center" style={{ padding: '32px 16px' }}>
+        <p className="text-sm text-[--color-retro-text-muted]">No candidates in pipeline. Post a job listing!</p>
       </div>
     );
   }
@@ -53,14 +53,13 @@ export function HiringPipeline() {
         return (
           <div
             key={candidate.id}
-            className={`rounded-lg border bg-gray-900 p-4 transition-colors ${
-              urgent ? 'border-red-800/60' : 'border-gray-800'
-            }`}
+            className="retro-card"
+            style={urgent ? { borderColor: '#cc3333' } : undefined}
           >
             {/* Header */}
             <div className="mb-2">
-              <h4 className="text-sm font-semibold text-gray-100">{candidate.name}</h4>
-              <span className="rounded bg-gray-800 px-2 py-0.5 text-xs text-gray-300">
+              <h4 className="text-sm font-bold text-[--color-retro-text]">{candidate.name}</h4>
+              <span className="retro-badge retro-badge-blue">
                 {ROLE_LABELS[candidate.role] ?? candidate.role}
               </span>
             </div>
@@ -69,32 +68,32 @@ export function HiringPipeline() {
             <div className="mb-3 space-y-1.5">
               {/* Skill */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">Skill</span>
+                <span className="text-xs text-[--color-retro-text-muted]">Skill</span>
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-16 rounded-full bg-gray-700">
+                  <div className="retro-progress" style={{ width: '64px', height: '10px' }}>
                     <div
-                      className="h-1.5 rounded-full bg-blue-500"
+                      className="retro-progress-bar"
                       style={{ width: `${candidate.skill}%` }}
                     />
                   </div>
-                  <span className="text-xs font-mono text-gray-300">{candidate.skill}</span>
+                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text]">{candidate.skill}</span>
                 </div>
               </div>
 
               {/* Salary expectation */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">Salary Ask</span>
-                <span className="text-xs font-mono text-gray-300">
+                <span className="text-xs text-[--color-retro-text-muted]">Salary Ask</span>
+                <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text]">
                   {formatSalary(candidate.salaryExpectation)}/wk
                 </span>
               </div>
 
               {/* Weeks to decide */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-400">Decides in</span>
+                <span className="text-xs text-[--color-retro-text-muted]">Decides in</span>
                 <span
-                  className={`text-xs font-mono font-medium ${
-                    urgent ? 'text-red-400' : 'text-gray-300'
+                  className={`text-xs font-[--font-retro-mono] font-bold ${
+                    urgent ? 'text-[--color-retro-red]' : 'text-[--color-retro-text]'
                   }`}
                 >
                   {candidate.weeksToDecide} {candidate.weeksToDecide === 1 ? 'week' : 'weeks'}
@@ -106,13 +105,13 @@ export function HiringPipeline() {
             <div className="flex gap-2">
               <button
                 onClick={() => handleHire(candidate.id)}
-                className="flex-1 rounded bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700"
+                className="btn-glossy btn-green flex-1"
               >
                 Hire
               </button>
               <button
                 onClick={() => handlePass(candidate.id)}
-                className="flex-1 rounded bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-400 transition-colors hover:bg-gray-700 hover:text-gray-300"
+                className="btn-glossy btn-silver flex-1"
               >
                 Pass
               </button>
