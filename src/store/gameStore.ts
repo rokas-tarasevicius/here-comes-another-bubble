@@ -34,6 +34,7 @@ interface GameStoreState {
   currentScreen: string;
   decisionsThisTurn: PlayerDecision[];
   isSimulating: boolean;
+  showWeekRecap: boolean;
 }
 
 interface GameStoreActions {
@@ -50,6 +51,7 @@ interface GameStoreActions {
   clearDecisions: () => void;
   setScreen: (screen: string) => void;
   setGrowthStrategy: (strategy: string) => void;
+  dismissWeekRecap: () => void;
   seekFunding: (targetStage: string) => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
@@ -67,6 +69,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   currentScreen: 'title',
   decisionsThisTurn: [],
   isSimulating: false,
+  showWeekRecap: false,
 
   // ── Actions ────────────────────────────────────────────────────────
 
@@ -98,6 +101,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       gameState: nextState,
       decisionsThisTurn: [],
       isSimulating: false,
+      showWeekRecap: true,
     });
   },
 
@@ -115,6 +119,10 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
   clearDecisions() {
     set({ decisionsThisTurn: [] });
+  },
+
+  dismissWeekRecap() {
+    set({ showWeekRecap: false, currentScreen: 'overview' });
   },
 
   setScreen(screen) {

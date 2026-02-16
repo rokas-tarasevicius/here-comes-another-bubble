@@ -74,7 +74,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 16,
     weight: 2,
     condition: (state: GameState) =>
-      state.team.employees.filter(e => e.role === 'engineer' || e.role === 'senior-engineer').length >= 2,
+      state.team.teamSize >= 2,
     descriptions: {
       default:
         'Your best developer just handed in their resignation. A competitor offered them 3x their current salary, and they are seriously considering it.',
@@ -84,7 +84,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         'Your 10x engineer just got a 30x offer from a startup that has no product, no customers, and somehow a $2B valuation. They apologized and said "it is not about the money" while visibly counting the money.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -8 },
+      { path: 'team.morale', operation: 'add', value: -8 },
     ],
     decisionOptions: [
       {
@@ -94,7 +94,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Match or exceed the competing offer with a raise and equity refresh. Expensive but retains talent.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -50000 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
         ],
       },
@@ -104,7 +104,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'Accept the departure gracefully. The remaining team will need to absorb the workload.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
           { path: 'product.techDebtTotal', operation: 'add', value: 8 },
           { path: 'product.overallQuality', operation: 'add', value: -5 },
         ],
@@ -116,9 +116,9 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Use this as a growth opportunity for a junior team member. Moderate disruption.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -15000 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 2 },
           { path: 'product.techDebtTotal', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
     ],
@@ -230,7 +230,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'The news cycle moves fast. Staying quiet avoids feeding the story but some damage sticks.',
         effects: [
           { path: 'company.reputation', operation: 'add', value: -2 },
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -3 },
         ],
       },
       {
@@ -318,7 +318,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 0,
     weight: 1,
     condition: (state: GameState) =>
-      state.meta.week >= 12 && state.team.employees.length >= 3,
+      state.meta.week >= 12 && state.team.teamSize >= 3,
     descriptions: {
       default:
         'Your co-founder wants to pivot the entire product. They have been building a slide deck behind your back and already pitched the idea to two board members.',
@@ -328,8 +328,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
         'Your co-founder wants to pivot from "AI for enterprise" to "AI for dogs." They have a 90-slide deck, a market analysis showing dogs control $500B in disposable income, and honestly the TAM math kind of checks out.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -10 },
-      { path: 'company.culture.collaboration', operation: 'add', value: -10 },
+      { path: 'team.morale', operation: 'add', value: -10 },
+      { path: 'company.culture', operation: 'add', value: -10 },
     ],
     decisionOptions: [
       {
@@ -339,8 +339,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Maybe they are right. Embrace the new direction and realign the team.',
         effects: [
           { path: 'product.pmfScore', operation: 'multiply', value: 0.5 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 10 },
           { path: 'product.customers', operation: 'multiply', value: 0.7 },
         ],
       },
@@ -351,9 +351,9 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Dedicate a small team to explore the new direction while maintaining the current product.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -30000 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -362,7 +362,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'Exercise your vesting clause and remove them. Brutal but decisive. Will cost equity and morale.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -15 },
+          { path: 'team.morale', operation: 'add', value: -15 },
           { path: 'company.reputation', operation: 'add', value: -8 },
           { path: 'finances.founderEquity', operation: 'multiply', value: 0.85 },
           { path: 'founder.reputation', operation: 'add', value: -5 },
@@ -375,8 +375,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Hire a professional mediator to work through the disagreement. Costs time and money but preserves the relationship.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -20000 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 8 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 8 },
         ],
       },
     ],
@@ -453,7 +453,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 8,
     weight: 2,
     condition: (state: GameState) =>
-      state.team.aiAgents.length > 0 || state.company.culture.aiFirst > 30,
+      state.team.aiAgents.length > 0 || state.company.culture > 30,
     descriptions: {
       default:
         'Your primary AI provider is experiencing a major outage. Your product is effectively crippled, and there is no ETA for resolution.',
@@ -497,7 +497,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: -80000 },
           { path: 'product.techDebtTotal', operation: 'add', value: -5 },
           { path: 'product.overallQuality', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -514,7 +514,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 0,
     weight: 1,
     condition: (state: GameState) =>
-      state.team.employees.length >= 5,
+      state.team.teamSize >= 5,
     descriptions: {
       default:
         'An employee has filed a formal harassment complaint against a senior team member. This needs to be handled immediately and carefully.',
@@ -524,8 +524,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
         'Someone in your all-hands Slack channel described their management style as "move fast and break people" and HR has informed you this is, in fact, not a valid company value no matter how many times it appears on your culture deck.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -12 },
-      { path: 'company.culture.collaboration', operation: 'add', value: -8 },
+      { path: 'team.morale', operation: 'add', value: -12 },
+      { path: 'company.culture', operation: 'add', value: -8 },
     ],
     decisionOptions: [
       {
@@ -536,8 +536,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -60000 },
           { path: 'company.reputation', operation: 'add', value: 5 },
-          { path: 'team.avgMorale', operation: 'add', value: 8 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -547,7 +547,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Investigate with your internal team. Faster and cheaper but may appear biased.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -10000 },
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -3 },
           { path: 'company.reputation', operation: 'add', value: -3 },
         ],
       },
@@ -557,7 +557,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'Swift action sends a strong message but may be premature without investigation.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'product.overallQuality', operation: 'add', value: -5 },
           { path: 'company.reputation', operation: 'add', value: 2 },
           { path: 'finances.cash', operation: 'add', value: -30000 },
@@ -577,7 +577,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 0,
     weight: 1,
     condition: (state: GameState) =>
-      state.company.culture.aiFirst > 40 && state.product.customers > 100,
+      state.company.culture > 40 && state.product.customers > 100,
     descriptions: {
       default:
         'An internal audit revealed that your AI model has been inadvertently including PII from customer data in its outputs. Other users can see fragments of private information.',
@@ -652,7 +652,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         'Your bank account has entered the "checking your balance through your fingers like a horror movie" phase. You have enough runway to either pay your team or pay your cloud bill, but definitely not both. Have you considered monetizing your anxiety?',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -15 },
+      { path: 'team.morale', operation: 'add', value: -15 },
       { path: 'founder.reputation', operation: 'add', value: -3 },
     ],
     decisionOptions: [
@@ -663,7 +663,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Gut-wrenching but extends runway immediately. Remaining team will be demoralized but the company survives.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 50000 },
-          { path: 'team.avgMorale', operation: 'add', value: -20 },
+          { path: 'team.morale', operation: 'add', value: -20 },
           { path: 'company.reputation', operation: 'add', value: -5 },
           { path: 'product.overallQuality', operation: 'add', value: -10 },
         ],
@@ -688,7 +688,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: 80000 },
           { path: 'product.techDebtTotal', operation: 'add', value: 15 },
           { path: 'product.pmfScore', operation: 'add', value: -5 },
-          { path: 'team.avgMorale', operation: 'add', value: -10 },
+          { path: 'team.morale', operation: 'add', value: -10 },
         ],
       },
       {
@@ -698,7 +698,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Lead by example. Founders stop drawing salary and put personal funds in. Buys a few weeks.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 40000 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'founder.reputation', operation: 'add', value: 3 },
         ],
       },
@@ -777,7 +777,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 12,
     weight: 2,
     condition: (state: GameState) =>
-      state.team.avgMorale < 50 && state.team.employees.length >= 3,
+      state.team.morale < 50 && state.team.teamSize >= 3,
     descriptions: {
       default:
         'Half your engineering team is burned out. Sick days are up 300%, commit frequency has plummeted, and two people have started updating their LinkedIn profiles.',
@@ -797,9 +797,9 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'Force the team to rest. Productivity drops to zero for two weeks but the team comes back refreshed.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 20 },
+          { path: 'team.morale', operation: 'add', value: 20 },
           { path: 'product.overallQuality', operation: 'add', value: -3 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 10 },
         ],
       },
       {
@@ -808,7 +808,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'The deadline is non-negotiable. Promise bonuses and time off after launch.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -15 },
+          { path: 'team.morale', operation: 'add', value: -15 },
           { path: 'product.techDebtTotal', operation: 'add', value: 12 },
           { path: 'product.bugs', operation: 'add', value: 10 },
           { path: 'finances.cash', operation: 'add', value: -20000 },
@@ -821,9 +821,9 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Bring in contractors to absorb the load and reduce individual burden. Balanced approach.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -50000 },
-          { path: 'team.avgMorale', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: 10 },
           { path: 'product.techDebtTotal', operation: 'add', value: 5 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -863,8 +863,8 @@ export const CRISIS_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -40000 },
           { path: 'product.techDebtTotal', operation: 'add', value: 10 },
-          { path: 'company.culture.innovation', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: 8 },
+          { path: 'team.morale', operation: 'add', value: -5 },
         ],
       },
       {
@@ -916,7 +916,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         'Your investors, who collectively have the operational experience of a Golden Retriever at a tennis ball factory, have decided you are "not experienced enough" to lead the company. They want to replace you with someone whose primary qualification is having been fired from three other startups "in a leadership capacity."',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -10 },
+      { path: 'team.morale', operation: 'add', value: -10 },
       { path: 'company.reputation', operation: 'add', value: -5 },
     ],
     decisionOptions: [
@@ -927,7 +927,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           'Rally your allies on the board, make your case with metrics, and call their bluff.',
         effects: [
           { path: 'founder.reputation', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'company.reputation', operation: 'add', value: 3 },
           { path: 'market.investorSentiment', operation: 'add', value: -5 },
         ],
@@ -953,7 +953,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
           { path: 'founder.reputation', operation: 'add', value: -10 },
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'market.investorSentiment', operation: 'add', value: 10 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
         ],
       },
     ],

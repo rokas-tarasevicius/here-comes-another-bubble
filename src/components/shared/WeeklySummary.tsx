@@ -87,7 +87,7 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
           </span>
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-[--color-retro-text-muted]">Customers</span>
+          <span className="text-[--color-retro-text-muted]">Users</span>
           <span className={`font-[--font-retro-mono] font-semibold ${customerDelta !== null && customerDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
             {customerDelta !== null
               ? `${customerDelta >= 0 ? '+' : ''}${formatNumber(customerDelta)}`

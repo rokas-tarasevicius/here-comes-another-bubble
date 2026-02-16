@@ -22,17 +22,6 @@ export type CompanyStage =
   | 'public'
   | 'dead';
 
-export type EmployeeRole =
-  | 'engineer'
-  | 'senior-engineer'
-  | 'designer'
-  | 'pm'
-  | 'marketer'
-  | 'sales'
-  | 'data-scientist'
-  | 'devops'
-  | 'exec';
-
 export type AIAgentType =
   | 'coding'
   | 'design'
@@ -116,27 +105,9 @@ export interface CompanyState {
   name: string;
   stage: CompanyStage;
   valuation: number;
-  culture: {
-    workLifeBalance: number;  // 0-100
-    innovation: number;       // 0-100
-    collaboration: number;    // 0-100
-    aiFirst: number;          // 0-100, how AI-reliant the culture is
-  };
-  reputation: number;  // 0-100
+  culture: number;       // 0-100
+  reputation: number;    // 0-100
   weekFounded: number;
-}
-
-export interface Employee {
-  id: string;
-  name: string;
-  role: EmployeeRole;
-  skill: number;          // 0-100
-  salary: number;         // weekly
-  morale: number;         // 0-100
-  loyalty: number;        // 0-100
-  aiSentiment: number;    // -100 to 100 (negative = hostile to AI)
-  weekHired: number;
-  assignedTo: string | null;  // feature id or null
 }
 
 export interface AIAgent {
@@ -150,20 +121,11 @@ export interface AIAgent {
   assignedTo: string | null;  // feature id or null
 }
 
-export interface HiringCandidate {
-  id: string;
-  name: string;
-  role: EmployeeRole;
-  skill: number;
-  salaryExpectation: number;
-  weeksToDecide: number;
-}
-
 export interface TeamState {
-  employees: Employee[];
+  teamSize: number;
+  avgSalary: number;
+  morale: number;        // 0-100
   aiAgents: AIAgent[];
-  hiringPipeline: HiringCandidate[];
-  avgMorale: number;
 }
 
 export interface Feature {
@@ -173,10 +135,7 @@ export interface Feature {
   status: FeatureStatus;
   progress: number;        // 0-100
   quality: number;         // 0-100
-  techDebt: number;        // 0-100
   marketRelevance: number; // 0-100
-  assignedEmployees: string[];  // employee ids
-  assignedAgents: string[];     // agent ids
 }
 
 export interface ProductState {

@@ -1,25 +1,6 @@
-import type { EmployeeRole, PricingModel, MarketSegment } from './game.ts';
+import type { PricingModel, MarketSegment } from './game.ts';
 
 // ─── Player decision payloads ─────────────────────────────────────────
-
-export interface HireDecision {
-  type: 'hire';
-  candidateId: string;
-}
-
-export interface FireDecision {
-  type: 'fire';
-  employeeId: string;
-}
-
-export interface AssignTeamDecision {
-  type: 'assign-team';
-  assignments: {
-    entityId: string;           // employee or agent id
-    entityType: 'employee' | 'agent';
-    featureId: string | null;   // null = unassign
-  }[];
-}
 
 export interface StartFeatureDecision {
   type: 'start-feature';
@@ -65,20 +46,11 @@ export interface ChangeSegmentDecision {
   newSegment: MarketSegment;
 }
 
-export interface PostJobDecision {
-  type: 'post-job';
-  role: EmployeeRole;
-}
-
 export type PlayerDecision =
-  | HireDecision
-  | FireDecision
-  | AssignTeamDecision
   | StartFeatureDecision
   | SetPricingDecision
   | RespondToEventDecision
   | HireAIAgentDecision
   | FireAIAgentDecision
   | SeekFundingDecision
-  | ChangeSegmentDecision
-  | PostJobDecision;
+  | ChangeSegmentDecision;

@@ -8,27 +8,11 @@ import {
   calculateValuation,
 } from '../derived.ts';
 import { createInitialState } from '../init.ts';
-import type { GameState, Employee, AIAgent, Feature } from '../../types/index.ts';
+import type { GameState, AIAgent, Feature } from '../../types/index.ts';
 
 function makeTestState(overrides?: Partial<GameState>): GameState {
   const base = createInitialState('TestCo', 'balanced', 'ai-devtools', 'normal', 'realistic');
   return { ...base, ...overrides };
-}
-
-function makeEmployee(overrides?: Partial<Employee>): Employee {
-  return {
-    id: 'emp-1',
-    name: 'Test Employee',
-    role: 'engineer',
-    skill: 70,
-    salary: 3000,
-    morale: 80,
-    loyalty: 60,
-    aiSentiment: 20,
-    weekHired: 1,
-    assignedTo: null,
-    ...overrides,
-  };
 }
 
 function makeAIAgent(overrides?: Partial<AIAgent>): AIAgent {
@@ -53,10 +37,7 @@ function makeFeature(overrides?: Partial<Feature>): Feature {
     status: 'shipped',
     progress: 100,
     quality: 75,
-    techDebt: 10,
     marketRelevance: 80,
-    assignedEmployees: [],
-    assignedAgents: [],
     ...overrides,
   };
 }
@@ -72,14 +53,12 @@ describe('calculateRunway', () => {
   });
 
   it('calculates finite runway when burning cash', () => {
-    const emp1 = makeEmployee({ salary: 5000 });
-    const emp2 = makeEmployee({ id: 'emp-2', salary: 5000 });
     const state = makeTestState({
       team: {
-        employees: [emp1, emp2],
+        teamSize: 2,
+        avgSalary: 5000,
+        morale: 80,
         aiAgents: [],
-        hiringPipeline: [],
-        avgMorale: 80,
       },
       finances: {
         cash: 100_000,
@@ -95,7 +74,7 @@ describe('calculateRunway', () => {
     });
 
     const runway = calculateRunway(state);
-    // burn = 5000 + 5000 + 500 + 2*50 = 10600
+    // burn = 2*5000 + 500 + 2*50 = 10600
     // 100000 / 10600 ≈ 9.43
     expect(runway).toBeCloseTo(100_000 / 10_600, 1);
   });
@@ -122,14 +101,13 @@ describe('calculateRunway', () => {
 
 describe('calculateWeeklyBurn', () => {
   it('includes salaries, AI costs, and fixed overhead', () => {
-    const emp = makeEmployee({ salary: 4000 });
     const agent = makeAIAgent({ costPerWeek: 800 });
     const state = makeTestState({
       team: {
-        employees: [emp],
+        teamSize: 1,
+        avgSalary: 4000,
+        morale: 80,
         aiAgents: [agent],
-        hiringPipeline: [],
-        avgMorale: 80,
       },
     });
 
@@ -141,10 +119,10 @@ describe('calculateWeeklyBurn', () => {
   it('returns only fixed costs when team is empty', () => {
     const state = makeTestState({
       team: {
-        employees: [],
+        teamSize: 0,
+        avgSalary: 0,
+        morale: 100,
         aiAgents: [],
-        hiringPipeline: [],
-        avgMorale: 100,
       },
     });
 
@@ -154,52 +132,48 @@ describe('calculateWeeklyBurn', () => {
 });
 
 describe('calculateAvgMorale', () => {
-  it('returns 100 when there are no employees', () => {
+  it('returns team morale directly', () => {
     const state = makeTestState({
       team: {
-        employees: [],
+        teamSize: 0,
+        avgSalary: 0,
+        morale: 100,
         aiAgents: [],
-        hiringPipeline: [],
-        avgMorale: 100,
       },
     });
 
     expect(calculateAvgMorale(state)).toBe(100);
   });
 
-  it('averages morale across employees', () => {
-    const emp1 = makeEmployee({ morale: 90 });
-    const emp2 = makeEmployee({ id: 'emp-2', morale: 60 });
-    const emp3 = makeEmployee({ id: 'emp-3', morale: 30 });
+  it('returns the morale value from team state', () => {
     const state = makeTestState({
       team: {
-        employees: [emp1, emp2, emp3],
+        teamSize: 3,
+        avgSalary: 3000,
+        morale: 60,
         aiAgents: [],
-        hiringPipeline: [],
-        avgMorale: 60,
       },
     });
 
-    expect(calculateAvgMorale(state)).toBe(60); // (90+60+30)/3
+    expect(calculateAvgMorale(state)).toBe(60);
   });
 });
 
 describe('calculateTeamVelocity', () => {
   it('combines human and AI velocity', () => {
-    const emp = makeEmployee({ skill: 80, morale: 100 });
     const agent = makeAIAgent({ capability: 90, reliability: 80 });
     const state = makeTestState({
       team: {
-        employees: [emp],
+        teamSize: 1,
+        avgSalary: 3000,
+        morale: 100,
         aiAgents: [agent],
-        hiringPipeline: [],
-        avgMorale: 100,
       },
     });
 
     const velocity = calculateTeamVelocity(state);
-    // Human: 80*100/100 = 80, AI: 90*80/100 = 72
-    expect(velocity).toBe(152);
+    // Human: 1 * (100/100) * 60 = 60, AI: 90*80/100 = 72
+    expect(velocity).toBe(132);
   });
 });
 
@@ -280,8 +254,6 @@ describe('calculateValuation', () => {
     });
 
     const valuation = calculateValuation(state);
-    // ARR = 5000*52=260000, multiple=15, bubble mult= 0.3+0.8*2.7=2.46, PMF mult=0.5+0.6*1.5=1.4
-    // 260000 * 15 * 2.46 * 1.4 ≈ 13,431,600
     expect(valuation).toBeGreaterThan(10_000_000);
   });
 });

@@ -185,7 +185,7 @@ export const MARKET_EVENTS: GameEvent[] = [
     immediateEffects: [
       { path: 'market.bubbleIndex', operation: 'add', value: 4 },
       { path: 'market.investorSentiment', operation: 'add', value: 3 },
-      { path: 'company.culture.aiFirst', operation: 'add', value: 2 },
+      { path: 'company.culture', operation: 'add', value: 2 },
     ],
     decisionOptions: [
       {
@@ -468,7 +468,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         effects: [
           { path: 'company.reputation', operation: 'add', value: -3 },
           { path: 'founder.reputation', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
         tone: 'satirical',
       },
@@ -507,7 +507,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Extend runway by reducing burn. Painful but prudent.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 10_000 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
         ],
       },
       {
@@ -544,7 +544,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         'New AI benchmark published. It proves that the model everyone was using is actually mid, and the model nobody was using is actually great. Time to re-evaluate your entire stack. Again.',
     },
     immediateEffects: [
-      { path: 'company.culture.aiFirst', operation: 'add', value: 1 },
+      { path: 'company.culture', operation: 'add', value: 1 },
     ],
     decisionOptions: [
       {
@@ -590,7 +590,7 @@ export const MARKET_EVENTS: GameEvent[] = [
     },
     immediateEffects: [
       { path: 'market.bubbleIndex', operation: 'add', value: 2 },
-      { path: 'company.culture.aiFirst', operation: 'add', value: 2 },
+      { path: 'company.culture', operation: 'add', value: 2 },
     ],
     decisionOptions: [
       {
@@ -600,7 +600,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: 5_000 },
           { path: 'product.techDebtTotal', operation: 'add', value: 4 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -653,7 +653,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Focus on what big tech does poorly. Vertical specificity.',
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -662,7 +662,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Match their features. Expensive and exhausting.',
         effects: [
           { path: 'product.techDebtTotal', operation: 'add', value: 5 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
         ],
       },
@@ -672,7 +672,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Maybe this is a sign to find a less contested space.',
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: -3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'founder.bizSkill', operation: 'add', value: 2 },
         ],
       },
@@ -790,7 +790,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Lock in a great deal on a much better office.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -5_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'company.reputation', operation: 'add', value: 3 },
         ],
       },
@@ -836,7 +836,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Stay competitive. Increase team comp by 15%.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -20_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 8 },
+          { path: 'team.morale', operation: 'add', value: 8 },
         ],
       },
       {
@@ -845,8 +845,8 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Better benefits, equity refreshes, remote flexibility.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -8_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -854,7 +854,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         label: 'Accept the Risk',
         description: 'Can\'t compete on comp. Hope culture is enough.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -3 },
         ],
       },
     ],
@@ -891,7 +891,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         description: 'Cut discretionary spending. Prepare for the worst.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 8_000 },
-          { path: 'team.avgMorale', operation: 'add', value: -4 },
+          { path: 'team.morale', operation: 'add', value: -4 },
         ],
       },
       {
@@ -901,7 +901,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -10_000 },
           { path: 'founder.reputation', operation: 'add', value: 3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {

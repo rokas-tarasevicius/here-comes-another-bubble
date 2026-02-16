@@ -16,12 +16,10 @@ const hasCodingAgent = (state: GameState): boolean =>
   state.team.aiAgents.some((a) => a.type === 'coding');
 
 const hasEmployees = (state: GameState): boolean =>
-  state.team.employees.length > 0;
+  state.team.teamSize > 0;
 
 const hasEngineers = (state: GameState): boolean =>
-  state.team.employees.some(
-    (e) => e.role === 'engineer' || e.role === 'senior-engineer',
-  );
+  state.team.teamSize >= 1;
 
 const hasCustomers = (state: GameState): boolean =>
   state.product.customers > 0;
@@ -85,7 +83,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'product.techDebtTotal', operation: 'add', value: 3 },
           { path: 'product.overallQuality', operation: 'add', value: 4 },
           { path: 'finances.cash', operation: 'add', value: -15000 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -126,7 +124,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: -50000 },
           { path: 'product.overallQuality', operation: 'add', value: 10 },
           { path: 'product.techDebtTotal', operation: 'add', value: 8 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'company.reputation', operation: 'add', value: 3 },
         ],
       },
@@ -147,8 +145,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'If it ain\'t broke, don\'t fix it. Save the money and focus on product.',
         effects: [
           { path: 'product.overallQuality', operation: 'add', value: -3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -3 },
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
+          { path: 'company.culture', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -3 },
         ],
       },
     ],
@@ -230,7 +228,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
     condition: (state: GameState): boolean =>
       hasAIAgents(state) &&
       hasEngineers(state) &&
-      state.team.employees.some((e) => e.aiSentiment < 0),
+      state.team.teamSize >= 2,
     descriptions: {
       default:
         'Your senior engineer refuses to use AI coding tools. "I didn\'t spend 4 years getting a CS degree to become a prompt engineer." Other engineers are watching your response.',
@@ -242,7 +240,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         'Senior engineer refuses AI tools. They\'re your best coder but also your slowest. During the standoff, the AI agent refactored their legacy module. It\'s cleaner. Nobody wants to tell them.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -5 },
+      { path: 'team.morale', operation: 'add', value: -5 },
     ],
     decisionOptions: [
       {
@@ -251,9 +249,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Let them work without AI. Diversity of approach has value. But the precedent...',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -8 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: -8 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -262,10 +260,10 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'AI tools are now required for all engineers. Efficient but authoritarian.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -10 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: -10 },
+          { path: 'company.culture', operation: 'add', value: 10 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -5 },
         ],
       },
       {
@@ -274,9 +272,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'AI tools encouraged but not required. Track productivity either way. Let the data decide.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 2 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 3 },
           { path: 'finances.cash', operation: 'add', value: -5000 },
         ],
       },
@@ -308,8 +306,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         'The AI wrote better code than your best human. Your engineer handled it gracefully in public and then spent two hours in the bathroom. The AI, in what can only be described as a power move, added a comment: "// Refactored for clarity."',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -8 },
-      { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+      { path: 'team.morale', operation: 'add', value: -8 },
+      { path: 'company.culture', operation: 'add', value: 5 },
     ],
     decisionOptions: [
       {
@@ -318,8 +316,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'This is what you\'re building toward. Publicly acknowledge the milestone.',
         effects: [
-          { path: 'company.culture.aiFirst', operation: 'add', value: 10 },
-          { path: 'team.avgMorale', operation: 'add', value: -8 },
+          { path: 'company.culture', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: -8 },
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'product.overallQuality', operation: 'add', value: 5 },
         ],
@@ -330,8 +328,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Quietly note the result. Emphasize that humans and AI have different strengths.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: -2 },
         ],
       },
       {
@@ -340,10 +338,10 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Shift humans to architecture and review. AI handles implementation. New paradigm.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 8 },
+          { path: 'team.morale', operation: 'add', value: -3 },
+          { path: 'company.culture', operation: 'add', value: 8 },
           { path: 'product.overallQuality', operation: 'add', value: 7 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -10000 },
         ],
       },
@@ -376,7 +374,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
     },
     immediateEffects: [
       { path: 'company.reputation', operation: 'add', value: -5 },
-      { path: 'team.avgMorale', operation: 'add', value: -3 },
+      { path: 'team.morale', operation: 'add', value: -3 },
     ],
     decisionOptions: [
       {
@@ -386,7 +384,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Address concerns directly. Commit to responsible AI deployment and workforce transition.',
         effects: [
           { path: 'company.reputation', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
           { path: 'finances.cash', operation: 'add', value: -10000 },
           { path: 'founder.reputation', operation: 'add', value: 5 },
         ],
@@ -398,7 +396,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Say nothing. The news cycle moves fast. This will blow over... probably.',
         effects: [
           { path: 'company.reputation', operation: 'add', value: -3 },
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
       },
       {
@@ -411,7 +409,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'founder.reputation', operation: 'add', value: 3 },
           { path: 'market.investorSentiment', operation: 'add', value: 3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -582,7 +580,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'product.customers', operation: 'add', value: 50 },
           { path: 'market.investorSentiment', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -5000 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -669,7 +667,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'product.techDebtTotal', operation: 'add', value: 12 },
           { path: 'product.overallQuality', operation: 'add', value: -8 },
           { path: 'company.reputation', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -5 },
         ],
       },
     ],
@@ -688,7 +686,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
     condition: (state: GameState): boolean =>
       hasAIAgents(state) &&
       state.finances.fundingHistory.length > 0 &&
-      state.company.culture.aiFirst > 40,
+      state.company.culture > 40,
     descriptions: {
       default:
         'Your lead investor wants you to establish a formal AI Ethics Board before the next funding round. It\'ll cost money and slow decisions, but refusal could cost you the round.',
@@ -711,7 +709,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'company.reputation', operation: 'add', value: 12 },
           { path: 'founder.reputation', operation: 'add', value: 8 },
           { path: 'market.investorSentiment', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: -3 },
+          { path: 'company.culture', operation: 'add', value: -3 },
         ],
       },
       {
@@ -733,7 +731,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         effects: [
           { path: 'market.investorSentiment', operation: 'add', value: -10 },
           { path: 'company.reputation', operation: 'add', value: -5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -775,9 +773,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Restrict all autonomous actions. Every AI output must be human-approved.',
         effects: [
           { path: 'product.overallQuality', operation: 'add', value: -3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -8 },
+          { path: 'company.culture', operation: 'add', value: -8 },
           { path: 'company.reputation', operation: 'add', value: 3 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
         ],
       },
       {
@@ -787,10 +785,10 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'The AI showed good judgment. Give it more autonomy with guardrails. Let it cook.',
         effects: [
           { path: 'product.overallQuality', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 10 },
           { path: 'product.customers', operation: 'add', value: 10 },
           { path: 'company.reputation', operation: 'add', value: -3 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
         ],
       },
       {
@@ -801,7 +799,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -8000 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
           { path: 'company.reputation', operation: 'add', value: 3 },
         ],
       },
@@ -845,8 +843,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'finances.weeklyRevenue', operation: 'multiply', value: 1.15 },
           { path: 'finances.cash', operation: 'add', value: -15000 },
           { path: 'product.customers', operation: 'add', value: 20 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -8 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: 5 },
         ],
       },
       {
@@ -866,7 +864,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'This is a fad. The future is AI. Don\'t let nostalgia dictate product strategy.',
         effects: [
-          { path: 'company.culture.aiFirst', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'product.customers', operation: 'add', value: -10 },
           { path: 'company.reputation', operation: 'add', value: -3 },
         ],
@@ -886,8 +884,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
     weight: 3,
     condition: (state: GameState): boolean =>
       hasAIAgents(state) &&
-      state.team.employees.length >= 5 &&
-      state.team.employees.filter((e) => e.aiSentiment < 0).length >= 2,
+      state.team.teamSize >= 5 &&
+      state.team.teamSize >= 3,
     descriptions: {
       default:
         'Your AI-skeptic employees have organized. They\'re presenting a formal "AI Usage Agreement" — rules about when and how AI tools can be used. Refusal could mean walkouts.',
@@ -899,8 +897,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         'The team organized. They want an AI Usage Agreement. The demands are reasonable, mostly. Except demand #7: "The AI shall not attend standup." It currently gives the best status updates. You keep this observation to yourself.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -5 },
-      { path: 'company.culture.collaboration', operation: 'add', value: -5 },
+      { path: 'team.morale', operation: 'add', value: -5 },
+      { path: 'company.culture', operation: 'add', value: -5 },
     ],
     decisionOptions: [
       {
@@ -909,10 +907,10 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Sign the AI Usage Agreement. Your team feels heard. Your AI integration slows down.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 12 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -12 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 8 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 12 },
+          { path: 'company.culture', operation: 'add', value: -12 },
+          { path: 'company.culture', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -921,9 +919,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Accept the spirit but push back on specifics. Find middle ground.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -5 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -5000 },
         ],
       },
@@ -933,9 +931,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'This is a startup, not a union shop. AI is the future. Get on board or get out.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -15 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 10 },
-          { path: 'company.culture.collaboration', operation: 'add', value: -10 },
+          { path: 'team.morale', operation: 'add', value: -15 },
+          { path: 'company.culture', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: -10 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
         ],
       },
@@ -1114,7 +1112,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'finances.weeklyBurn', operation: 'multiply', value: 0.8 },
           { path: 'product.techDebtTotal', operation: 'add', value: 10 },
           { path: 'product.overallQuality', operation: 'add', value: -3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -1155,7 +1153,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
     condition: (state: GameState): boolean =>
       hasEngineers(state) &&
       state.market.talentMarketHeat > 50 &&
-      state.team.employees.some((e) => e.skill > 70),
+      state.team.teamSize >= 3,
     descriptions: {
       default:
         'Google is offering your best AI engineer 3x their current salary. They haven\'t decided yet. The "AI talent war" just became personal.',
@@ -1167,7 +1165,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         'Your best engineer got a Google offer. 3x salary. You can\'t match it. You can offer equity, mission, and the fact that they\'d actually ship products here instead of working on a project that gets killed in 6 months. That argument is getting harder to make.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -5 },
+      { path: 'team.morale', operation: 'add', value: -5 },
     ],
     decisionOptions: [
       {
@@ -1178,7 +1176,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -20000 },
           { path: 'finances.founderEquity', operation: 'add', value: -0.02 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
         ],
       },
       {
@@ -1187,7 +1185,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Wish them well. You can\'t compete with FAANG salaries and you shouldn\'t try.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -8 },
           { path: 'product.overallQuality', operation: 'add', value: -8 },
           { path: 'company.reputation', operation: 'add', value: 2 },
         ],
@@ -1200,9 +1198,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -15000 },
           { path: 'finances.weeklyBurn', operation: 'multiply', value: 1.05 },
-          { path: 'team.avgMorale', operation: 'add', value: 8 },
+          { path: 'team.morale', operation: 'add', value: 8 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -1308,7 +1306,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'This is noise. You\'re building real value. Keep your head down and ship product.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
           { path: 'product.pmfScore', operation: 'add', value: 3 },
           { path: 'company.reputation', operation: 'add', value: 3 },
         ],
@@ -1320,9 +1318,9 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'If the bubble pops, survivors will be those with runway. Cut costs now while you can.',
         effects: [
           { path: 'finances.weeklyBurn', operation: 'multiply', value: 0.75 },
-          { path: 'team.avgMorale', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -8 },
           { path: 'product.overallQuality', operation: 'add', value: -5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -5 },
         ],
       },
       {
@@ -1345,7 +1343,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Rebrand from "AI-first" to "results-first." Show revenue, not AI benchmarks. Survive the correction.',
         effects: [
           { path: 'company.reputation', operation: 'add', value: 8 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: -10 },
+          { path: 'company.culture', operation: 'add', value: -10 },
           { path: 'product.pmfScore', operation: 'add', value: 5 },
           { path: 'market.investorSentiment', operation: 'add', value: 3 },
           { path: 'finances.cash', operation: 'add', value: -8000 },

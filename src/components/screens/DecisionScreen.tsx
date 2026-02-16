@@ -8,12 +8,6 @@ function describeDecision(decision: PlayerDecision): string {
   switch (decision.type) {
     case 'respond-to-event':
       return `Event response: decision ${decision.decisionId} \u2192 option ${decision.optionId}`;
-    case 'hire':
-      return `Hire candidate ${decision.candidateId}`;
-    case 'fire':
-      return `Fire employee ${decision.employeeId}`;
-    case 'assign-team':
-      return `Reassign ${decision.assignments.length} team member${decision.assignments.length !== 1 ? 's' : ''}`;
     case 'start-feature':
       return `Start feature: ${decision.name}`;
     case 'set-pricing':
@@ -26,8 +20,6 @@ function describeDecision(decision: PlayerDecision): string {
       return `Seek funding: ${decision.targetStage}`;
     case 'change-segment':
       return `Pivot to ${decision.newSegment}`;
-    case 'post-job':
-      return `Post job listing: ${decision.role}`;
     default:
       return 'Unknown action';
   }
@@ -36,32 +28,24 @@ function describeDecision(decision: PlayerDecision): string {
 function decisionTypeLabel(type: string): string {
   switch (type) {
     case 'respond-to-event': return 'Event';
-    case 'hire': return 'Hiring';
-    case 'fire': return 'Firing';
-    case 'assign-team': return 'Team';
     case 'start-feature': return 'Product';
     case 'set-pricing': return 'Pricing';
     case 'hire-ai-agent': return 'AI';
     case 'fire-ai-agent': return 'AI';
     case 'seek-funding': return 'Funding';
     case 'change-segment': return 'Strategy';
-    case 'post-job': return 'Hiring';
     default: return 'Action';
   }
 }
 
 const TYPE_BADGE_CLASSES: Record<string, string> = {
   'respond-to-event': 'retro-badge retro-badge-orange',
-  hire: 'retro-badge retro-badge-green',
-  fire: 'retro-badge retro-badge-red',
-  'assign-team': 'retro-badge retro-badge-blue',
   'start-feature': 'retro-badge retro-badge-blue',
   'set-pricing': 'retro-badge retro-badge-green',
   'hire-ai-agent': 'retro-badge retro-badge-purple',
   'fire-ai-agent': 'retro-badge retro-badge-purple',
   'seek-funding': 'retro-badge retro-badge-orange',
   'change-segment': 'retro-badge retro-badge-blue',
-  'post-job': 'retro-badge retro-badge-green',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────

@@ -25,7 +25,7 @@ export function MarketScreen() {
   const playerRow = {
     name: company.name,
     funding: finances.fundingHistory.reduce((sum, r) => sum + r.amount, 0),
-    teamSize: team.employees.length + team.aiAgents.length,
+    teamSize: team.teamSize + team.aiAgents.length,
     productQuality: product.overallQuality,
     marketShare: segmentData.size > 0
       ? product.customers / segmentData.size

@@ -42,7 +42,7 @@ export function FinanceScreen() {
   const recentBurn = weekHistory.slice(-8).map((w) => w.burn);
 
   // P&L calculations
-  const totalSalaries = team.employees.reduce((sum, e) => sum + e.salary, 0);
+  const totalSalaries = team.teamSize * team.avgSalary;
   const totalAICosts = team.aiAgents.reduce((sum, a) => sum + a.costPerWeek, 0);
   const overhead = Math.round(finances.monthlyExpenses / 4 - totalSalaries - totalAICosts);
   const overheadEstimate = Math.max(0, overhead);
@@ -141,7 +141,7 @@ export function FinanceScreen() {
             <div className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-[--color-retro-text-muted]">
-                  Salaries ({team.employees.length} employees)
+                  Salaries ({team.teamSize} team members)
                 </span>
                 <span className="font-[--font-retro-mono] text-[--color-retro-red]">
                   {formatCurrency(totalSalaries)}

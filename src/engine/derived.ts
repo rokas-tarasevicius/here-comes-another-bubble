@@ -15,29 +15,23 @@ export function calculateRunway(state: GameState): number {
  * Calculate total weekly burn: salaries + AI costs + fixed overhead.
  */
 export function calculateWeeklyBurn(state: GameState): number {
-  const salaries = state.team.employees.reduce(
-    (sum, emp) => sum + emp.salary,
-    0,
-  );
+  const salaries = state.team.teamSize * state.team.avgSalary;
   const aiCosts = state.team.aiAgents.reduce(
     (sum, agent) => sum + agent.costPerWeek,
     0,
   );
   // Fixed costs: office/infra — roughly $500/week base + $50 per person
-  const fixedCosts = 500 + state.team.employees.length * 50;
+  const fixedCosts = 500 + state.team.teamSize * 50;
   return salaries + aiCosts + fixedCosts;
 }
 
 /**
  * Calculate team velocity — a measure of how much work gets done per week.
- * Human contribution: skill * morale / 100
+ * Human contribution: teamSize * morale/100 * 60 (base productivity per person)
  * AI contribution: capability * reliability / 100
  */
 export function calculateTeamVelocity(state: GameState): number {
-  const humanVelocity = state.team.employees.reduce(
-    (sum, emp) => sum + (emp.skill * emp.morale) / 100,
-    0,
-  );
+  const humanVelocity = state.team.teamSize * (state.team.morale / 100) * 60;
   const aiVelocity = state.team.aiAgents.reduce(
     (sum, agent) => sum + (agent.capability * agent.reliability) / 100,
     0,
@@ -72,15 +66,10 @@ export function calculatePMF(state: GameState): number {
 }
 
 /**
- * Calculate average morale across all employees.
- * Returns 100 if there are no employees.
+ * Calculate average morale. With simplified types, just return team.morale.
  */
 export function calculateAvgMorale(state: GameState): number {
-  const employees = state.team.employees;
-  if (employees.length === 0) return 100;
-
-  const total = employees.reduce((sum, emp) => sum + emp.morale, 0);
-  return Math.round(total / employees.length);
+  return state.team.morale;
 }
 
 /**

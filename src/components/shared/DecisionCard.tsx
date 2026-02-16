@@ -33,10 +33,7 @@ const EFFECT_LABELS: Record<string, string> = {
   'bubbleIndex': 'Bubble Index',
   'investorSentiment': 'Investor Sentiment',
   'talentMarketHeat': 'Talent Market',
-  'workLifeBalance': 'Work-Life Balance',
-  'innovation': 'Innovation',
-  'collaboration': 'Collaboration',
-  'aiFirst': 'AI-First Culture',
+  'culture': 'Culture',
   'valuation': 'Valuation',
   'pricePerUnit': 'Price/Unit',
 };

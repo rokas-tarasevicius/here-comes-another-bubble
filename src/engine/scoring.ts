@@ -15,24 +15,16 @@ export interface GameScore {
 
 export function calculateScore(state: GameState): GameScore {
   // Valuation score: log scale, max ~40 points
-  // $0 = 0, $1M = 10, $10M = 20, $100M = 30, $1B = 40
   const valuation = Math.min(40, Math.log10(Math.max(1, state.company.valuation)) * (40 / 9));
 
   // Revenue score: max ~20 points
-  // Based on weekly revenue * 52 for ARR
   const arr = state.finances.weeklyRevenue * 52;
   const revenue = Math.min(20, Math.log10(Math.max(1, arr)) * (20 / 8));
 
   // Team score: max ~15 points
-  // Team size * avg morale / 100
-  const employees = state.team.employees;
-  const avgMorale = employees.length > 0
-    ? employees.reduce((sum, e) => sum + e.morale, 0) / employees.length
-    : 0;
-  const team = Math.min(15, (employees.length * avgMorale / 100) * 0.5);
+  const team = Math.min(15, (state.team.teamSize * state.team.morale / 100) * 0.5);
 
   // Product score: max ~15 points
-  // Shipped features * avg quality
   const shipped = state.product.features.filter(f => f.status === 'shipped');
   const avgQuality = shipped.length > 0
     ? shipped.reduce((sum, f) => sum + f.quality, 0) / shipped.length
@@ -40,7 +32,6 @@ export function calculateScore(state: GameState): GameScore {
   const product = Math.min(15, shipped.length * (avgQuality / 100) * 3);
 
   // Survival score: max ~10 points
-  // 0.1 point per week survived, max at 100 weeks
   const survival = Math.min(10, state.meta.week * 0.1);
 
   // Difficulty multiplier

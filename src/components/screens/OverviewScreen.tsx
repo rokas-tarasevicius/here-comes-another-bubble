@@ -105,11 +105,11 @@ export function OverviewScreen() {
   const cashHistory = weekHistory.map((w) => w.cash);
   const revenueHistory = weekHistory.map((w) => w.revenue);
   const teamHistory = weekHistory.map((w) => w.teamSize);
-  const pmfHistory = weekHistory.map((w) => w.pmfScore);
+  const customerHistory = weekHistory.map((w) => w.customers);
 
   // ── Derived values ──
   const runway = computeRunway(finances.cash, finances.weeklyBurn);
-  const humanCount = team.employees.length;
+  const humanCount = team.teamSize;
   const aiCount = team.aiAgents.length;
   const totalTeam = humanCount + aiCount;
   const revenueTrend = getTrend(revenueHistory);
@@ -152,15 +152,15 @@ export function OverviewScreen() {
           sparklineData={teamHistory}
         />
 
-        {/* PMF Score */}
+        {/* Users */}
         <KPICard
-          title="PMF Score"
-          value={formatPercent(product.pmfScore)}
-          subtitle={`${formatNumber(product.customers)} customers \u00B7 ${formatPercent(product.churnRate * 100)} churn`}
-          trend={getTrend(pmfHistory)}
-          trendValue={trendPercent(pmfHistory)}
-          color={pmfColor(product.pmfScore)}
-          sparklineData={pmfHistory}
+          title="Users"
+          value={formatNumber(product.customers)}
+          subtitle={`PMF: ${formatPercent(product.pmfScore)} \u00B7 ${formatPercent(product.churnRate * 100)} churn`}
+          trend={getTrend(customerHistory)}
+          trendValue={trendPercent(customerHistory)}
+          color={product.customers > 0 ? 'emerald' : 'amber'}
+          sparklineData={customerHistory}
         />
       </div>
 
@@ -228,7 +228,7 @@ export function OverviewScreen() {
               </div>
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-[--color-retro-text-light]">Team Morale</span>
-                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text-muted]">{Math.round(team.avgMorale)}/100</span>
+                <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text-muted]">{Math.round(team.morale)}/100</span>
               </div>
             </div>
           </div>
@@ -250,9 +250,9 @@ export function OverviewScreen() {
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Team Morale</span>
                 <span className={`text-sm font-[--font-retro-mono] ${
-                  team.avgMorale >= 60 ? 'text-[--color-retro-green]' : team.avgMorale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+                  team.morale >= 60 ? 'text-[--color-retro-green]' : team.morale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
                 }`}>
-                  {Math.round(team.avgMorale)}/100
+                  {Math.round(team.morale)}/100
                 </span>
               </div>
 
@@ -305,7 +305,7 @@ export function OverviewScreen() {
                   <th>Week</th>
                   <th className="text-right">Cash</th>
                   <th className="text-right">Revenue</th>
-                  <th className="text-right">Customers</th>
+                  <th className="text-right">Users</th>
                   <th className="text-right">Team</th>
                   <th className="text-right">PMF</th>
                 </tr>

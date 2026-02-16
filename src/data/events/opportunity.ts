@@ -55,7 +55,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'founder.reputation', operation: 'add', value: 10 },
           { path: 'market.investorSentiment', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: 10 },
           { path: 'company.reputation', operation: 'add', value: 5 },
         ],
       },
@@ -95,7 +95,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: 250000 },
           { path: 'product.techDebtTotal', operation: 'add', value: 12 },
           { path: 'product.pmfScore', operation: 'add', value: -5 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
         ],
       },
       {
@@ -115,7 +115,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         description:
           'Politely pass. You are not ready for enterprise demands and it would distract the team.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
           { path: 'product.pmfScore', operation: 'add', value: 3 },
         ],
       },
@@ -167,8 +167,8 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           'You do not need the YC brand. Keep your equity and build on your own terms.',
         effects: [
           { path: 'founder.reputation', operation: 'add', value: 3 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
     ],
@@ -320,7 +320,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: 500000 },
           { path: 'company.reputation', operation: 'add', value: 5 },
-          { path: 'team.avgMorale', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -8 },
           { path: 'product.customers', operation: 'add', value: -50 },
         ],
       },
@@ -330,10 +330,10 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         description:
           'Publicly decline the contract. Your team will love you, some customers will too, but you leave money on the table.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: 10 },
           { path: 'company.reputation', operation: 'add', value: 8 },
           { path: 'founder.reputation', operation: 'add', value: 5 },
-          { path: 'company.culture.innovation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -344,7 +344,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: 200000 },
           { path: 'company.reputation', operation: 'add', value: 3 },
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
       },
     ],
@@ -382,9 +382,9 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -150000 },
           { path: 'product.overallQuality', operation: 'add', value: 10 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 10 },
           { path: 'company.reputation', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 5 },
         ],
       },
       {
@@ -396,7 +396,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: -20000 },
           { path: 'product.overallQuality', operation: 'add', value: 4 },
           { path: 'company.reputation', operation: 'add', value: 5 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -405,7 +405,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         description:
           'The budget cannot support it. Better to wait for a time when you can afford top talent.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
       },
     ],
@@ -453,7 +453,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'product.customers', operation: 'add', value: 30 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
         ],
       },
       {
@@ -560,7 +560,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -80000 },
           { path: 'product.overallQuality', operation: 'add', value: 8 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
           { path: 'company.reputation', operation: 'add', value: -2 },
         ],
       },
@@ -662,7 +662,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     weight: 2,
     condition: (state: GameState) =>
       state.product.overallQuality > 40 &&
-      state.company.culture.innovation > 30,
+      state.company.culture > 30,
     descriptions: {
       default:
         'Developers are asking to build on top of your platform. Open-sourcing your API layer could create an ecosystem, but it changes your business model.',
@@ -673,7 +673,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     },
     immediateEffects: [
       { path: 'company.reputation', operation: 'add', value: 5 },
-      { path: 'company.culture.innovation', operation: 'add', value: 5 },
+      { path: 'company.culture', operation: 'add', value: 5 },
     ],
     decisionOptions: [
       {
@@ -684,7 +684,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'company.reputation', operation: 'add', value: 12 },
           { path: 'product.customers', operation: 'multiply', value: 1.3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 10 },
           { path: 'finances.cash', operation: 'add', value: -20000 },
         ],
       },
@@ -707,7 +707,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           'Protect your IP and focus on your own product. The community will be disappointed.',
         effects: [
           { path: 'company.reputation', operation: 'add', value: -3 },
-          { path: 'company.culture.innovation', operation: 'add', value: -3 },
+          { path: 'company.culture', operation: 'add', value: -3 },
         ],
       },
     ],
@@ -767,7 +767,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           'Too early to go international. Focus on winning your home market first.',
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: 3 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 2 },
         ],
       },
     ],

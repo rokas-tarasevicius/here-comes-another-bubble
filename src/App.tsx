@@ -10,6 +10,7 @@ import { MarketScreen } from './components/screens/MarketScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
+import { WeekRecap } from './components/shared/WeekRecap.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
 
@@ -39,6 +40,8 @@ function App() {
   const saveGame = useGameStore((s) => s.saveGame);
   const isSimulating = useGameStore((s) => s.isSimulating);
   const setScreen = useGameStore((s) => s.setScreen);
+  const showWeekRecap = useGameStore((s) => s.showWeekRecap);
+  const dismissWeekRecap = useGameStore((s) => s.dismissWeekRecap);
 
   // Auto-save after each week advance
   const originalEndWeek = useCallback(() => {
@@ -58,9 +61,16 @@ function App() {
         return;
       }
 
-      // N = Next Week (only during gameplay)
+      // Enter or Escape dismisses week recap if showing
+      if (showWeekRecap && (e.key === 'Enter' || e.key === 'Escape')) {
+        e.preventDefault();
+        dismissWeekRecap();
+        return;
+      }
+
+      // N = Next Week (only during gameplay, not while recap is showing)
       if (e.key === 'n' || e.key === 'N') {
-        if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon && !isSimulating) {
+        if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon && !isSimulating && !showWeekRecap) {
           e.preventDefault();
           originalEndWeek();
         }
@@ -85,7 +95,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, isSimulating, originalEndWeek, setScreen]);
+  }, [gameState, isSimulating, originalEndWeek, setScreen, showWeekRecap, dismissWeekRecap]);
 
   // Check for game over or game won redirect
   useEffect(() => {
@@ -117,9 +127,12 @@ function App() {
 
   // All gameplay screens wrapped in AppShell
   return (
-    <AppShell>
-      <GameplayScreen />
-    </AppShell>
+    <>
+      <AppShell>
+        <GameplayScreen />
+      </AppShell>
+      <WeekRecap />
+    </>
   );
 }
 

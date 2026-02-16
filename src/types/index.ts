@@ -3,7 +3,6 @@ export type {
   Difficulty,
   FounderArchetype,
   CompanyStage,
-  EmployeeRole,
   AIAgentType,
   FeatureStatus,
   PricingModel,
@@ -13,9 +12,7 @@ export type {
   GameMeta,
   FounderProfile,
   CompanyState,
-  Employee,
   AIAgent,
-  HiringCandidate,
   TeamState,
   Feature,
   ProductState,
@@ -36,9 +33,6 @@ export type { GameEvent } from './events.ts';
 
 export type {
   PlayerDecision,
-  HireDecision,
-  FireDecision,
-  AssignTeamDecision,
   StartFeatureDecision,
   SetPricingDecision,
   RespondToEventDecision,
@@ -46,5 +40,4 @@ export type {
   FireAIAgentDecision,
   SeekFundingDecision,
   ChangeSegmentDecision,
-  PostJobDecision,
 } from './decisions.ts';

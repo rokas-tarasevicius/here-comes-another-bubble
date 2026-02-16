@@ -61,7 +61,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 4,
     weight: 7,
     condition: (state) =>
-      state.team.employees.length >= 1 &&
+      state.team.teamSize >= 1 &&
       state.product.features.some((f) => f.status === 'in-progress'),
     descriptions: {
       default: 'Your team completed and shipped a new feature!',
@@ -73,7 +73,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'The feature shipped! Only two weeks behind schedule, which in startup time is basically early.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: 5 },
+      { path: 'team.morale', operation: 'add', value: 5 },
       { path: 'product.overallQuality', operation: 'add', value: 2 },
       { path: 'product.pmfScore', operation: 'add', value: 1 },
     ],
@@ -144,7 +144,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 5,
     weight: 5,
-    condition: (state) => state.team.employees.length >= 3,
+    condition: (state) => state.team.teamSize >= 3,
     descriptions: {
       default: 'Engineers got into a heated debate during standup about the architecture.',
       realistic:
@@ -155,7 +155,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Architecture debate at standup. Pros: passionate team. Cons: nothing else got discussed. The Jira board weeps.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -3 },
+      { path: 'team.morale', operation: 'add', value: -3 },
     ],
     decisionOptions: [
       {
@@ -163,8 +163,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Mediate the Discussion',
         description: 'Spend time facilitating a resolution. Morale recovers.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -172,7 +172,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Pick a Side',
         description: 'Make a unilateral call. Fast but someone will be unhappy.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
           { path: 'product.techDebtTotal', operation: 'add', value: -1 },
         ],
       },
@@ -181,7 +181,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Let Them Fight',
         description: 'Darwinism will sort it out. Probably.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -5 },
           { path: 'product.techDebtTotal', operation: 'add', value: 3 },
         ],
         tone: 'satirical',
@@ -252,7 +252,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 4,
     cooldownWeeks: 24,
     weight: 3,
-    condition: (state) => state.team.employees.length >= 2,
+    condition: (state) => state.team.teamSize >= 2,
     descriptions: {
       default: 'Your office lease is up for renewal. The landlord wants 20% more.',
       realistic:
@@ -270,7 +270,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Stability has value. Pay the increase.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -12_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 2 },
         ],
       },
       {
@@ -288,8 +288,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Cancel the lease. Save money but culture takes a hit.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 10_000 },
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
-          { path: 'company.culture.collaboration', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -8 },
         ],
       },
     ],
@@ -305,7 +305,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 4,
     weight: 7,
-    condition: (state) => state.team.employees.length >= 1,
+    condition: (state) => state.team.teamSize >= 1,
     descriptions: {
       default: 'One of your team members is celebrating their birthday today!',
       realistic:
@@ -316,7 +316,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Birthday in the office! Someone bought a cake. Someone else pointed out it\'s not vegan, gluten-free, or sugar-free. Good times.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: 2 },
+      { path: 'team.morale', operation: 'add', value: 2 },
     ],
     decisionOptions: [],
     decisionDeadlineWeeks: 0,
@@ -331,8 +331,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 5,
     weight: 5,
-    condition: (state) =>
-      state.team.employees.filter((e) => e.role === 'engineer' || e.role === 'senior-engineer').length >= 2,
+    condition: (state) => state.team.teamSize >= 2,
     descriptions: {
       default: 'A code review turned into a heated debate about best practices.',
       realistic:
@@ -343,7 +342,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Code review conflict: one dev wants clean architecture, the other wants to ship. Tale as old as time. The PR comments section is now longer than the code itself.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -2 },
+      { path: 'team.morale', operation: 'add', value: -2 },
     ],
     decisionOptions: [
       {
@@ -353,7 +352,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         effects: [
           { path: 'product.techDebtTotal', operation: 'add', value: -2 },
           { path: 'product.overallQuality', operation: 'add', value: 2 },
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
       },
       {
@@ -362,7 +361,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Good enough. Move on.',
         effects: [
           { path: 'product.techDebtTotal', operation: 'add', value: 3 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 2 },
         ],
       },
       {
@@ -370,8 +369,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Have Them Pair Program',
         description: 'Force collaboration. Takes time but builds alignment.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
           { path: 'product.overallQuality', operation: 'add', value: 1 },
         ],
       },
@@ -446,7 +445,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 12,
     weight: 4,
-    condition: (state) => state.team.employees.length >= 2,
+    condition: (state) => state.team.teamSize >= 2,
     descriptions: {
       default: 'The office coffee machine is broken.',
       realistic:
@@ -457,7 +456,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Coffee machine is dead. Within 30 minutes, three people offered to "disrupt" the coffee space with an AI-powered solution. Productivity is at zero.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -3 },
+      { path: 'team.morale', operation: 'add', value: -3 },
     ],
     decisionOptions: [
       {
@@ -466,7 +465,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Spring for the fancy espresso machine. $800.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -800 },
-          { path: 'team.avgMorale', operation: 'add', value: 6 },
+          { path: 'team.morale', operation: 'add', value: 6 },
         ],
       },
       {
@@ -475,7 +474,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Basic drip coffee. $50. It works.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -50 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 2 },
         ],
       },
       {
@@ -483,7 +482,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'No Replacement',
         description: 'There\'s a Starbucks down the street. They\'ll survive.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -4 },
+          { path: 'team.morale', operation: 'add', value: -4 },
         ],
         tone: 'satirical',
       },
@@ -501,7 +500,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 8,
     weight: 4,
     condition: (state) =>
-      state.team.employees.length >= 2 && state.finances.cash > 10_000,
+      state.team.teamSize >= 2 && state.finances.cash > 10_000,
     descriptions: {
       default: 'A CS student applied for an internship at your startup.',
       realistic:
@@ -519,8 +518,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Cheap labor, $1,200/week. Will need mentoring time.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -4_800 },
-          { path: 'team.avgMorale', operation: 'add', value: 2 },
-          { path: 'company.culture.innovation', operation: 'add', value: 1 },
+          { path: 'team.morale', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 1 },
         ],
       },
       {
@@ -542,7 +541,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 3,
     weight: 6,
-    condition: (state) => state.team.employees.length >= 2,
+    condition: (state) => state.team.teamSize >= 2,
     descriptions: {
       default: 'The team is suggesting a group lunch outing.',
       realistic:
@@ -564,8 +563,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
             operation: 'add',
             value: -500,
           },
-          { path: 'team.avgMorale', operation: 'add', value: 5 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -574,7 +573,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Crowd-pleaser on a budget. $15 per person.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -150 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
         ],
       },
       {
@@ -582,7 +581,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Skip It',
         description: 'We have deadlines. Lunch is for closers.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
         tone: 'satirical',
       },
@@ -600,7 +599,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 10,
     weight: 3,
     condition: (state) =>
-      state.team.employees.some((e) => e.role === 'engineer' || e.role === 'senior-engineer') &&
+      state.team.teamSize >= 1 &&
       state.product.overallQuality > 30,
     descriptions: {
       default: 'One of your open source libraries is getting attention on GitHub.',
@@ -629,7 +628,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 6,
     weight: 5,
-    condition: (state) => state.team.employees.length >= 4,
+    condition: (state) => state.team.teamSize >= 4,
     descriptions: {
       default: 'Drama erupted in the #random Slack channel.',
       realistic:
@@ -640,7 +639,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Slack drama again. Started with "should we use AI for code reviews?" and ended with someone questioning the meaning of work itself. The thread has 200+ messages. Nobody got any work done.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -2 },
+      { path: 'team.morale', operation: 'add', value: -2 },
     ],
     decisionOptions: [
       {
@@ -648,8 +647,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Address It Thoughtfully',
         description: 'Have an all-hands to discuss the underlying concerns.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 4 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 4 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -657,8 +656,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Lock the Channel',
         description: 'Shut it down. Focus on work.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -3 },
+          { path: 'company.culture', operation: 'add', value: -2 },
         ],
       },
     ],
@@ -674,7 +673,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 3,
     cooldownWeeks: 12,
     weight: 3,
-    condition: (state) => state.team.employees.length >= 1,
+    condition: (state) => state.team.teamSize >= 1,
     descriptions: {
       default: 'An employee requested a standing desk for ergonomic reasons.',
       realistic:
@@ -692,8 +691,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Buy the standing desk. $600. Happy employee.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -600 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 2 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -701,7 +700,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Deny It',
         description: 'Budget is tight. Not now.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -2 },
+          { path: 'team.morale', operation: 'add', value: -2 },
         ],
       },
     ],
@@ -718,7 +717,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 4,
     weight: 5,
     condition: (state) =>
-      state.team.employees.length >= 2 &&
+      state.team.teamSize >= 2 &&
       state.product.features.some((f) => f.status === 'in-progress'),
     descriptions: {
       default: 'The team pulled a late night to ship an important feature.',
@@ -732,8 +731,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     immediateEffects: [
       { path: 'product.overallQuality', operation: 'add', value: 3 },
       { path: 'product.pmfScore', operation: 'add', value: 2 },
-      { path: 'team.avgMorale', operation: 'add', value: -4 },
-      { path: 'company.culture.workLifeBalance', operation: 'add', value: -3 },
+      { path: 'team.morale', operation: 'add', value: -4 },
+      { path: 'company.culture', operation: 'add', value: -3 },
     ],
     decisionOptions: [
       {
@@ -741,8 +740,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Give Team a Day Off',
         description: 'They earned it. Let them recover.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 8 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: 4 },
+          { path: 'team.morale', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 4 },
         ],
       },
       {
@@ -750,8 +749,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Back to Work Tomorrow',
         description: 'Deadlines don\'t care about your sleep schedule.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -5 },
-          { path: 'company.culture.workLifeBalance', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -3 },
         ],
       },
     ],
@@ -849,7 +848,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 4,
     weight: 5,
     condition: (state) =>
-      state.finances.cash > 30_000 && state.team.employees.length >= 1,
+      state.finances.cash > 30_000 && state.team.teamSize >= 1,
     descriptions: {
       default: 'You\'re interviewing a promising engineering candidate today.',
       realistic:
@@ -898,7 +897,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 12,
     weight: 4,
-    condition: (state) => state.team.employees.length >= 3,
+    condition: (state) => state.team.teamSize >= 3,
     descriptions: {
       default: 'It\'s time for quarterly performance reviews. Employees expect feedback and raises.',
       realistic:
@@ -909,7 +908,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         'Review season. Everyone wants a raise. Your top performer wants a title change. Your underperformer wants "more runway." Your budget wants everyone to calm down.',
     },
     immediateEffects: [
-      { path: 'team.avgMorale', operation: 'add', value: -3 },
+      { path: 'team.morale', operation: 'add', value: -3 },
     ],
     decisionOptions: [
       {
@@ -918,7 +917,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Reward the team well. Retention and morale up.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -15_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 10 },
+          { path: 'team.morale', operation: 'add', value: 10 },
           { path: 'company.reputation', operation: 'add', value: 2 },
         ],
       },
@@ -928,7 +927,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Cost-of-living adjustment. Reasonable.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -5_000 },
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 3 },
         ],
       },
       {
@@ -936,7 +935,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'No Raises This Quarter',
         description: 'Runway is more important. Explain the situation.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -8 },
           { path: 'company.reputation', operation: 'add', value: -2 },
         ],
       },
@@ -945,7 +944,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Offer Equity Instead',
         description: 'Stock options instead of cash. Startup classic.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 1 },
+          { path: 'team.morale', operation: 'add', value: 1 },
           { path: 'finances.founderEquity', operation: 'add', value: -0.02 },
         ],
         tone: 'satirical',
@@ -963,7 +962,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 12,
     weight: 4,
-    condition: (state) => state.team.employees.length >= 2,
+    condition: (state) => state.team.teamSize >= 2,
     descriptions: {
       default: 'Time for quarterly planning. The team needs strategic alignment.',
       realistic:
@@ -982,7 +981,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: 3 },
           { path: 'product.techDebtTotal', operation: 'add', value: 3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -1018,7 +1017,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 4,
     weight: 5,
-    condition: (state) => state.team.employees.length >= 3,
+    condition: (state) => state.team.teamSize >= 3,
     descriptions: {
       default: 'The team wants to organize a Friday happy hour.',
       realistic:
@@ -1036,8 +1035,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Open tab. $60 per person. Good times.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -600 },
-          { path: 'team.avgMorale', operation: 'add', value: 7 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 3 },
+          { path: 'team.morale', operation: 'add', value: 7 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
@@ -1045,8 +1044,8 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Casual BYOB in the Office',
         description: 'Low-key. Someone brings a six-pack.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: 3 },
-          { path: 'company.culture.collaboration', operation: 'add', value: 1 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 1 },
         ],
       },
       {
@@ -1054,7 +1053,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Not This Week',
         description: 'Too much going on. Rain check.',
         effects: [
-          { path: 'team.avgMorale', operation: 'add', value: -1 },
+          { path: 'team.morale', operation: 'add', value: -1 },
         ],
       },
     ],
@@ -1071,7 +1070,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     cooldownWeeks: 3,
     weight: 6,
     condition: (state) =>
-      state.team.employees.some((e) => e.role === 'engineer' || e.role === 'senior-engineer' || e.role === 'devops'),
+      state.team.teamSize >= 1,
     descriptions: {
       default: 'The CI/CD pipeline is broken. No one can deploy.',
       realistic:
@@ -1083,7 +1082,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     },
     immediateEffects: [
       { path: 'product.techDebtTotal', operation: 'add', value: 2 },
-      { path: 'team.avgMorale', operation: 'add', value: -2 },
+      { path: 'team.morale', operation: 'add', value: -2 },
     ],
     decisionOptions: [
       {
@@ -1101,7 +1100,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Band-aid fix. Gets deploys working but doesn\'t address root cause.',
         effects: [
           { path: 'product.techDebtTotal', operation: 'add', value: 2 },
-          { path: 'team.avgMorale', operation: 'add', value: 1 },
+          { path: 'team.morale', operation: 'add', value: 1 },
         ],
       },
     ],
@@ -1146,7 +1145,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Fast and cheap. Quality is... variable.',
         effects: [
           { path: 'product.overallQuality', operation: 'add', value: 2 },
-          { path: 'company.culture.aiFirst', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 2 },
         ],
       },
       {
@@ -1192,7 +1191,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Ship faster to stay ahead. More pressure on team.',
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: 2 },
-          { path: 'team.avgMorale', operation: 'add', value: -3 },
+          { path: 'team.morale', operation: 'add', value: -3 },
           { path: 'product.techDebtTotal', operation: 'add', value: 3 },
         ],
       },
@@ -1202,7 +1201,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Focus on what makes you unique. Longer-term play.',
         effects: [
           { path: 'product.pmfScore', operation: 'add', value: 3 },
-          { path: 'company.culture.innovation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
         ],
       },
       {
