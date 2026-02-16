@@ -235,7 +235,7 @@ export function MainMenuScreen() {
         <div className="flex w-full max-w-xs flex-col gap-3">
           {/* New Game - primary action */}
           <button
-            onClick={() => setScreen('newGame')}
+            onClick={() => setScreen('newgame')}
             className="group relative overflow-hidden rounded-lg bg-emerald-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-emerald-900/30 transition-all hover:bg-emerald-500 hover:shadow-emerald-900/50 active:scale-[0.98]"
           >
             <span className="relative z-10">New Game</span>

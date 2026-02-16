@@ -179,7 +179,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                             style={{ width: `${row.productQuality}%` }}
                           />
                         </div>
-                        <span className="text-xs text-gray-400">{row.productQuality}</span>
+                        <span className="text-xs text-gray-400">{Math.round(row.productQuality)}</span>
                       </div>
                     </td>
 
