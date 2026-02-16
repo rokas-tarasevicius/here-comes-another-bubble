@@ -9,17 +9,8 @@ import type {
 import { FOUNDER_CONFIGS } from '../data/founders.ts';
 import { MARKET_SEGMENTS } from '../data/markets.ts';
 import { COMPETITORS_BY_SEGMENT } from '../data/competitors.ts';
+import { calculateWeeklyBurn } from './derived.ts';
 import { generateId } from '../utils/id.ts';
-
-/**
- * Starting cash by difficulty.
- */
-const STARTING_CASH: Record<Difficulty, number> = {
-  easy: 500_000,
-  normal: 250_000,
-  hard: 150_000,
-  nightmare: 75_000,
-};
 
 /**
  * Create the starting employees for the bigtech archetype.
@@ -32,8 +23,8 @@ function createBigtechStartingEmployees(week: number): Employee[] {
       role: 'senior-engineer',
       skill: 78,
       salary: 4_500,
-      morale: 75,
-      loyalty: 60,
+      morale: 90,
+      loyalty: 75,
       aiSentiment: 30,
       weekHired: week,
       assignedTo: null,
@@ -44,8 +35,8 @@ function createBigtechStartingEmployees(week: number): Employee[] {
       role: 'senior-engineer',
       skill: 72,
       salary: 4_200,
-      morale: 80,
-      loyalty: 55,
+      morale: 85,
+      loyalty: 70,
       aiSentiment: 10,
       weekHired: week,
       assignedTo: null,
@@ -79,23 +70,26 @@ export function createInitialState(
         )
       : 100;
 
-  return {
+  // BUG 2 fix: Use founder-specific starting cash from FOUNDER_CONFIGS
+  const startingCash = founderConfig.startingCash;
+
+  // Build a partial state to calculate initial burn (BUG 1 fix)
+  const partialState: GameState = {
     meta: {
       week: startWeek,
       year: 2026,
       month: 1,
-      day: 6,  // First Monday of 2026
+      day: 6,
       difficulty,
       tone,
+      growthStrategy: 'sustainable',
       gameOver: false,
       score: 0,
     },
-
     founder: {
       name: 'You',
       ...founderConfig.baseProfile,
     },
-
     company: {
       name: companyName,
       stage: 'garage',
@@ -109,14 +103,12 @@ export function createInitialState(
       reputation: founderConfig.baseProfile.reputation,
       weekFounded: startWeek,
     },
-
     team: {
       employees: startingEmployees,
       aiAgents: [],
       hiringPipeline: [],
       avgMorale,
     },
-
     product: {
       name: companyName,
       features: [],
@@ -127,30 +119,39 @@ export function createInitialState(
       churnRate: 0.05,
       bugs: 0,
     },
-
     finances: {
-      cash: STARTING_CASH[difficulty],
+      cash: startingCash,
       weeklyRevenue: 0,
-      weeklyBurn: 0,  // Will be computed on first tick
+      weeklyBurn: 0,
       pricingModel: 'free',
       pricePerUnit: 0,
       fundingHistory: [],
       founderEquity: 1.0,
       monthlyExpenses: 0,
     },
-
     market: {
       segment,
       segmentData: { ...segmentData },
       competitors,
-      bubbleIndex: 60,     // Mid-bubble
-      bubbleTrend: 2,      // Inflating
+      bubbleIndex: 60,
+      bubbleTrend: 2,
       talentMarketHeat: 70,
       investorSentiment: 65,
     },
-
     eventLog: [],
     pendingDecisions: [],
     weekHistory: [],
+  };
+
+  // BUG 1 fix: Calculate initial burn so Overview doesn't show $0/wk
+  const initialBurn = calculateWeeklyBurn(partialState);
+
+  return {
+    ...partialState,
+    finances: {
+      ...partialState.finances,
+      weeklyBurn: initialBurn,
+      monthlyExpenses: initialBurn * 4,
+    },
   };
 }

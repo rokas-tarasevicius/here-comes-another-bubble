@@ -49,8 +49,8 @@ export function RunwayCountdown({ cash, weeklyBurn, weeklyRevenue = 0 }: RunwayC
       ) : (
         <>
           <div className={`mt-2 text-3xl font-bold font-mono ${colorClass}`}>
-            {runwayWeeks === Infinity ? '--' : runwayWeeks}
-            <span className="ml-1 text-lg font-semibold">weeks</span>
+            {runwayWeeks === Infinity ? '--' : runwayWeeks}{' '}
+            <span className="text-lg font-semibold">weeks</span>
           </div>
           <p className="mt-1 text-xs text-gray-500">
             until you run out of money

@@ -93,6 +93,7 @@ export interface GameMeta {
   day: number;
   difficulty: Difficulty;
   tone: Tone;
+  growthStrategy: string;
   gameOver: boolean;
   gameOverReason?: string;
   score: number;

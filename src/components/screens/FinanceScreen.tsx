@@ -154,12 +154,14 @@ export function FinanceScreen() {
                   {formatCurrency(totalAICosts)}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-400">Overhead</span>
-                <span className="font-mono text-red-400">
-                  {formatCurrency(overheadEstimate)}
-                </span>
-              </div>
+              {overheadEstimate > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-400">Overhead</span>
+                  <span className="font-mono text-red-400">
+                    {formatCurrency(overheadEstimate)}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="mt-2 border-t border-gray-800 pt-1 flex items-center justify-between text-sm font-semibold">
               <span className="text-gray-300">Total Expenses</span>

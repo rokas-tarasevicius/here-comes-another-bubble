@@ -49,6 +49,7 @@ interface GameStoreActions {
   removeDecision: (index: number) => void;
   clearDecisions: () => void;
   setScreen: (screen: string) => void;
+  setGrowthStrategy: (strategy: string) => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
   getSaveSlots: () => SaveSlot[];
@@ -117,6 +118,20 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
   setScreen(screen) {
     set({ currentScreen: screen });
+  },
+
+  setGrowthStrategy(strategy) {
+    const { gameState } = get();
+    if (!gameState) return;
+    set({
+      gameState: {
+        ...gameState,
+        meta: {
+          ...gameState.meta,
+          growthStrategy: strategy,
+        },
+      },
+    });
   },
 
   saveGame(slot = 0) {

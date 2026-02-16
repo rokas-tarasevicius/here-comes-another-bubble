@@ -11,32 +11,81 @@ export interface DecisionCardProps {
 
 // ─── Effect formatting ───────────────────────────────────────────────────
 
-function capitalize(s: string): string {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
+const EFFECT_LABELS: Record<string, string> = {
+  'cash': 'Cash',
+  'weeklyRevenue': 'Revenue',
+  'weeklyBurn': 'Burn Rate',
+  'monthlyExpenses': 'Expenses',
+  'founderEquity': 'Equity',
+  'avgMorale': 'Team Morale',
+  'morale': 'Morale',
+  'techSkill': 'Tech Skill',
+  'bizSkill': 'Business Skill',
+  'network': 'Network',
+  'reputation': 'Reputation',
+  'learning': 'Learning Speed',
+  'overallQuality': 'Product Quality',
+  'techDebtTotal': 'Tech Debt',
+  'pmfScore': 'Product-Market Fit',
+  'customers': 'Customers',
+  'churnRate': 'Churn Rate',
+  'bugs': 'Bugs',
+  'bubbleIndex': 'Bubble Index',
+  'investorSentiment': 'Investor Sentiment',
+  'talentMarketHeat': 'Talent Market',
+  'workLifeBalance': 'Work-Life Balance',
+  'innovation': 'Innovation',
+  'collaboration': 'Collaboration',
+  'aiFirst': 'AI-First Culture',
+  'valuation': 'Valuation',
+  'pricePerUnit': 'Price/Unit',
+};
+
+function getEffectLabel(path: string): string {
+  const key = path.split('.').pop() || path;
+  return EFFECT_LABELS[key] ?? key.charAt(0).toUpperCase() + key.slice(1);
 }
 
 function formatEffectValue(effect: StateEffect): string {
-  const pathLabel = effect.path.split('.').pop() || effect.path;
-  const label = capitalize(pathLabel);
+  const label = getEffectLabel(effect.path);
+  const pathKey = effect.path.split('.').pop() || effect.path;
 
   if (effect.operation === 'add') {
     // Currency-like paths get dollar formatting
     const isCurrency =
-      pathLabel === 'cash' ||
-      pathLabel === 'weeklyRevenue' ||
-      pathLabel === 'weeklyBurn' ||
-      pathLabel === 'monthlyExpenses';
-    const sign = effect.value >= 0 ? '+' : '';
+      pathKey === 'cash' ||
+      pathKey === 'weeklyRevenue' ||
+      pathKey === 'weeklyBurn' ||
+      pathKey === 'monthlyExpenses';
     if (isCurrency) {
-      return `${label}: ${sign}$${Math.abs(effect.value).toLocaleString('en-US')}${effect.value < 0 ? '' : ''}`;
+      if (effect.value < 0) {
+        return `${label}: -$${Math.abs(effect.value).toLocaleString('en-US')}`;
+      }
+      return `${label}: +$${effect.value.toLocaleString('en-US')}`;
     }
+    const sign = effect.value >= 0 ? '+' : '';
     return `${label}: ${sign}${effect.value}`;
   }
   if (effect.operation === 'multiply') {
     return `${label}: \u00D7${effect.value}`;
   }
   return `${label}: \u2192 ${effect.value}`;
+}
+
+/** Combine effects with the same path and operation by summing their values. */
+function combineEffects(effects: StateEffect[]): StateEffect[] {
+  const map = new Map<string, StateEffect>();
+  for (const eff of effects) {
+    const key = `${eff.path}|${eff.operation}`;
+    const existing = map.get(key);
+    if (existing && eff.operation === 'add') {
+      map.set(key, { ...existing, value: existing.value + eff.value });
+    } else {
+      // For multiply / set, last-write wins; or first entry
+      map.set(key, { ...eff });
+    }
+  }
+  return Array.from(map.values());
 }
 
 function effectColor(effect: StateEffect): string {
@@ -184,7 +233,7 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
               {/* Effect previews */}
               {option.effects.length > 0 && (
                 <div className="flex flex-wrap gap-x-3 gap-y-1">
-                  {option.effects.map((eff, i) => (
+                  {combineEffects(option.effects).map((eff, i) => (
                     <span
                       key={i}
                       className={`text-xs font-mono ${effectColor(eff)}`}

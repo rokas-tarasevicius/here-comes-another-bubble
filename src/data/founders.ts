@@ -2,6 +2,7 @@ import type { FounderArchetype, FounderProfile } from '../types/index.ts';
 
 export interface FounderConfig {
   archetype: FounderArchetype;
+  startingCash: number;
   baseProfile: Omit<FounderProfile, 'name'>;
 }
 
@@ -11,6 +12,7 @@ export interface FounderConfig {
 export const FOUNDER_CONFIGS: Record<FounderArchetype, FounderConfig> = {
   technical: {
     archetype: 'technical',
+    startingCash: 50_000,
     baseProfile: {
       archetype: 'technical',
       techSkill: 85,
@@ -22,6 +24,7 @@ export const FOUNDER_CONFIGS: Record<FounderArchetype, FounderConfig> = {
   },
   visionary: {
     archetype: 'visionary',
+    startingCash: 100_000,
     baseProfile: {
       archetype: 'visionary',
       techSkill: 25,
@@ -33,6 +36,7 @@ export const FOUNDER_CONFIGS: Record<FounderArchetype, FounderConfig> = {
   },
   balanced: {
     archetype: 'balanced',
+    startingCash: 75_000,
     baseProfile: {
       archetype: 'balanced',
       techSkill: 55,
@@ -44,6 +48,7 @@ export const FOUNDER_CONFIGS: Record<FounderArchetype, FounderConfig> = {
   },
   bigtech: {
     archetype: 'bigtech',
+    startingCash: 150_000,
     baseProfile: {
       archetype: 'bigtech',
       techSkill: 70,
@@ -55,6 +60,7 @@ export const FOUNDER_CONFIGS: Record<FounderArchetype, FounderConfig> = {
   },
   academic: {
     archetype: 'academic',
+    startingCash: 30_000,
     baseProfile: {
       archetype: 'academic',
       techSkill: 90,

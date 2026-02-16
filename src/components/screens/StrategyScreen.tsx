@@ -234,8 +234,9 @@ function AIProviderCard({ provider, onHire }: AIProviderCardProps) {
 export function StrategyScreen() {
   const gameState = useGameStore((s) => s.gameState);
   const addDecision = useGameStore((s) => s.addDecision);
+  const setGrowthStrategy = useGameStore((s) => s.setGrowthStrategy);
 
-  const [activeStrategy, setActiveStrategy] = useState<string>('sustainable');
+  const activeStrategy = gameState?.meta.growthStrategy ?? 'sustainable';
 
   if (!gameState) return null;
 
@@ -312,7 +313,7 @@ export function StrategyScreen() {
             return (
               <button
                 key={strategy.id}
-                onClick={() => setActiveStrategy(strategy.id)}
+                onClick={() => setGrowthStrategy(strategy.id)}
                 className={`rounded-lg border p-4 text-left transition-all ${
                   isActive
                     ? 'border-emerald-600 bg-emerald-900/10 ring-1 ring-emerald-600/30'
@@ -484,9 +485,6 @@ export function StrategyScreen() {
               <span className="rounded bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-400">
                 {market.segmentData.name}
               </span>
-              <span className="text-xs text-gray-500">
-                {market.segment}
-              </span>
             </div>
             <p className="mb-4 text-xs leading-relaxed text-gray-400">
               {market.segmentData.description}
@@ -627,7 +625,7 @@ export function StrategyScreen() {
                 </thead>
                 <tbody className="divide-y divide-gray-800">
                   {market.competitors.map((comp) => {
-                    const qualityDiff = comp.productQuality - product.overallQuality;
+                    const qualityDiff = Math.round(comp.productQuality - product.overallQuality);
                     return (
                       <tr
                         key={comp.id}
@@ -641,7 +639,7 @@ export function StrategyScreen() {
                         <td className="px-3 py-2">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-gray-300">
-                              {comp.productQuality}
+                              {Math.round(comp.productQuality)}
                             </span>
                             <span
                               className={`text-[10px] font-mono ${

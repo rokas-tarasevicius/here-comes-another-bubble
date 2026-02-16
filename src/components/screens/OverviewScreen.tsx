@@ -35,9 +35,14 @@ const STAGE_BADGE_COLORS: Record<CompanyStage, string> = {
 function computeRunway(cash: number, burn: number): string {
   if (burn <= 0) return 'Infinite';
   const weeks = Math.floor(cash / burn);
-  if (weeks > 520) return '10+ yr';
-  if (weeks > 52) return `${Math.floor(weeks / 52)}yr ${weeks % 52}w`;
-  return `${weeks}w`;
+  if (weeks > 520) return '10+ yrs';
+  if (weeks > 52) {
+    const yrs = Math.floor(weeks / 52);
+    const remainingWks = weeks % 52;
+    if (remainingWks === 0) return `${yrs} yrs`;
+    return `${yrs} yrs ${remainingWks} wks`;
+  }
+  return `${weeks} wks`;
 }
 
 function getTrend(

@@ -62,14 +62,13 @@ function makeFeature(overrides?: Partial<Feature>): Feature {
 }
 
 describe('calculateRunway', () => {
-  it('returns Infinity when there are no expenses and no revenue', () => {
+  it('returns finite runway when there are fixed costs and no revenue', () => {
     const state = makeTestState();
     // balanced archetype has no starting employees, so burn = just fixed costs
-    // But with $250k cash and tiny burn, runway is large
+    // Balanced founder starts with $75k cash and burn is $500 fixed.
     const runway = calculateRunway(state);
-    // With no employees, burn is just $500 fixed. Revenue is 0.
-    // 250000 / 500 = 500 weeks
-    expect(runway).toBe(500);
+    // 75000 / 500 = 150 weeks
+    expect(runway).toBe(150);
   });
 
   it('calculates finite runway when burning cash', () => {
@@ -262,6 +261,7 @@ describe('calculateValuation', () => {
         segmentData: {
           id: 'ai-devtools',
           name: 'AI Developer Tools',
+          description: 'Tools for AI developers',
           size: 50000,
           growthRate: 0.2,
           competitionIntensity: 75,
