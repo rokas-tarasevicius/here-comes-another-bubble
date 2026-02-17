@@ -375,7 +375,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     ],
     decisionOptions: [
       {
-        id: 'hire-aggressively',
+        id: 'hire_1_5000',
         label: 'Make an aggressive offer',
         description:
           'Offer a top-of-market salary plus significant equity. Transformative hire but expensive.',
@@ -798,7 +798,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     immediateEffects: [],
     decisionOptions: [
       {
-        id: 'hire-vp-sales',
+        id: 'hire_1_4800',
         label: 'Hire them as VP of Sales',
         description:
           'Make a competitive offer. Their enterprise network alone could 2x your revenue.',

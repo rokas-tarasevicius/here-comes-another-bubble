@@ -7,6 +7,7 @@ import { NewGameScreen } from './components/screens/NewGameScreen.tsx';
 import { OverviewScreen } from './components/screens/OverviewScreen.tsx';
 import { FinanceScreen } from './components/screens/FinanceScreen.tsx';
 import { MarketScreen } from './components/screens/MarketScreen.tsx';
+import { CompanyScreen } from './components/screens/CompanyScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
@@ -20,6 +21,8 @@ function GameplayScreen() {
   switch (currentScreen) {
     case 'overview':
       return <OverviewScreen />;
+    case 'company':
+      return <CompanyScreen />;
     case 'finance':
       return <FinanceScreen />;
     case 'market':
@@ -76,11 +79,11 @@ function App() {
         }
       }
 
-      // Number keys 1-4 for screen navigation
+      // Number keys 1-5 for screen navigation
       if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
-        const screens = ['overview', 'finance', 'market', 'decisions'];
+        const screens = ['overview', 'company', 'finance', 'market', 'decisions'];
         const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 4) {
+        if (num >= 1 && num <= 5) {
           e.preventDefault();
           setScreen(screens[num - 1]);
         }

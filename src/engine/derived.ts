@@ -20,8 +20,11 @@ export function calculateWeeklyBurn(state: GameState): number {
     (sum, agent) => sum + agent.costPerWeek,
     0,
   );
-  // Fixed costs: office/infra — roughly $500/week base + $50 per person
-  const fixedCosts = 500 + state.team.teamSize * 50;
+  // Fixed costs: infrastructure and overhead
+  // Garage stage: just cloud hosting ($100/wk). As you grow, costs scale.
+  const isGarage = state.company.stage === 'garage' || state.company.stage === 'pre-seed';
+  const baseCost = isGarage ? 100 : 500;
+  const fixedCosts = baseCost + state.team.teamSize * 50;
   return salaries + aiCosts + fixedCosts;
 }
 
@@ -74,22 +77,55 @@ export function calculateAvgMorale(state: GameState): number {
 
 /**
  * Calculate company valuation.
- * Formula: ARR * revenue multiple * bubble multiplier * PMF multiplier
+ * Pre-revenue: stage-based base + team/product/customer/bubble multipliers
+ * Post-revenue: ARR * revenue multiple * bubble * PMF
+ * The two are blended so there's no sudden jump.
  */
 export function calculateValuation(state: GameState): number {
-  const annualRevenue = state.finances.weeklyRevenue * 52;
+  // ── Stage-based valuation (matters most pre-revenue) ──
+  const stageBaseValuation: Record<string, number> = {
+    'garage': 100_000,
+    'pre-seed': 500_000,
+    'seed': 3_000_000,
+    'series-a': 15_000_000,
+    'series-b': 50_000_000,
+    'series-c': 150_000_000,
+    'growth': 500_000_000,
+    'public': 1_000_000_000,
+    'dead': 0,
+  };
+  const stageBase = stageBaseValuation[state.company.stage] ?? 100_000;
 
-  // Revenue multiple based on growth (typical SaaS: 10-30x)
-  const baseMultiple = 15;
+  // Team multiplier: more people = more valuable (1.0 to 2.0)
+  const totalTeam = state.team.teamSize + state.team.aiAgents.length;
+  const teamMultiplier = 1.0 + Math.min(1.0, totalTeam / 20);
 
-  // Bubble multiplier: at bubble index 50 = 1x, at 100 = 3x, at 0 = 0.3x
+  // Product multiplier: quality and shipped features matter (0.5 to 2.0)
+  const shippedCount = state.product.features.filter(f => f.status === 'shipped').length;
+  const qualityFactor = state.product.overallQuality / 100;
+  const productMultiplier = 0.5 + Math.min(1.5, shippedCount * 0.25 + qualityFactor * 0.5);
+
+  // Customer multiplier: traction increases value (1.0 to 3.0)
+  const customerMultiplier = 1.0 + Math.min(2.0, Math.log10(Math.max(1, state.product.customers)) * 0.5);
+
+  // Bubble multiplier: market conditions (0.3 to 3.0)
   const bubbleMultiplier = 0.3 + (state.market.bubbleIndex / 100) * 2.7;
 
-  // PMF multiplier: 0.5 at PMF=0, 2.0 at PMF=100
+  // PMF multiplier (0.5 to 2.0)
   const pmfMultiplier = 0.5 + (state.product.pmfScore / 100) * 1.5;
 
-  const valuation = annualRevenue * baseMultiple * bubbleMultiplier * pmfMultiplier;
+  const tractionValuation = stageBase * teamMultiplier * productMultiplier * customerMultiplier * bubbleMultiplier;
 
-  // Floor valuation at $100k for early stage
-  return Math.max(Math.round(valuation), 100_000);
+  // ── Revenue-based valuation (matters post-revenue) ──
+  const annualRevenue = state.finances.weeklyRevenue * 52;
+  const revenueMultiple = 15; // Typical SaaS: 10-30x
+  const revenueValuation = annualRevenue * revenueMultiple * bubbleMultiplier * pmfMultiplier;
+
+  // Blend: use the higher of the two, weighted by revenue presence
+  // As revenue grows, revenue-based valuation dominates
+  const revenueWeight = Math.min(1.0, annualRevenue / 500_000); // Full weight at $500K ARR
+  const valuation = tractionValuation * (1 - revenueWeight) + revenueValuation * revenueWeight;
+
+  // Always at least the stage base (can't be worth less than your funding implies)
+  return Math.max(Math.round(valuation), stageBase);
 }

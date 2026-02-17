@@ -27,6 +27,8 @@ export type {
   EventLogEntry,
   WeekSummary,
   GameState,
+  ProductFocus,
+  AcquisitionChannel,
 } from './game.ts';
 
 export type { GameEvent } from './events.ts';

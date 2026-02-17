@@ -46,7 +46,7 @@ describe('advanceWeek', () => {
   it('triggers game over when cash reaches zero', () => {
     const state = makeTestState({
       finances: {
-        cash: 100, // Very low cash, will go below 0 after burn
+        cash: 10, // Very low cash, will go below 0 after burn (garage burn ~$85/wk)
         weeklyRevenue: 0,
         weeklyBurn: 0,
         pricingModel: 'free',

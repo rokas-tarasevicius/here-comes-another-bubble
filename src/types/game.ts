@@ -75,6 +75,21 @@ export type EventCategory =
 
 // ─── Core interfaces ──────────────────────────────────────────────────
 
+export type ProductFocus =
+  | 'new-features'    // Normal: build what sprint planning says
+  | 'quality'         // Boost feature quality, slower progress
+  | 'bug-fixing'      // Reduce bugs faster, less feature work
+  | 'tech-debt'       // Reduce tech debt, less feature work
+  | 'user-growth';    // Focus on growth/marketing features
+
+export type AcquisitionChannel =
+  | 'organic'          // Free, relies on PMF and word-of-mouth
+  | 'content-seo'      // Low cost, compounds over time (+2%/wk up to +20%)
+  | 'paid-ads'         // High cost, instant users, diminishing returns
+  | 'community'        // Medium cost, reduces churn, stickier users
+  | 'sales-outreach'   // Best for enterprise, requires team ≥ 3
+  | 'viral-loops';     // No cost, requires quality > 50, exponential but risky
+
 export interface GameMeta {
   week: number;
   year: number;
@@ -83,12 +98,16 @@ export interface GameMeta {
   difficulty: Difficulty;
   tone: Tone;
   growthStrategy: string;
+  productFocus: ProductFocus;
+  acquisitionChannel: AcquisitionChannel;
+  contentSeoWeeks: number;    // weeks content-seo has been active (for compounding)
   gameOver: boolean;
   gameOverReason?: string;
   gameWon: boolean;
   gameWonReason?: string;
   score: number;
   regulatoryHeat: number;  // 0-100, accumulates in regulated segments
+  lowMoraleWeeks: number;  // consecutive weeks with morale < 40 (for salary pressure)
 }
 
 export interface FounderProfile {
@@ -168,6 +187,7 @@ export interface FinancialState {
   founderEquity: number;    // 0-1
   monthlyExpenses: number;
   marketingSpend: number;   // weekly marketing budget, increased by growth-hack strategy
+  lastPricingChangeWeek: number;  // week when pricing was last changed (prevent frequent switches)
 }
 
 export interface MarketSegmentData {

@@ -8,6 +8,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: '\u{1F4CA}' },
+  { id: 'company', label: 'Company', icon: '\u{1F3E2}' },
   { id: 'finance', label: 'Finance', icon: '\u{1F4B0}' },
   { id: 'market', label: 'Market', icon: '\u{1F310}' },
   { id: 'decisions', label: 'Decisions', icon: '\u{2696}\u{FE0F}' },

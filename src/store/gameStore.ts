@@ -5,9 +5,13 @@ import type {
   MarketSegment,
   Difficulty,
   Tone,
+  ProductFocus,
+  AcquisitionChannel,
 } from '../types/index.ts';
 import type { PlayerDecision } from '../types/decisions.ts';
+import type { Feature } from '../types/index.ts';
 import { createInitialState, advanceWeek, applySeekFunding } from '../engine/index.ts';
+import { generateId } from '../utils/id.ts';
 
 // ─── Save slot metadata ──────────────────────────────────────────────
 
@@ -51,6 +55,12 @@ interface GameStoreActions {
   clearDecisions: () => void;
   setScreen: (screen: string) => void;
   setGrowthStrategy: (strategy: string) => void;
+  setProductFocus: (focus: ProductFocus) => void;
+  setAcquisitionChannel: (channel: AcquisitionChannel) => void;
+  startFeature: (name: string, description: string, marketRelevance: number) => void;
+  setMarketingBudget: (amount: number) => void;
+  hireTeam: (count: number, salary: number) => void;
+  fireTeam: (count: number) => void;
   dismissWeekRecap: () => void;
   seekFunding: (targetStage: string) => void;
   saveGame: (slot?: number) => void;
@@ -138,6 +148,124 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         meta: {
           ...gameState.meta,
           growthStrategy: strategy,
+        },
+      },
+    });
+  },
+
+  setProductFocus(focus) {
+    const { gameState } = get();
+    if (!gameState) return;
+    set({
+      gameState: {
+        ...gameState,
+        meta: {
+          ...gameState.meta,
+          productFocus: focus,
+        },
+      },
+    });
+  },
+
+  setAcquisitionChannel(channel) {
+    const { gameState } = get();
+    if (!gameState) return;
+    set({
+      gameState: {
+        ...gameState,
+        meta: {
+          ...gameState.meta,
+          acquisitionChannel: channel,
+          // Reset SEO weeks if switching away from content-seo
+          contentSeoWeeks: channel === 'content-seo' ? gameState.meta.contentSeoWeeks : 0,
+        },
+      },
+    });
+  },
+
+  startFeature(name, description, marketRelevance) {
+    const { gameState } = get();
+    if (!gameState) return;
+    const newFeature: Feature = {
+      id: generateId(),
+      name,
+      description,
+      status: 'in-progress',
+      progress: 0,
+      quality: 0,
+      marketRelevance,
+    };
+    set({
+      gameState: {
+        ...gameState,
+        product: {
+          ...gameState.product,
+          features: [...gameState.product.features, newFeature],
+        },
+      },
+    });
+  },
+
+  setMarketingBudget(amount) {
+    const { gameState } = get();
+    if (!gameState) return;
+    set({
+      gameState: {
+        ...gameState,
+        finances: {
+          ...gameState.finances,
+          marketingSpend: Math.max(0, Math.round(amount)),
+        },
+      },
+    });
+  },
+
+  hireTeam(count, salary) {
+    const { gameState } = get();
+    if (!gameState) return;
+    const hiringCost = count * salary * 2;
+    if (gameState.finances.cash < hiringCost) return;
+    const oldTotal = gameState.team.teamSize * gameState.team.avgSalary;
+    const newTotal = oldTotal + count * salary;
+    const newSize = gameState.team.teamSize + count;
+    const culturePenalty = count >= 3 ? -5 : count >= 2 ? -3 : 0;
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          teamSize: newSize,
+          avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : salary,
+        },
+        company: {
+          ...gameState.company,
+          culture: Math.max(0, gameState.company.culture + culturePenalty),
+        },
+        finances: {
+          ...gameState.finances,
+          cash: gameState.finances.cash - hiringCost,
+        },
+      },
+    });
+  },
+
+  fireTeam(count) {
+    const { gameState } = get();
+    if (!gameState || gameState.team.teamSize === 0) return;
+    const actual = Math.min(count, gameState.team.teamSize);
+    const moralePenalty = actual >= 3 ? -12 : actual >= 2 ? -8 : -4;
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          teamSize: gameState.team.teamSize - actual,
+          morale: Math.max(0, gameState.team.morale + moralePenalty),
+        },
+        company: {
+          ...gameState.company,
+          culture: Math.max(0, gameState.company.culture - actual * 3),
+          reputation: Math.max(0, gameState.company.reputation - actual),
         },
       },
     });

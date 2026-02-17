@@ -26,6 +26,9 @@ export function createInitialState(
 
   const startWeek = 1;
 
+  // Task 2: Difficulty affects starting bubble index
+  const startingBubble = difficulty === 'nightmare' ? 45 : 60;
+
   // Bigtech archetype starts with a team
   const teamSize = archetype === 'bigtech' ? 2 : 0;
   const avgSalary = archetype === 'bigtech' ? 4350 : 3000;
@@ -44,10 +47,14 @@ export function createInitialState(
       difficulty,
       tone,
       growthStrategy: 'sustainable',
+      productFocus: 'new-features',
+      acquisitionChannel: 'organic',
+      contentSeoWeeks: 0,
       gameOver: false,
       gameWon: false,
       score: 0,
       regulatoryHeat: 0,
+      lowMoraleWeeks: 0,
     },
     founder: {
       name: 'You',
@@ -87,12 +94,13 @@ export function createInitialState(
       founderEquity: 1.0,
       monthlyExpenses: 0,
       marketingSpend: 0,
+      lastPricingChangeWeek: 0,
     },
     market: {
       segment,
       segmentData: { ...segmentData },
       competitors,
-      bubbleIndex: 60,
+      bubbleIndex: startingBubble,
       bubbleTrend: 2,
       talentMarketHeat: 70,
       investorSentiment: 65,

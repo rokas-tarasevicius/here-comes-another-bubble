@@ -46,6 +46,27 @@ export interface ChangeSegmentDecision {
   newSegment: MarketSegment;
 }
 
+export interface HireTeamDecision {
+  type: 'hire-team';
+  count: number;
+  salary: number;
+}
+
+export interface FireTeamDecision {
+  type: 'fire-team';
+  count: number;
+}
+
+export interface SetMarketingBudgetDecision {
+  type: 'set-marketing-budget';
+  amount: number;
+}
+
+export interface SetGrowthStrategyDecision {
+  type: 'set-growth-strategy';
+  strategy: string;
+}
+
 export type PlayerDecision =
   | StartFeatureDecision
   | SetPricingDecision
@@ -53,4 +74,8 @@ export type PlayerDecision =
   | HireAIAgentDecision
   | FireAIAgentDecision
   | SeekFundingDecision
-  | ChangeSegmentDecision;
+  | ChangeSegmentDecision
+  | HireTeamDecision
+  | FireTeamDecision
+  | SetMarketingBudgetDecision
+  | SetGrowthStrategyDecision;

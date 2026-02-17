@@ -46,10 +46,10 @@ describe('calculateRunway', () => {
   it('returns finite runway when there are fixed costs and no revenue', () => {
     const state = makeTestState();
     // balanced archetype has no starting employees, so burn = just fixed costs
-    // Balanced founder starts with $75k cash and burn is $500 fixed.
+    // Balanced founder starts with $75k cash and garage stage burn is $100 fixed.
     const runway = calculateRunway(state);
-    // 75000 / 500 = 150 weeks
-    expect(runway).toBe(150);
+    // 75000 / 100 = 750 weeks
+    expect(runway).toBe(750);
   });
 
   it('calculates finite runway when burning cash', () => {
@@ -74,9 +74,9 @@ describe('calculateRunway', () => {
     });
 
     const runway = calculateRunway(state);
-    // burn = 2*5000 + 500 + 2*50 = 10600
-    // 100000 / 10600 ≈ 9.43
-    expect(runway).toBeCloseTo(100_000 / 10_600, 1);
+    // burn = 2*5000 + 100 (garage base) + 2*50 = 10200
+    // 100000 / 10200 ≈ 9.80
+    expect(runway).toBeCloseTo(100_000 / 10_200, 1);
   });
 
   it('returns Infinity when revenue exceeds burn', () => {
@@ -112,8 +112,8 @@ describe('calculateWeeklyBurn', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // 4000 (salary) + 800 (AI) + 500 (base) + 50 (per-person) = 5350
-    expect(burn).toBe(5350);
+    // 4000 (salary) + 800 (AI) + 100 (garage base) + 50 (per-person) = 4950
+    expect(burn).toBe(4950);
   });
 
   it('returns only fixed costs when team is empty', () => {
@@ -127,7 +127,7 @@ describe('calculateWeeklyBurn', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    expect(burn).toBe(500); // just base fixed costs
+    expect(burn).toBe(100); // just base fixed costs (garage stage = $100/wk)
   });
 });
 
@@ -254,6 +254,8 @@ describe('calculateValuation', () => {
     });
 
     const valuation = calculateValuation(state);
-    expect(valuation).toBeGreaterThan(10_000_000);
+    // Garage startup with $5K/wk revenue, 100 customers, bubble 80 - should be worth millions
+    expect(valuation).toBeGreaterThan(1_000_000);
+    expect(valuation).toBeLessThan(50_000_000);
   });
 });

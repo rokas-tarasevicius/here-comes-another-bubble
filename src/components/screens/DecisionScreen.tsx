@@ -20,6 +20,14 @@ function describeDecision(decision: PlayerDecision): string {
       return `Seek funding: ${decision.targetStage}`;
     case 'change-segment':
       return `Pivot to ${decision.newSegment}`;
+    case 'hire-team':
+      return `Hire ${decision.count} team member${decision.count > 1 ? 's' : ''} at $${decision.salary.toLocaleString()}/wk`;
+    case 'fire-team':
+      return `Let go ${decision.count} team member${decision.count > 1 ? 's' : ''}`;
+    case 'set-marketing-budget':
+      return `Set marketing budget to $${decision.amount.toLocaleString()}/wk`;
+    case 'set-growth-strategy':
+      return `Switch growth strategy to ${decision.strategy.replace(/-/g, ' ')}`;
     default:
       return 'Unknown action';
   }
@@ -34,6 +42,10 @@ function decisionTypeLabel(type: string): string {
     case 'fire-ai-agent': return 'AI';
     case 'seek-funding': return 'Funding';
     case 'change-segment': return 'Strategy';
+    case 'hire-team': return 'Team';
+    case 'fire-team': return 'Team';
+    case 'set-marketing-budget': return 'Marketing';
+    case 'set-growth-strategy': return 'Strategy';
     default: return 'Action';
   }
 }
@@ -46,6 +58,10 @@ const TYPE_BADGE_CLASSES: Record<string, string> = {
   'fire-ai-agent': 'retro-badge retro-badge-purple',
   'seek-funding': 'retro-badge retro-badge-orange',
   'change-segment': 'retro-badge retro-badge-blue',
+  'hire-team': 'retro-badge retro-badge-blue',
+  'fire-team': 'retro-badge retro-badge-red',
+  'set-marketing-budget': 'retro-badge retro-badge-green',
+  'set-growth-strategy': 'retro-badge retro-badge-blue',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────

@@ -50,6 +50,14 @@ function applySingleDecision(
       return applyFireAIAgent(state, decision.agentId);
     case 'seek-funding':
       return applySeekFunding(state, decision.targetStage);
+    case 'hire-team':
+      return applyHireTeam(state, decision.count, decision.salary);
+    case 'fire-team':
+      return applyFireTeam(state, decision.count);
+    case 'set-marketing-budget':
+      return applySetMarketingBudget(state, decision.amount);
+    case 'set-growth-strategy':
+      return applySetGrowthStrategy(state, decision.strategy);
     case 'change-segment':
       return state; // Complex pivot, placeholder
   }
@@ -85,12 +93,163 @@ function applySetPricing(
   model: GameState['finances']['pricingModel'],
   pricePerUnit: number,
 ): GameState {
+  const currentModel = state.finances.pricingModel;
+  const week = state.meta.week;
+  const lastChange = state.finances.lastPricingChangeWeek ?? 0;
+  let next = state;
+
+  // Task 6: Prevent switching more than once every 8 weeks
+  if (currentModel !== model && (week - lastChange) < 8 && lastChange > 0) {
+    const logEntry: EventLogEntry = {
+      id: generateId(),
+      week,
+      eventId: 'pricing-switch-blocked',
+      title: 'Pricing Change Too Soon',
+      description: 'You changed pricing recently. Wait at least 8 weeks between pricing model changes.',
+      category: 'product',
+    };
+    return {
+      ...state,
+      finances: { ...state.finances, pricePerUnit }, // Allow price adjustments within same model
+      eventLog: [...state.eventLog, logEntry],
+    };
+  }
+
+  // Task 6: Switching costs when changing pricing MODEL (not just price)
+  if (currentModel !== model && state.product.customers > 0) {
+    let customerLoss = 0.15; // Default: lose 15% of customers
+    let reputationLoss = -5;
+
+    // Exception: free → freemium is a natural transition
+    if (currentModel === 'free' && model === 'freemium') {
+      customerLoss = 0.05;
+      reputationLoss = -1;
+    }
+
+    const lostCustomers = Math.round(state.product.customers * customerLoss);
+    const logEntry: EventLogEntry = {
+      id: generateId(),
+      week,
+      eventId: 'pricing-switch-penalty',
+      title: 'Pricing Model Changed',
+      description: `Switching from ${currentModel} to ${model} caused ${lostCustomers} customers to churn. Customers don't like pricing changes.`,
+      category: 'product',
+    };
+
+    next = {
+      ...state,
+      product: {
+        ...state.product,
+        customers: Math.max(0, state.product.customers - lostCustomers),
+      },
+      company: {
+        ...state.company,
+        reputation: Math.max(0, state.company.reputation + reputationLoss),
+      },
+      eventLog: [...state.eventLog, logEntry],
+    };
+  }
+
+  return {
+    ...next,
+    finances: {
+      ...next.finances,
+      pricingModel: model,
+      pricePerUnit,
+      lastPricingChangeWeek: currentModel !== model ? week : next.finances.lastPricingChangeWeek,
+    },
+  };
+}
+
+function applyHireTeam(state: GameState, count: number, salary: number): GameState {
+  if (count <= 0) return state;
+  const hiringCost = count * salary * 2; // 2 weeks signing bonus
+  if (state.finances.cash < hiringCost) {
+    return {
+      ...state,
+      eventLog: [...state.eventLog, {
+        id: generateId(),
+        week: state.meta.week,
+        eventId: 'hire-insufficient-funds',
+        title: 'Cannot Afford Hire',
+        description: `You need $${hiringCost.toLocaleString()} to hire ${count} people but only have $${Math.round(state.finances.cash).toLocaleString()}.`,
+        category: 'team',
+      }],
+    };
+  }
+  const oldTotal = state.team.teamSize * state.team.avgSalary;
+  const newTotal = oldTotal + count * salary;
+  const newSize = state.team.teamSize + count;
+  const culturePenalty = count >= 3 ? -5 : count >= 2 ? -3 : 0;
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      teamSize: newSize,
+      avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : salary,
+    },
+    company: {
+      ...state.company,
+      culture: Math.max(0, state.company.culture + culturePenalty),
+    },
+    finances: {
+      ...state.finances,
+      cash: state.finances.cash - hiringCost,
+    },
+    eventLog: [...state.eventLog, {
+      id: generateId(),
+      week: state.meta.week,
+      eventId: 'team-hired',
+      title: `Hired ${count} Team Member${count > 1 ? 's' : ''}`,
+      description: `Hired ${count} new team member${count > 1 ? 's' : ''} at $${salary.toLocaleString()}/wk avg. Signing cost: $${hiringCost.toLocaleString()}.`,
+      category: 'team',
+    }],
+  };
+}
+
+function applyFireTeam(state: GameState, count: number): GameState {
+  if (count <= 0 || state.team.teamSize === 0) return state;
+  const actual = Math.min(count, state.team.teamSize);
+  const moralePenalty = actual >= 3 ? -12 : actual >= 2 ? -8 : -4;
+  return {
+    ...state,
+    team: {
+      ...state.team,
+      teamSize: state.team.teamSize - actual,
+      morale: Math.max(0, state.team.morale + moralePenalty),
+    },
+    company: {
+      ...state.company,
+      culture: Math.max(0, state.company.culture - actual * 3),
+      reputation: Math.max(0, state.company.reputation - actual),
+    },
+    eventLog: [...state.eventLog, {
+      id: generateId(),
+      week: state.meta.week,
+      eventId: 'team-fired',
+      title: `Let Go ${actual} Team Member${actual > 1 ? 's' : ''}`,
+      description: `${actual} team member${actual > 1 ? 's' : ''} ${actual > 1 ? 'were' : 'was'} let go. Remaining team morale took a hit.`,
+      category: 'team',
+    }],
+  };
+}
+
+function applySetMarketingBudget(state: GameState, amount: number): GameState {
   return {
     ...state,
     finances: {
       ...state.finances,
-      pricingModel: model,
-      pricePerUnit,
+      marketingSpend: Math.max(0, Math.round(amount)),
+    },
+  };
+}
+
+function applySetGrowthStrategy(state: GameState, strategy: string): GameState {
+  return {
+    ...state,
+    meta: {
+      ...state.meta,
+      growthStrategy: strategy,
     },
   };
 }
@@ -135,6 +294,12 @@ function applyEventResponse(
     }
   }
 
+  // Clamp percentage values after applying effects
+  const clamp100 = (v: number) => Math.max(0, Math.min(100, v));
+  next.team.morale = clamp100(next.team.morale);
+  next.company.reputation = clamp100(next.company.reputation);
+  next.company.culture = clamp100(next.company.culture);
+
   // Remove from pending, mark in log
   next = {
     ...next,
@@ -148,20 +313,22 @@ function applyEventResponse(
 
   // --- Handle auto-generated decision side effects ---
 
-  // Hiring via event response: increment teamSize
+  // Hiring via event response: increment teamSize (format: hire_[count]_[salary])
   if (optionId.startsWith('hire_')) {
+    const hireParts = optionId.split('_');
+    const hireCount = parseInt(hireParts[1], 10) || 1;
+    const hireSalary = parseInt(hireParts[2], 10) || 3500;
+    const oldTotal = next.team.teamSize * next.team.avgSalary;
+    const newTotal = oldTotal + hireCount * hireSalary;
+    const newSize = next.team.teamSize + hireCount;
     next = {
       ...next,
       team: {
         ...next.team,
-        teamSize: next.team.teamSize + 1,
-        // Weighted average salary (assume new hire at ~$3500/wk)
-        avgSalary: next.team.teamSize > 0
-          ? Math.round((next.team.avgSalary * next.team.teamSize + 3500) / (next.team.teamSize + 1))
-          : 3500,
+        teamSize: newSize,
+        avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : hireSalary,
       },
     };
-    // Fix teamSize after avgSalary calc (we used old teamSize in the formula)
   }
 
   // Team expansion: team-eng_N_S or team-growth_N_S
@@ -217,6 +384,111 @@ function applyEventResponse(
       meta: {
         ...next.meta,
         growthStrategy: strategy,
+      },
+    };
+  }
+
+  // Task 10: Culture drift from hiring fast (2+ people in one decision)
+  if (optionId.startsWith('team-eng_') || optionId.startsWith('team-growth_')) {
+    const hParts = optionId.split('_');
+    const hCount = parseInt(hParts[1], 10) || 2;
+    if (hCount >= 2) {
+      next = {
+        ...next,
+        company: {
+          ...next.company,
+          culture: Math.max(0, next.company.culture - 3), // Culture dilution
+        },
+      };
+    }
+  }
+
+  // Task 8: Layoff handling (layoff_N reduces team size)
+  if (optionId.startsWith('layoff_')) {
+    const layoffParts = optionId.split('_');
+    const layoffCount = parseInt(layoffParts[1], 10) || 1;
+    const actualLayoffs = Math.min(next.team.teamSize, layoffCount);
+    next = {
+      ...next,
+      team: {
+        ...next.team,
+        teamSize: next.team.teamSize - actualLayoffs,
+      },
+      company: {
+        ...next.company,
+        culture: Math.max(0, next.company.culture - 10), // Layoffs hurt culture
+      },
+    };
+  }
+
+  // Task 8: Refuse raise — 20% chance of losing 1 person
+  if (optionId === 'refuse-raise' && next.team.teamSize > 0 && Math.random() < 0.2) {
+    next = {
+      ...next,
+      team: {
+        ...next.team,
+        teamSize: next.team.teamSize - 1,
+      },
+      eventLog: [...next.eventLog, {
+        id: generateId(),
+        week: next.meta.week,
+        eventId: 'raise-refused-quit',
+        title: 'Team Member Quit Over Pay',
+        description: 'After refusing the raise, one team member decided to leave for a better-paying opportunity.',
+        category: 'team',
+      }],
+    };
+  }
+
+  // Task 9: Viral campaign — boost customers, 20% PR disaster chance
+  if (optionId === 'viral-campaign') {
+    const customerBoost = 50 + Math.floor(Math.random() * 150);
+    const prDisaster = Math.random() < 0.2;
+    next = {
+      ...next,
+      product: {
+        ...next.product,
+        customers: next.product.customers + customerBoost,
+      },
+      company: {
+        ...next.company,
+        reputation: prDisaster
+          ? Math.max(0, next.company.reputation - 5)
+          : Math.min(100, next.company.reputation + 3),
+      },
+      eventLog: [...next.eventLog, {
+        id: generateId(),
+        week: next.meta.week,
+        eventId: prDisaster ? 'viral-pr-disaster' : 'viral-success',
+        title: prDisaster ? 'Viral Campaign Backfired' : 'Viral Campaign Success!',
+        description: prDisaster
+          ? `The viral campaign attracted ${customerBoost} new customers but also triggered a PR disaster. Your reputation took a hit.`
+          : `The viral campaign was a hit! ${customerBoost} new customers joined.`,
+        category: 'market',
+      }],
+    };
+  }
+
+  // Funding prompt: auto-trigger seek funding
+  if (optionId === 'seek-funding-now') {
+    next = applySeekFunding(next, next.company.stage);
+  }
+
+  // Pricing decisions from auto-prompt
+  if (optionId.startsWith('pricing_') && optionId !== 'pricing_stay_free') {
+    const parts = optionId.split('_');
+    // Format: pricing_[model]_[price]
+    const model = parts[1] as GameState['finances']['pricingModel'];
+    const price = parseInt(parts[2], 10) || 10;
+    // Convert monthly price to weekly
+    const weeklyPrice = Math.round(price / 4.33);
+    next = {
+      ...next,
+      finances: {
+        ...next.finances,
+        pricingModel: model,
+        pricePerUnit: weeklyPrice,
+        lastPricingChangeWeek: next.meta.week,
       },
     };
   }
@@ -423,6 +695,107 @@ export function applySeekFunding(state: GameState, targetStage: string): GameSta
   };
 }
 
+// ─── Milestone celebrations ──────────────────────────────────────────
+
+function checkMilestones(state: GameState): GameState {
+  const newLogEntries: EventLogEntry[] = [];
+  const week = state.meta.week;
+  const prevWeek = state.weekHistory.length > 0 ? state.weekHistory[state.weekHistory.length - 1] : null;
+
+  // First feature shipped
+  const shippedCount = state.product.features.filter(f => f.status === 'shipped').length;
+  const prevShippedCount = state.eventLog.some(e => e.eventId === 'milestone-first-ship') ? Infinity : 0;
+  if (shippedCount >= 1 && prevShippedCount === 0) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-first-ship',
+      title: 'First Feature Shipped!',
+      description: 'You shipped your first feature! Now get it in front of users. Consider setting a pricing model.',
+      category: 'product',
+    });
+  }
+
+  // First customers
+  if (state.product.customers > 0 && (!prevWeek || prevWeek.customers === 0)) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-first-users',
+      title: 'First Users!',
+      description: `You have your first users! People are actually using your product. Keep building and growing.`,
+      category: 'product',
+    });
+  }
+
+  // Hit 10 customers - suggest pricing
+  if (state.product.customers >= 10 && prevWeek && prevWeek.customers < 10) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-10-users',
+      title: '10 Users Milestone!',
+      description: 'You have 10 users! Time to think about monetization. Set your pricing model in the Finance screen.',
+      category: 'product',
+    });
+  }
+
+  // Hit 100 customers
+  if (state.product.customers >= 100 && prevWeek && prevWeek.customers < 100) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-100-users',
+      title: '100 Users!',
+      description: 'Triple digits! Your product is gaining real traction. Investors will start noticing.',
+      category: 'product',
+    });
+  }
+
+  // Hit 1000 customers
+  if (state.product.customers >= 1000 && prevWeek && prevWeek.customers < 1000) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-1000-users',
+      title: '1,000 Users!',
+      description: 'A thousand users! You\'re building something people want. Time to scale.',
+      category: 'product',
+    });
+  }
+
+  // First revenue
+  if (state.finances.weeklyRevenue > 0 && prevWeek && prevWeek.revenue === 0) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-first-revenue',
+      title: 'First Revenue!',
+      description: `You\'re making money! $${Math.round(state.finances.weeklyRevenue)}/week might not sound like much, but every great company started here.`,
+      category: 'funding',
+    });
+  }
+
+  // First hire
+  if (state.team.teamSize > 0 && prevWeek && prevWeek.teamSize === 0) {
+    newLogEntries.push({
+      id: generateId(),
+      week,
+      eventId: 'milestone-first-hire',
+      title: 'First Hire!',
+      description: 'You\'re no longer alone! Having a team means faster development but also more responsibility.',
+      category: 'team',
+    });
+  }
+
+  if (newLogEntries.length === 0) return state;
+
+  return {
+    ...state,
+    eventLog: [...state.eventLog, ...newLogEntries],
+  };
+}
+
 // ─── Calendar advancement ─────────────────────────────────────────────
 
 function advanceCalendar(state: GameState): GameState {
@@ -494,27 +867,31 @@ function checkGameOver(state: GameState): GameState {
     };
   }
 
-  // 2. Bubble Pop: bubble drops below 15 AND company has raised funding
-  const hasFunding = state.finances.fundingHistory.length > 0;
-  if (state.market.bubbleIndex < 15 && hasFunding) {
+  // 2. Team wiped out: escalating attrition reduced team to 0
+  // Only trigger if the player HAD a team before (check week history for non-zero team)
+  const hadTeamBefore = state.weekHistory.some(w => w.teamSize > 0);
+  if (state.team.teamSize === 0 && hadTeamBefore && state.meta.week > 3) {
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: 'The bubble popped. Your AI startup was just another casualty.',
+        gameOverReason: "Everyone quit. Your entire team walked out. There's nobody left to build your 'disruptive AI solution.'",
       },
     };
   }
 
-  // 3. Team Revolt: morale drops below 15 with team > 0
-  if (state.team.teamSize > 0 && state.team.morale < 15) {
+  // 3. Shutdown chosen: player chose to shut down during bubble emergency
+  const shutdownChosen = state.eventLog.some(
+    (e) => e.eventId === 'auto-bubble-emergency' && e.resolvedOptionId === 'shutdown',
+  );
+  if (shutdownChosen) {
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: "Your team staged a walkout. Nobody wants to build your 'disruptive AI solution' anymore.",
+        gameOverReason: 'You chose to shut down. The remaining cash was returned to investors. The dream is over.',
       },
     };
   }
@@ -680,17 +1057,92 @@ export function advanceWeek(
   // 6. Simulate regulatory heat for regulated segments
   next = simulateRegulatoryHeat(next);
 
-  // 7. Record week history
+  // 7. Task 3: Founder skill learning — every 10 weeks, auto-increment lowest skill
+  if (next.meta.week % 10 === 0 && next.founder.learning > 0) {
+    const skillIncrement = Math.min(5, next.founder.learning / 20);
+    const { techSkill, bizSkill, network } = next.founder;
+    const minSkill = Math.min(techSkill, bizSkill, network);
+    const updatedFounder = { ...next.founder };
+    if (techSkill === minSkill) {
+      updatedFounder.techSkill = Math.min(100, techSkill + skillIncrement);
+    } else if (bizSkill === minSkill) {
+      updatedFounder.bizSkill = Math.min(100, bizSkill + skillIncrement);
+    } else {
+      updatedFounder.network = Math.min(100, network + skillIncrement);
+    }
+    next = { ...next, founder: updatedFounder };
+  }
+
+  // 8. Task 8: Track consecutive low morale weeks
+  const lowMoraleWeeks = next.team.morale < 40
+    ? (next.meta.lowMoraleWeeks ?? 0) + 1
+    : 0;
+
+  // Track content-SEO weeks for compounding effect
+  const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
+    ? (next.meta.contentSeoWeeks ?? 0) + 1
+    : 0;
+
+  next = {
+    ...next,
+    meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks },
+  };
+
+  // 9. Task 10: Morale impact from funding events this week
+  const fundingThisWeek = next.eventLog.filter(
+    (e) => e.week === next.meta.week && e.eventId === 'funding-raised',
+  );
+  const rejectedThisWeek = next.eventLog.filter(
+    (e) => e.week === next.meta.week && e.eventId === 'funding-rejected',
+  );
+  if (fundingThisWeek.length > 0) {
+    next = {
+      ...next,
+      team: { ...next.team, morale: Math.min(100, next.team.morale + 5) },
+    };
+  }
+  if (rejectedThisWeek.length > 0) {
+    next = {
+      ...next,
+      team: { ...next.team, morale: Math.max(0, next.team.morale - 3) },
+    };
+  }
+
+  // 10. Clamp all percentage values (safety net for entire pipeline)
+  const clamp0100 = (v: number) => Math.max(0, Math.min(100, v));
+  next = {
+    ...next,
+    team: { ...next.team, morale: clamp0100(next.team.morale) },
+    company: {
+      ...next.company,
+      reputation: clamp0100(next.company.reputation),
+      culture: clamp0100(next.company.culture),
+    },
+    market: {
+      ...next.market,
+      investorSentiment: clamp0100(next.market.investorSentiment),
+      talentMarketHeat: clamp0100(next.market.talentMarketHeat),
+    },
+    product: {
+      ...next.product,
+      overallQuality: clamp0100(next.product.overallQuality),
+    },
+  };
+
+  // 11. Check milestones
+  next = checkMilestones(next);
+
+  // 11. Record week history
   const summary = createWeekSummary(next);
   next = {
     ...next,
     weekHistory: [...next.weekHistory, summary],
   };
 
-  // 8. Check game over
+  // 12. Check game over
   next = checkGameOver(next);
 
-  // 9. Check win conditions
+  // 13. Check win conditions
   next = checkWinCondition(next);
 
   return next;

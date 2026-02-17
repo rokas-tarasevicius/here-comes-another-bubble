@@ -6,11 +6,11 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     id: 'routine-new-job-applicant',
     title: 'New Job Applicant',
     category: 'team',
-    minWeek: 2,
+    minWeek: 6,
     maxOccurrences: 0,
-    cooldownWeeks: 3,
-    weight: 6,
-    condition: (state) => state.finances.cash > 20_000,
+    cooldownWeeks: 4,
+    weight: 5,
+    condition: (state) => state.finances.cash > 40_000 || state.finances.fundingHistory.length > 0,
     descriptions: {
       default: 'A strong candidate just applied to your open role.',
       realistic:
@@ -23,7 +23,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     immediateEffects: [],
     decisionOptions: [
       {
-        id: 'hire',
+        id: 'hire_1_3500',
         label: 'Hire Them',
         description: 'Extend an offer immediately. $3,500/week salary.',
         effects: [
@@ -38,7 +38,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         effects: [],
       },
       {
-        id: 'lowball',
+        id: 'hire_1_2000',
         label: 'Offer Below Market',
         description: 'Offer $2,000/week plus equity. They might walk.',
         effects: [
@@ -513,7 +513,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     immediateEffects: [],
     decisionOptions: [
       {
-        id: 'hire-intern',
+        id: 'hire_1_1200',
         label: 'Hire the Intern',
         description: 'Cheap labor, $1,200/week. Will need mentoring time.',
         effects: [
@@ -861,7 +861,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     immediateEffects: [],
     decisionOptions: [
       {
-        id: 'strong-offer',
+        id: 'hire_1_4000',
         label: 'Make a Strong Offer',
         description: 'Top of market: $4,000/week. Lock them in.',
         effects: [
@@ -871,7 +871,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         ],
       },
       {
-        id: 'standard-offer',
+        id: 'hire_1_3200',
         label: 'Standard Offer',
         description: 'Market rate: $3,200/week. Fair but might lose them.',
         effects: [
