@@ -54,7 +54,6 @@ export function FinanceScreen() {
   // Pricing model display
   const pricingLabels: Record<string, string> = {
     free: 'Free',
-    freemium: 'Freemium',
     subscription: 'Subscription',
     'usage-based': 'Usage-Based',
     enterprise: 'Enterprise',

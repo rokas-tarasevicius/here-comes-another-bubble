@@ -38,7 +38,6 @@ export type FeatureStatus =
 
 export type PricingModel =
   | 'free'
-  | 'freemium'
   | 'subscription'
   | 'usage-based'
   | 'enterprise'

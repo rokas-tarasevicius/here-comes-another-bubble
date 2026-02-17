@@ -121,7 +121,17 @@ export function calculateValuation(state: GameState): number {
   // PMF multiplier (0.5 to 2.0)
   const pmfMultiplier = 0.5 + (state.product.pmfScore / 100) * 1.5;
 
-  const tractionValuation = stageBase * teamMultiplier * productMultiplier * customerMultiplier * bubbleMultiplier;
+  // Pricing model valuation multiplier: investors value recurring revenue models higher
+  const pricingValuationMap: Record<string, number> = {
+    'subscription': 1.5,
+    'enterprise': 1.8,
+    'usage-based': 1.2,
+    'free': 0.6,
+    'one-time': 1.0,
+  };
+  const pricingMultiplier = pricingValuationMap[state.finances.pricingModel] ?? 1.0;
+
+  const tractionValuation = stageBase * teamMultiplier * productMultiplier * customerMultiplier * bubbleMultiplier * pricingMultiplier;
 
   // ── Revenue-based valuation (matters post-revenue) ──
   const annualRevenue = state.finances.weeklyRevenue * 52;

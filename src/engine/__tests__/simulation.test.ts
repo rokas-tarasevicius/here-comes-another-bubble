@@ -733,37 +733,6 @@ describe('Pricing Switching Costs', () => {
     expect(switchLog).toBeDefined();
   });
 
-  it('free to freemium loses only 5% customers', () => {
-    const state = makeDeepState({
-      product: {
-        features: [makeShippedFeature()],
-        overallQuality: 60,
-        customers: 1000,
-        churnRate: 0.05,
-        bugs: 0,
-        pmfScore: 50,
-        techDebtTotal: 10,
-        name: 'TestCo',
-      },
-      finances: {
-        ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
-        pricingModel: 'free' as const,
-        lastPricingChangeWeek: 0,
-      },
-    });
-
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = advanceWeek(state, [
-      { type: 'set-pricing', model: 'freemium', pricePerUnit: 9 },
-    ]);
-    vi.restoreAllMocks();
-
-    const switchLog = result.eventLog.find(e => e.eventId === 'pricing-switch-penalty');
-    expect(switchLog).toBeDefined();
-    // Description should mention ~50 customers (5% of 1000)
-    expect(switchLog!.description).toContain('50');
-  });
-
   it('blocks pricing switch within 8 weeks of last change', () => {
     const state = makeDeepState({
       meta: { week: 5 },
@@ -1162,45 +1131,9 @@ describe('Team Management', () => {
     expect(salaryDecision).toBeDefined();
   });
 
-  it('salary scales by company stage', () => {
-    // At series-a, salaries should be 1.5x base
-    const state = makeDeepState({
-      meta: { week: 3 }, // divisible by 3 triggers team decision
-      company: { stage: 'series-a', name: 'TestCo', valuation: 10_000_000, culture: 60, reputation: 50, weekFounded: 1 },
-    });
-
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = simulateWeek(state);
-    vi.restoreAllMocks();
-
-    const teamDecision = result.pendingDecisions.find(d => d.eventId === 'auto-team-growth');
-    if (teamDecision) {
-      const engOption = teamDecision.options.find(o => o.id.startsWith('team-eng_'));
-      if (engOption) {
-        // Extract salary from option ID: team-eng_2_[salary]
-        const salary = parseInt(engOption.id.split('_')[2], 10);
-        // Base is 3500-5000, with 1.5x multiplier for series-a should be 5250-7500
-        expect(salary).toBeGreaterThanOrEqual(5000);
-      }
-    }
-  });
 });
 
 describe('Marketing Decisions', () => {
-  it('generates marketing budget decision every 4 weeks', () => {
-    const state = makeDeepState({
-      meta: { week: 4 }, // week 4 is divisible by 4 and > 2
-    });
-
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = simulateWeek(state);
-    vi.restoreAllMocks();
-
-    const marketingDecision = result.pendingDecisions.find(d => d.eventId === 'auto-marketing-budget');
-    expect(marketingDecision).toBeDefined();
-    expect(marketingDecision!.options).toHaveLength(4); // increase, decrease, viral, keep
-  });
-
   it('sustainable strategy auto-reduces marketing spend', () => {
     const state = makeDeepState({
       meta: { growthStrategy: 'sustainable' },
@@ -1280,34 +1213,6 @@ describe('Revenue Models', () => {
     expect(result.finances.weeklyRevenue).toBeLessThan(9000);
   });
 
-  it('freemium model only ~5% of users pay', () => {
-    const state = makeDeepState({
-      product: {
-        features: [makeShippedFeature({ quality: 80 })],
-        overallQuality: 80,
-        customers: 1000,
-        churnRate: 0.05,
-        bugs: 0,
-        pmfScore: 50,
-        techDebtTotal: 10,
-        name: 'TestCo',
-      },
-      finances: {
-        ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
-        pricingModel: 'freemium' as const,
-        pricePerUnit: 10,
-      },
-    });
-
-    vi.spyOn(Math, 'random').mockReturnValue(0.5);
-    const result = simulateWeek(state);
-    vi.restoreAllMocks();
-
-    // ~5% of ~1000 customers = ~50 paying * 10 * 0.8 quality ≈ 400
-    // Customer count shifts during simulation
-    expect(result.finances.weeklyRevenue).toBeGreaterThan(350);
-    expect(result.finances.weeklyRevenue).toBeLessThan(500);
-  });
 });
 
 describe('Multi-Week Realism Simulation', () => {

@@ -252,12 +252,6 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       let customerLoss = 0.15;
       let reputationLoss = -5;
 
-      // Free → freemium is a natural transition
-      if (currentModel === 'free' && model === 'freemium') {
-        customerLoss = 0.05;
-        reputationLoss = -1;
-      }
-
       const lostCustomers = Math.round(gameState.product.customers * customerLoss);
       newLogEntries.push({
         id: `pricing-${Date.now()}`,
@@ -460,6 +454,12 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
     try {
       const payload: SavePayload = JSON.parse(raw);
+
+      // Migrate saved 'freemium' pricing to 'subscription'
+      if ((payload.gameState.finances.pricingModel as string) === 'freemium') {
+        payload.gameState.finances.pricingModel = 'subscription';
+      }
+
       set({
         gameState: payload.gameState,
         currentScreen: 'overview',

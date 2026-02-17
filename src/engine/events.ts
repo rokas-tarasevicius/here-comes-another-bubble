@@ -1,6 +1,7 @@
-import type { GameState, EventLogEntry, PendingDecision, Feature } from '../types/index.ts';
+import type { GameState, EventLogEntry, PendingDecision, Feature, TeamMember } from '../types/index.ts';
 import { ALL_EVENTS } from '../data/events/index.ts';
 import { generateId } from '../utils/id.ts';
+import { randomName } from '../data/names.ts';
 
 /**
  * Count how many times a given event has fired in the log.
@@ -59,6 +60,8 @@ function applyEffects(state: GameState, effects: { path: string; operation: 'add
   }
 
   next.finances.founderEquity = Math.max(0, Math.min(1, next.finances.founderEquity));
+  next.product.bugs = Math.max(0, next.product.bugs);
+  next.product.techDebtTotal = Math.max(0, next.product.techDebtTotal);
 
   return next;
 }
@@ -126,15 +129,30 @@ function autoResolveExpired(state: GameState): GameState {
         const hireParts = optionId.split('_');
         const hireCount = parseInt(hireParts[1], 10) || 1;
         const hireSalary = parseInt(hireParts[2], 10) || 3500;
-        const oldTotal = next.team.teamSize * next.team.avgSalary;
-        const newTotal = oldTotal + hireCount * hireSalary;
-        const newSize = next.team.teamSize + hireCount;
+        const newHireMembers: TeamMember[] = [];
+        for (let i = 0; i < hireCount; i++) {
+          newHireMembers.push({
+            id: generateId(),
+            name: randomName(),
+            role: 'engineer',
+            skill: 50 + Math.floor(Math.random() * 30),
+            salary: hireSalary,
+            morale: 80,
+            weekHired: next.meta.week,
+            traits: [],
+            boosts: {},
+          });
+        }
+        const allMembers = [...(next.team.members ?? []), ...newHireMembers];
+        const newSize = allMembers.length;
+        const newAvg = newSize > 0 ? Math.round(allMembers.reduce((s, m) => s + m.salary, 0) / newSize) : hireSalary;
         next = {
           ...next,
           team: {
             ...next.team,
+            members: allMembers,
             teamSize: newSize,
-            avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : hireSalary,
+            avgSalary: newAvg,
           },
         };
       }
@@ -144,15 +162,30 @@ function autoResolveExpired(state: GameState): GameState {
         const parts = optionId.split('_');
         const count = parseInt(parts[1], 10) || 2;
         const salary = parseInt(parts[2], 10) || 3500;
-        const oldTotal = next.team.teamSize * next.team.avgSalary;
-        const newTotal = oldTotal + count * salary;
-        const newSize = next.team.teamSize + count;
+        const expandMembers: TeamMember[] = [];
+        for (let i = 0; i < count; i++) {
+          expandMembers.push({
+            id: generateId(),
+            name: randomName(),
+            role: optionId.startsWith('team-eng_') ? 'engineer' : 'marketer',
+            skill: 45 + Math.floor(Math.random() * 25),
+            salary,
+            morale: 75,
+            weekHired: next.meta.week,
+            traits: [],
+            boosts: {},
+          });
+        }
+        const allMembers = [...(next.team.members ?? []), ...expandMembers];
+        const newSize = allMembers.length;
+        const newAvg = newSize > 0 ? Math.round(allMembers.reduce((s, m) => s + m.salary, 0) / newSize) : salary;
         next = {
           ...next,
           team: {
             ...next.team,
+            members: allMembers,
             teamSize: newSize,
-            avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : salary,
+            avgSalary: newAvg,
           },
         };
       }
@@ -199,12 +232,18 @@ function autoResolveExpired(state: GameState): GameState {
       if (optionId.startsWith('layoff_')) {
         const layoffParts = optionId.split('_');
         const layoffCount = parseInt(layoffParts[1], 10) || 1;
-        const actualLayoffs = Math.min(next.team.teamSize, layoffCount);
+        const memberCount = next.team.members?.length ?? next.team.teamSize;
+        const actualLayoffs = Math.min(memberCount, layoffCount);
+        const newMembers = (next.team.members ?? []).slice(0, -actualLayoffs);
+        const newSize = newMembers.length;
+        const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
         next = {
           ...next,
           team: {
             ...next.team,
-            teamSize: next.team.teamSize - actualLayoffs,
+            members: newMembers,
+            teamSize: newSize,
+            avgSalary: newAvg,
           },
           company: {
             ...next.company,
@@ -270,9 +309,9 @@ export function processEvents(state: GameState): GameState {
     return true;
   });
 
-  // Select 1-3 events (fewer if pool is small)
+  // Select 1-2 events (fewer if pool is small)
   const eventCount = Math.min(
-    Math.floor(Math.random() * 3) + 1,
+    Math.floor(Math.random() * 2) + 1,
     eligible.length,
   );
   const selectedEvents = weightedSelect(eligible, eventCount);

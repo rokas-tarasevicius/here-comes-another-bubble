@@ -122,7 +122,7 @@ describe('addDecision', () => {
   it('appends multiple decisions in order', () => {
     useGameStore.getState().addDecision({
       type: 'set-pricing',
-      model: 'freemium',
+      model: 'subscription',
       pricePerUnit: 0,
     });
     useGameStore.getState().addDecision({
@@ -143,7 +143,7 @@ describe('removeDecision', () => {
   it('removes a decision by index', () => {
     useGameStore.getState().addDecision({
       type: 'set-pricing',
-      model: 'freemium',
+      model: 'subscription',
       pricePerUnit: 0,
     });
     useGameStore.getState().addDecision({

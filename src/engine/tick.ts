@@ -123,12 +123,6 @@ function applySetPricing(
     let customerLoss = 0.15; // Default: lose 15% of customers
     let reputationLoss = -5;
 
-    // Exception: free → freemium is a natural transition
-    if (currentModel === 'free' && model === 'freemium') {
-      customerLoss = 0.05;
-      reputationLoss = -1;
-    }
-
     const lostCustomers = Math.round(state.product.customers * customerLoss);
     const logEntry: EventLogEntry = {
       id: generateId(),
@@ -327,6 +321,8 @@ function applyEventResponse(
   next.team.morale = clamp100(next.team.morale);
   next.company.reputation = clamp100(next.company.reputation);
   next.company.culture = clamp100(next.company.culture);
+  next.product.bugs = Math.max(0, next.product.bugs);
+  next.product.techDebtTotal = Math.max(0, next.product.techDebtTotal);
 
   // Remove from pending, mark in log
   next = {

@@ -37,16 +37,11 @@ export function CompanyScreen() {
   const setProductFocus = useGameStore((s) => s.setProductFocus);
   const setAcquisitionChannel = useGameStore((s) => s.setAcquisitionChannel);
   const setMarketingBudget = useGameStore((s) => s.setMarketingBudget);
-  const hireTeam = useGameStore((s) => s.hireTeam);
-  const fireTeam = useGameStore((s) => s.fireTeam);
   const makeOffer = useGameStore((s) => s.makeOffer);
   const fireMember = useGameStore((s) => s.fireMember);
 
   const startFeature = useGameStore((s) => s.startFeature);
 
-  const [hireCount, setHireCount] = useState(1);
-  const [hireSalary, setHireSalary] = useState(3500);
-  const [fireCount, setFireCount] = useState(1);
   const [marketingInput, setMarketingInput] = useState('');
   const [featureName, setFeatureName] = useState('');
   const [offerSalaries, setOfferSalaries] = useState<Record<string, string>>({});
@@ -55,17 +50,6 @@ export function CompanyScreen() {
   if (!gameState) return null;
 
   const { team, company, product, finances, meta, founder } = gameState;
-  const hiringCost = hireCount * hireSalary * 2;
-  const canAffordHire = finances.cash >= hiringCost;
-  const canFire = (team.members?.length ?? team.teamSize) > 0;
-
-  // Salary scaling by stage
-  const salaryMultiplier =
-    company.stage === 'series-b' || company.stage === 'series-c' || company.stage === 'growth' || company.stage === 'public' ? 1.8
-    : company.stage === 'series-a' ? 1.5
-    : company.stage === 'seed' ? 1.2
-    : 1.0;
-  const suggestedSalary = Math.round(3000 * salaryMultiplier);
 
   // Channel availability checks
   const channelAvailable = (id: AcquisitionChannel): boolean => {
@@ -370,81 +354,6 @@ export function CompanyScreen() {
             })}
           </div>
         )}
-      </div>
-
-      {/* Quick Hire (backward compat) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Hire */}
-        <div className="retro-card">
-          <h3 className="retro-section-heading">Quick Hire (Generic)</h3>
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Count</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={hireCount}
-                  onChange={(e) => setHireCount(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
-                  className="retro-input mt-1 w-full"
-                />
-              </div>
-              <div>
-                <label className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">
-                  Salary/wk <span className="normal-case text-[--color-retro-text-muted]">(suggested: ${suggestedSalary.toLocaleString()})</span>
-                </label>
-                <input
-                  type="number"
-                  min={1000}
-                  max={20000}
-                  step={500}
-                  value={hireSalary}
-                  onChange={(e) => setHireSalary(Math.max(1000, parseInt(e.target.value) || 3000))}
-                  className="retro-input mt-1 w-full"
-                />
-              </div>
-            </div>
-            <div className="text-xs text-[--color-retro-text-muted]">
-              Signing cost: {formatCurrency(hiringCost)} (2 weeks salary)
-            </div>
-            <button
-              onClick={() => { hireTeam(hireCount, hireSalary); }}
-              disabled={!canAffordHire}
-              className="btn-glossy btn-blue w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {canAffordHire ? `Quick Hire ${hireCount} for ${formatCurrency(hiringCost)}` : `Need ${formatCurrency(hiringCost)} (have ${formatCurrency(finances.cash)})`}
-            </button>
-          </div>
-        </div>
-
-        {/* Bulk Fire */}
-        <div className="retro-card">
-          <h3 className="retro-section-heading">Bulk Layoff</h3>
-          <div className="space-y-3">
-            <div>
-              <label className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Count</label>
-              <input
-                type="number"
-                min={1}
-                max={Math.max(1, team.members?.length ?? team.teamSize)}
-                value={Math.min(fireCount, (team.members?.length ?? team.teamSize) || 1)}
-                onChange={(e) => setFireCount(Math.max(1, Math.min(team.members?.length ?? team.teamSize, parseInt(e.target.value) || 1)))}
-                className="retro-input mt-1 w-full"
-              />
-            </div>
-            <div className="text-xs text-[--color-retro-text-muted]">
-              Morale hit: {fireCount >= 3 ? '-12' : fireCount >= 2 ? '-8' : '-4'}
-            </div>
-            <button
-              onClick={() => { fireTeam(fireCount); }}
-              disabled={!canFire}
-              className="btn-glossy btn-red w-full disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {canFire ? `Let go ${Math.min(fireCount, team.members?.length ?? team.teamSize)} team member${Math.min(fireCount, team.members?.length ?? team.teamSize) > 1 ? 's' : ''}` : 'No team to let go'}
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Marketing Budget */}

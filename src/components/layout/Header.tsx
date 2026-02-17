@@ -50,8 +50,16 @@ export function Header() {
 
   if (!gameState) return null;
 
+  const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const { meta, company, finances, pendingDecisions } = gameState;
   const pendingCount = pendingDecisions.length;
+
+  // Check if any urgent decisions (due within 1 week) are unresolved
+  const hasUrgentUnresolved = pendingDecisions.some(
+    (d) => d.deadline <= meta.week + 1 && !decisionsThisTurn.some(
+      (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+    )
+  );
   const monthName = MONTH_NAMES[meta.month - 1] ?? 'Jan';
   const dateStr = `Week ${meta.week} \u2014 ${monthName} ${meta.day}, ${meta.year}`;
   const stageBadgeClass = STAGE_COLORS[company.stage] ?? 'bg-gray-700 text-gray-300';
@@ -86,16 +94,22 @@ export function Header() {
           </span>
         )}
 
+        {hasUrgentUnresolved && (
+          <span className="retro-badge retro-badge-red text-xs animate-pulse">
+            Decisions Due!
+          </span>
+        )}
+
         <button
           onClick={endWeek}
-          disabled={isSimulating}
+          disabled={isSimulating || hasUrgentUnresolved}
           className={`btn-glossy text-xs md:text-sm ${
-            isSimulating
+            isSimulating || hasUrgentUnresolved
               ? 'btn-silver cursor-not-allowed opacity-60'
               : 'btn-green'
           }`}
         >
-          {isSimulating ? 'Simulating...' : 'Next Week \u2192'}
+          {isSimulating ? 'Simulating...' : hasUrgentUnresolved ? 'Resolve Decisions First' : 'Next Week \u2192'}
         </button>
       </div>
     </header>

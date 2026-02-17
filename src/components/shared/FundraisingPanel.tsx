@@ -38,7 +38,6 @@ const NEXT_FUNDING_STAGE: Partial<Record<CompanyStage, string>> = {
 
 const PRICING_MODELS: { value: PricingModel; label: string }[] = [
   { value: 'free', label: 'Free' },
-  { value: 'freemium', label: 'Freemium' },
   { value: 'subscription', label: 'Subscription' },
   { value: 'usage-based', label: 'Usage-Based' },
   { value: 'enterprise', label: 'Enterprise' },

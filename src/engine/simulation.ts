@@ -269,16 +269,6 @@ function simulateRevenue(state: GameState): GameState {
       revenue = customers * 0.05 * qualityModifier;
       break;
 
-    case 'freemium': {
-      // Price sensitivity: higher price = lower conversion rate
-      // Base 5% at $10/unit, decreasing as price increases
-      const baseConversionRate = 0.05;
-      const priceSensitivity = pricePerUnit > 10 ? Math.max(0.01, baseConversionRate - (pricePerUnit - 10) * 0.005) : baseConversionRate;
-      const payingUsers = Math.floor(customers * priceSensitivity);
-      revenue = payingUsers * pricePerUnit * qualityModifier * bugPenalty;
-      break;
-    }
-
     case 'subscription':
       revenue = customers * pricePerUnit * qualityModifier * bugPenalty;
       break;
@@ -292,7 +282,7 @@ function simulateRevenue(state: GameState): GameState {
     }
 
     case 'enterprise': {
-      const enterpriseMultiplier = 15;
+      const enterpriseMultiplier = 20;
       let enterpriseRevenue = customers * pricePerUnit * enterpriseMultiplier * qualityModifier * bugPenalty;
       // Task 6: Enterprise requires team size >= 5 for full revenue
       const totalTeam = state.team.teamSize + state.team.aiAgents.length;
@@ -751,9 +741,11 @@ function simulateCustomers(state: GameState): GameState {
     ? Math.sqrt(state.finances.marketingSpend / 1000) * 2 * channelMarketingMultiplier + marketingAgentBonus
     : marketingAgentBonus;
 
-  const pricingGrowthBonus = state.finances.pricingModel === 'free' ? 1.5
-    : state.finances.pricingModel === 'freemium' ? 1.3
-    : state.finances.pricingModel === 'enterprise' ? 0.5
+  const pricingGrowthBonus = state.finances.pricingModel === 'free' ? 2.0
+    : state.finances.pricingModel === 'subscription' ? 0.8
+    : state.finances.pricingModel === 'enterprise' ? 0.4
+    : state.finances.pricingModel === 'usage-based' ? 1.2
+    : state.finances.pricingModel === 'one-time' ? 1.0
     : 1.0;
 
   // Task 4: Competitor market share pressure
@@ -785,10 +777,18 @@ function simulateCustomers(state: GameState): GameState {
     return sum;
   }, 0);
 
-  const pricingChurnPenalty = state.finances.pricingModel === 'enterprise' ? 0.02 : 0;
+  // Pricing-specific churn adjustments
+  const pricingChurnMap: Record<string, number> = {
+    'free': 0.08,
+    'subscription': 0.03,
+    'enterprise': 0.01,
+    'usage-based': 0.05,
+    'one-time': 0.04,
+  };
+  const pricingBaseChurn = pricingChurnMap[state.finances.pricingModel] ?? 0.04;
 
   const effectiveChurn = clamp(
-    (baseChurn + qualityBonus + bugPenalty + competitorPull - supportBonus + pricingChurnPenalty - channelChurnReduction) * diffMods.churnMultiplier,
+    (pricingBaseChurn + qualityBonus + bugPenalty + competitorPull - supportBonus - channelChurnReduction) * diffMods.churnMultiplier,
     0.01,
     0.25,
   );
@@ -995,65 +995,6 @@ function generateAutoDecisions(state: GameState): GameState {
     }
   }
 
-  // --- TEAM DECISIONS (every 2-3 weeks, but not too early) ---
-  // Don't overwhelm early-game players with hire decisions when they can't afford it
-  const canSustainHire = state.finances.cash > 30000; // Need enough cash to sustain a hire
-  if (week > 4 && canSustainHire && week % 3 === 0) {
-    const alreadyPending = state.pendingDecisions.some(
-      (d) => d.eventId === 'auto-team-growth',
-    );
-
-    if (!alreadyPending) {
-      const baseEngSalary = 3500 + Math.floor(Math.random() * 1500);
-      const baseGrowthSalary = 2500 + Math.floor(Math.random() * 1000);
-      const engSalary = Math.round(baseEngSalary * salaryScale);
-      const growthSalary = Math.round(baseGrowthSalary * salaryScale);
-      const decisionId = generateId();
-
-      newDecisions.push({
-        id: decisionId,
-        eventId: 'auto-team-growth',
-        prompt: 'Your team needs to grow. Where should you invest?',
-        options: [
-          {
-            id: `team-eng_2_${engSalary}`,
-            label: 'Expand Engineering',
-            description: `+2 engineers (~$${engSalary.toLocaleString()}/wk avg). Faster feature development.`,
-            effects: [
-              { path: 'company.reputation', operation: 'add', value: 1 },
-            ],
-          },
-          {
-            id: `team-growth_2_${growthSalary}`,
-            label: 'Expand Sales & Marketing',
-            description: `+2 growth team (~$${growthSalary.toLocaleString()}/wk avg). +$500/wk marketing spend.`,
-            effects: [
-              { path: 'finances.marketingSpend', operation: 'add', value: 500 },
-            ],
-          },
-          {
-            id: 'stay-lean',
-            label: 'Stay Lean',
-            description: 'Save cash and extend runway. No new hires.',
-            effects: [],
-          },
-        ],
-        deadline: week + 3,
-        defaultOptionId: 'stay-lean',
-      });
-
-      newLogEntries.push({
-        id: generateId(),
-        week,
-        eventId: 'auto-team-growth',
-        title: 'Team Growth Decision',
-        description: 'Time to decide how to grow the team.',
-        category: 'team',
-        decisionId,
-      });
-    }
-  }
-
   // --- PRODUCT DECISIONS (every 2-3 weeks) ---
   if (week % 3 === 0) {
     const demands = state.market.segmentData.customerDemand;
@@ -1087,12 +1028,12 @@ function generateAutoDecisions(state: GameState): GameState {
         newDecisions.push({
           id: decisionId,
           eventId: 'auto-sprint-planning',
-          prompt: 'Sprint planning: what should the team build next?',
+          prompt: `Sprint planning: ship what customers actually want, or what you told investors you'd build? Tech debt is at ${Math.round(state.product.techDebtTotal)}%.`,
           options: [
             {
               id: `feature_${featureA}_${relevanceA}`,
               label: `Build ${nameA}`,
-              description: `User-facing feature, relevance: ${relevanceA}%`,
+              description: `What customers are actually asking for. Relevance: ${relevanceA}%. Your investors won't understand it.`,
               effects: [
                 { path: 'company.reputation', operation: 'add', value: 1 },
               ],
@@ -1100,7 +1041,7 @@ function generateAutoDecisions(state: GameState): GameState {
             {
               id: `feature_${featureB}_${relevanceB}`,
               label: `Build ${nameB}`,
-              description: `Enterprise value, relevance: ${relevanceB}%`,
+              description: `What looks good in the pitch deck. Relevance: ${relevanceB}%. Enterprise value — if you can spell "enterprise."`,
               effects: [
                 { path: 'company.reputation', operation: 'add', value: 1 },
               ],
@@ -1108,7 +1049,7 @@ function generateAutoDecisions(state: GameState): GameState {
             {
               id: 'fix-tech-debt',
               label: 'Pay Down Tech Debt',
-              description: `Reduce tech debt by ~15 points and fix ~2 bugs (currently ${Math.round(state.product.techDebtTotal)}% debt, ${state.product.bugs} bugs)`,
+              description: `The codebase is held together by duct tape and prayers. -15 debt, -2 bugs. (Currently ${Math.round(state.product.techDebtTotal)}% debt, ${state.product.bugs} bugs)`,
               effects: [
                 { path: 'product.techDebtTotal', operation: 'add', value: -15 },
                 { path: 'product.bugs', operation: 'add', value: -2 },
@@ -1124,7 +1065,7 @@ function generateAutoDecisions(state: GameState): GameState {
           week,
           eventId: 'auto-sprint-planning',
           title: 'Sprint Planning',
-          description: 'The team is ready for the next sprint.',
+          description: 'Another sprint, another impossible set of promises to keep.',
           category: 'product',
           decisionId,
         });
@@ -1144,12 +1085,12 @@ function generateAutoDecisions(state: GameState): GameState {
         newDecisions.push({
           id: decisionId,
           eventId: 'auto-sprint-planning',
-          prompt: 'Sprint planning: what should the team build next?',
+          prompt: `Sprint planning: only one feature left on the roadmap. Tech debt is at ${Math.round(state.product.techDebtTotal)}%.`,
           options: [
             {
               id: `feature_${feature}_${relevance}`,
               label: `Build ${featureName}`,
-              description: `Customers are asking for it (relevance: ${relevance}%)`,
+              description: `Customers are literally asking for it (relevance: ${relevance}%). Imagine that — building what people want.`,
               effects: [
                 { path: 'company.reputation', operation: 'add', value: 1 },
               ],
@@ -1157,7 +1098,7 @@ function generateAutoDecisions(state: GameState): GameState {
             {
               id: 'fix-tech-debt',
               label: 'Pay Down Tech Debt',
-              description: `Reduce tech debt by ~15 points and fix ~2 bugs (currently ${Math.round(state.product.techDebtTotal)}% debt, ${state.product.bugs} bugs)`,
+              description: `The codebase is held together by duct tape and prayers. -15 debt, -2 bugs. (Currently ${Math.round(state.product.techDebtTotal)}% debt, ${state.product.bugs} bugs)`,
               effects: [
                 { path: 'product.techDebtTotal', operation: 'add', value: -15 },
                 { path: 'product.bugs', operation: 'add', value: -2 },
@@ -1173,7 +1114,7 @@ function generateAutoDecisions(state: GameState): GameState {
           week,
           eventId: 'auto-sprint-planning',
           title: 'Sprint Planning',
-          description: 'The team is ready for the next sprint.',
+          description: 'Another sprint, another impossible set of promises to keep.',
           category: 'product',
           decisionId,
         });
@@ -1193,12 +1134,12 @@ function generateAutoDecisions(state: GameState): GameState {
       newDecisions.push({
         id: decisionId,
         eventId: 'auto-board-meeting',
-        prompt: 'Board meeting: investors want to discuss direction.',
+        prompt: 'The board wants a strategy update. Your lead investor just texted "we need to talk" which is never good.',
         options: [
           {
             id: 'strategy_growth-hack',
-            label: 'Go Aggressive',
-            description: '2x marketing spend, +reputation, higher burn rate.',
+            label: 'Pivot to AI (Again)',
+            description: 'Slap "AI-powered" on everything. 2x marketing spend, +reputation with VCs who don\'t know better.',
             effects: [
               { path: 'finances.marketingSpend', operation: 'multiply', value: 2 },
               { path: 'company.reputation', operation: 'add', value: 3 },
@@ -1206,8 +1147,8 @@ function generateAutoDecisions(state: GameState): GameState {
           },
           {
             id: 'strategy_sustainable',
-            label: 'Focus on Profitability',
-            description: 'Cut marketing, reduce churn, lower burn.',
+            label: 'Actually Try to Make Money',
+            description: 'Revolutionary concept: spend less than you earn. Cut marketing, reduce churn.',
             effects: [
               { path: 'finances.marketingSpend', operation: 'multiply', value: 0.5 },
               { path: 'product.churnRate', operation: 'multiply', value: 0.8 },
@@ -1215,8 +1156,8 @@ function generateAutoDecisions(state: GameState): GameState {
           },
           {
             id: 'strategy_quality-first',
-            label: 'Double Down on Product',
-            description: 'Boost product quality, slower growth.',
+            label: 'Ship Something That Works',
+            description: 'Radical idea: fix bugs before adding features. +5 quality, +3 culture. Your engineers will cry tears of joy.',
             effects: [
               { path: 'product.overallQuality', operation: 'add', value: 5 },
               { path: 'company.culture', operation: 'add', value: 3 },
@@ -1232,7 +1173,7 @@ function generateAutoDecisions(state: GameState): GameState {
         week,
         eventId: 'auto-board-meeting',
         title: 'Board Meeting',
-        description: 'Time to set company direction.',
+        description: 'Your investors want to "align on strategy," which means they want you to grow faster while spending less.',
         category: 'market',
         decisionId,
       });
@@ -1265,12 +1206,12 @@ function generateAutoDecisions(state: GameState): GameState {
       newDecisions.push({
         id: decisionId,
         eventId: `auto-ai-agent-${provider.name}`,
-        prompt: `${provider.name} is offering their ${typeLabel} AI agent at $${provider.cost}/week. Capability: ${provider.capability}/100, Reliability: ${provider.reliability}/100.`,
+        prompt: `${provider.name} is offering their ${typeLabel} AI agent. It promises to replace your entire team. (It won't.) $${provider.cost}/week. Capability: ${provider.capability}/100, Reliability: ${provider.reliability}/100.`,
         options: [
           {
             id: `ai_${provider.name}_${agentType}_${provider.cost}_${provider.capability}_${provider.reliability}`,
             label: `Deploy ${typeLabel} Agent`,
-            description: `Add ${provider.name} ${typeLabel} agent ($${provider.cost}/wk)`,
+            description: `Add ${provider.name} ${typeLabel} agent ($${provider.cost}/wk). Your engineers will love having another tool to babysit.`,
             effects: [
               { path: 'finances.cash', operation: 'add', value: -provider.cost * 2 },
             ],
@@ -1278,7 +1219,7 @@ function generateAutoDecisions(state: GameState): GameState {
           {
             id: 'decline',
             label: 'Decline',
-            description: 'Not interested right now.',
+            description: 'You can always hire humans who also hallucinate, but at least they feel bad about it.',
             effects: [],
           },
         ],
@@ -1291,7 +1232,7 @@ function generateAutoDecisions(state: GameState): GameState {
         week,
         eventId: `auto-ai-agent-${provider.name}`,
         title: `AI Agent Offer: ${provider.name}`,
-        description: `${provider.name} pitches their ${typeLabel} agent.`,
+        description: `${provider.name} pitches their ${typeLabel} agent. The demo was flawless, which means production will be interesting.`,
         category: 'product',
         decisionId,
       });
@@ -1415,68 +1356,6 @@ function generateAutoDecisions(state: GameState): GameState {
     }
   }
 
-  // --- Task 9: MARKETING BUDGET DECISIONS (every 4 weeks) ---
-  if (week > 2 && week % 4 === 0) {
-    const alreadyPending = state.pendingDecisions.some(
-      (d) => d.eventId === 'auto-marketing-budget',
-    );
-
-    if (!alreadyPending) {
-      const currentSpend = state.finances.marketingSpend;
-      const decisionId = generateId();
-
-      newDecisions.push({
-        id: decisionId,
-        eventId: 'auto-marketing-budget',
-        prompt: `Marketing budget review. Currently spending $${currentSpend.toLocaleString()}/week on marketing.`,
-        options: [
-          {
-            id: 'increase-marketing',
-            label: 'Increase Budget (+$1,000/wk)',
-            description: 'More customer growth, higher burn.',
-            effects: [
-              { path: 'finances.marketingSpend', operation: 'add', value: 1000 },
-            ],
-          },
-          {
-            id: 'decrease-marketing',
-            label: 'Decrease Budget (-$500/wk)',
-            description: 'Save money, slower growth.',
-            effects: [
-              { path: 'finances.marketingSpend', operation: 'add', value: -500 },
-            ],
-          },
-          {
-            id: 'viral-campaign',
-            label: 'Launch Viral Campaign ($5K)',
-            description: 'One-time spend for a big customer boost. 20% chance of PR disaster.',
-            effects: [
-              { path: 'finances.cash', operation: 'add', value: -5000 },
-            ],
-          },
-          {
-            id: 'keep-marketing',
-            label: 'Keep Current Budget',
-            description: 'No changes.',
-            effects: [],
-          },
-        ],
-        deadline: week + 3,
-        defaultOptionId: 'keep-marketing',
-      });
-
-      newLogEntries.push({
-        id: generateId(),
-        week,
-        eventId: 'auto-marketing-budget',
-        title: 'Marketing Budget Review',
-        description: 'Time to review your marketing spend.',
-        category: 'market',
-        decisionId,
-      });
-    }
-  }
-
   // --- PARTNERSHIP OPPORTUNITIES (every 8-10 weeks after week 5) ---
   if (week > 5 && (week % 8 === 0 || (week % 10 === 0 && Math.random() < 0.4))) {
     const alreadyPending = state.pendingDecisions.some(
@@ -1485,10 +1364,10 @@ function generateAutoDecisions(state: GameState): GameState {
 
     if (!alreadyPending) {
       const partners = [
-        { name: 'AWS', benefit: 'cloud-credits', desc: '$50K in cloud credits, +5 reputation', cashBonus: 50000, repBonus: 5 },
-        { name: 'Y Combinator', benefit: 'accelerator', desc: 'Mentorship, network boost, +10 reputation', cashBonus: 25000, repBonus: 10 },
-        { name: 'Microsoft', benefit: 'enterprise-access', desc: 'Enterprise customer pipeline, +3 reputation', cashBonus: 0, repBonus: 3 },
-        { name: 'Stripe', benefit: 'payments', desc: 'Reduced payment fees, +$20K credits', cashBonus: 20000, repBonus: 2 },
+        { name: 'AWS', benefit: 'cloud-credits', desc: '$50K in cloud credits. First taste is free — the addiction comes later. +5 reputation', cashBonus: 50000, repBonus: 5 },
+        { name: 'Y Combinator', benefit: 'accelerator', desc: 'A hoodie, a network, and the right to say "we\'re YC-backed" at every party. +10 reputation', cashBonus: 25000, repBonus: 10 },
+        { name: 'Microsoft', benefit: 'enterprise-access', desc: 'Enterprise customer pipeline. Your product will be buried somewhere in Microsoft Teams where no one will find it. +3 reputation', cashBonus: 0, repBonus: 3 },
+        { name: 'Stripe', benefit: 'payments', desc: 'Stripe takes 2.9% of your dreams, but at least the API is nice. +$20K credits', cashBonus: 20000, repBonus: 2 },
       ];
       const partner = partners[Math.floor(Math.random() * partners.length)];
       const decisionId = generateId();
@@ -1525,59 +1404,6 @@ function generateAutoDecisions(state: GameState): GameState {
         title: `Partnership Offer: ${partner.name}`,
         description: `${partner.name} reached out about a partnership.`,
         category: 'market',
-        decisionId,
-      });
-    }
-  }
-
-  // --- TALENT OPPORTUNITY (random, every ~6 weeks, only if you can afford it) ---
-  if (week > 6 && Math.random() < 0.15 && state.finances.cash > 40000) {
-    const alreadyPending = state.pendingDecisions.some(
-      (d) => d.eventId === 'auto-talent-opportunity',
-    );
-
-    if (!alreadyPending) {
-      const candidates = [
-        { role: 'Ex-Google engineer', salary: Math.round(5000 * salaryScale), skill: 'engineering', moraleBoost: 3 },
-        { role: 'Growth hacker from Uber', salary: Math.round(4500 * salaryScale), skill: 'growth', moraleBoost: 2 },
-        { role: 'Stanford AI researcher', salary: Math.round(6000 * salaryScale), skill: 'AI', moraleBoost: 5 },
-        { role: 'Serial entrepreneur (COO)', salary: Math.round(5500 * salaryScale), skill: 'operations', moraleBoost: 4 },
-      ];
-      const candidate = candidates[Math.floor(Math.random() * candidates.length)];
-      const decisionId = generateId();
-
-      newDecisions.push({
-        id: decisionId,
-        eventId: 'auto-talent-opportunity',
-        prompt: `A ${candidate.role} is interested in joining! They want $${candidate.salary.toLocaleString()}/wk.`,
-        options: [
-          {
-            id: `hire_1_${candidate.salary}`,
-            label: `Hire (${candidate.role})`,
-            description: `$${candidate.salary.toLocaleString()}/wk + $${(candidate.salary * 2).toLocaleString()} signing bonus. Morale +${candidate.moraleBoost}.`,
-            effects: [
-              { path: 'team.morale', operation: 'add', value: candidate.moraleBoost },
-              { path: 'company.reputation', operation: 'add', value: 2 },
-            ],
-          },
-          {
-            id: 'pass-talent',
-            label: 'Pass',
-            description: 'Not the right time to hire.',
-            effects: [],
-          },
-        ],
-        deadline: week + 2,
-        defaultOptionId: 'pass-talent',
-      });
-
-      newLogEntries.push({
-        id: generateId(),
-        week,
-        eventId: 'auto-talent-opportunity',
-        title: `Talent: ${candidate.role}`,
-        description: `A strong candidate wants to join your team.`,
-        category: 'team',
         decisionId,
       });
     }
