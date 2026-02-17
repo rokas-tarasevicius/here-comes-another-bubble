@@ -41,15 +41,18 @@ export function WeekRecap() {
   const showWeekRecap = useGameStore((s) => s.showWeekRecap);
   const dismissWeekRecap = useGameStore((s) => s.dismissWeekRecap);
 
+  const weekHistory = gameState?.weekHistory;
+  const shouldDismiss = showWeekRecap && (!gameState || !weekHistory || weekHistory.length === 0);
+
+  useEffect(() => {
+    if (shouldDismiss) dismissWeekRecap();
+  }, [shouldDismiss, dismissWeekRecap]);
+
   if (!showWeekRecap || !gameState) return null;
 
-  const { weekHistory, eventLog, meta } = gameState;
+  const { eventLog, meta } = gameState;
 
-  // We need at least the current week's summary
-  useEffect(() => {
-    if (weekHistory.length === 0) dismissWeekRecap();
-  }, [weekHistory.length, dismissWeekRecap]);
-  if (weekHistory.length === 0) return null;
+  if (!weekHistory || weekHistory.length === 0) return null;
 
   const latest = weekHistory[weekHistory.length - 1];
   const previous = weekHistory.length >= 2 ? weekHistory[weekHistory.length - 2] : null;
@@ -107,7 +110,7 @@ export function WeekRecap() {
       >
         {/* Header */}
         <h2 className="text-xl font-bold font-[--font-retro-heading] text-[--color-retro-text] mb-4 text-center">
-          Week {meta.week} Recap
+          Week {meta.week - 1} Recap
         </h2>
 
         {/* Delta rows */}

@@ -78,9 +78,12 @@ export function MarketScreen() {
 
             {/* Growth Rate */}
             <div>
-              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Growth Rate</span>
+              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Annual Growth</span>
               <p className="text-lg font-bold font-[--font-retro-mono] text-[--color-retro-blue]">
                 {formatPercent(segmentData.growthRate * 100)}
+              </p>
+              <p className="text-xs text-[--color-retro-text-muted]">
+                +{formatCurrency(segmentData.size * segmentData.growthRate / 52)}/wk
               </p>
             </div>
 

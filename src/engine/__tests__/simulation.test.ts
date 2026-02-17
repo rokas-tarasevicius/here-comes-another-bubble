@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { simulateWeek } from '../simulation.ts';
 import { advanceWeek } from '../tick.ts';
 import { createInitialState } from '../init.ts';
-import type { GameState, AIAgent, Feature, Competitor } from '../../types/index.ts';
+import type { GameState, AIAgent, Feature, Competitor, TeamMember } from '../../types/index.ts';
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
@@ -55,6 +55,20 @@ function makeFeature(overrides?: Partial<Feature>): Feature {
     marketRelevance: 80,
     ...overrides,
   };
+}
+
+function makeMembers(count: number, salary: number, morale = 75): TeamMember[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `test-member-${i}`,
+    name: `Member ${i + 1}`,
+    role: 'engineer' as const,
+    skill: 50,
+    salary,
+    morale,
+    weekHired: 1,
+    traits: [],
+    boosts: {},
+  }));
 }
 
 function makeShippedFeature(overrides?: Partial<Feature>): Feature {
@@ -1115,8 +1129,9 @@ describe('Escalating Game Over (Soft Landing)', () => {
 
 describe('Team Management', () => {
   it('generates layoff decision when burn >> revenue and low runway', () => {
+    const members = makeMembers(8, 5000, 60);
     const state = makeDeepState({
-      team: { teamSize: 8, avgSalary: 5000, morale: 60, aiAgents: [] },
+      team: { members, teamSize: 8, avgSalary: 5000, morale: 60, aiAgents: [] },
       finances: {
         ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
         cash: 50_000, // Low cash
@@ -1332,8 +1347,9 @@ describe('Multi-Week Realism Simulation', () => {
   });
 
   it('a bootstrapped startup without revenue runs out of cash', () => {
+    const members = makeMembers(3, 4000, 70);
     let state = makeDeepState({
-      team: { teamSize: 3, avgSalary: 4000, morale: 70, aiAgents: [] },
+      team: { members, teamSize: 3, avgSalary: 4000, morale: 70, aiAgents: [] },
       finances: {
         ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
         cash: 30_000, // Low starting cash

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { CompanyStage, FundingRound, PricingModel } from '../../types/game.ts';
-import type { SetPricingDecision } from '../../types/decisions.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 
 export interface FundraisingPanelProps {
@@ -9,8 +8,10 @@ export interface FundraisingPanelProps {
   fundingHistory: FundingRound[];
   pricingModel: PricingModel;
   pricePerUnit: number;
+  lastPricingChangeWeek: number;
+  currentWeek: number;
   onSeekFunding: (targetStage: string) => void;
-  onChangePricing: (decision: SetPricingDecision) => void;
+  onChangePricing: (model: PricingModel, price: number) => void;
 }
 
 const STAGE_LABELS: Record<CompanyStage, string> = {
@@ -54,6 +55,8 @@ export function FundraisingPanel({
   fundingHistory,
   pricingModel,
   pricePerUnit,
+  lastPricingChangeWeek,
+  currentWeek,
   onSeekFunding,
   onChangePricing,
 }: FundraisingPanelProps) {
@@ -72,7 +75,7 @@ export function FundraisingPanel({
   function handleChangePricing() {
     const price = parseFloat(priceInput);
     if (isNaN(price) || price < 0) return;
-    onChangePricing({ type: 'set-pricing', model: selectedModel, pricePerUnit: price });
+    onChangePricing(selectedModel, price);
   }
 
   return (
@@ -183,6 +186,11 @@ export function FundraisingPanel({
         <div className="retro-hr" />
         <div className="space-y-2 pt-2">
           <label className="block text-xs font-bold text-[--color-retro-text-muted]">Change Pricing Model</label>
+          {lastPricingChangeWeek > 0 && (currentWeek - lastPricingChangeWeek) < 8 && selectedModel !== pricingModel && (
+            <p className="text-xs text-[--color-retro-orange]">
+              Cooldown: {8 - (currentWeek - lastPricingChangeWeek)} weeks until you can switch models
+            </p>
+          )}
           <select
             value={selectedModel}
             onChange={(e) => setSelectedModel(e.target.value as PricingModel)}

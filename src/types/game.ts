@@ -140,10 +140,44 @@ export interface AIAgent {
   assignedTo: string | null;  // feature id or null
 }
 
-export interface TeamState {
-  teamSize: number;
-  avgSalary: number;
+export type TeamRole = 'engineer' | 'designer' | 'marketer' | 'sales' | 'ops';
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: TeamRole;
+  skill: number;        // 0-100
+  salary: number;        // weekly
   morale: number;        // 0-100
+  weekHired: number;
+  traits: string[];      // e.g., ['fast-learner', '10x-engineer', 'mentor']
+  boosts: Record<string, number>; // e.g., { velocity: 10, quality: 5 }
+}
+
+export interface Candidate {
+  id: string;
+  name: string;
+  role: TeamRole;
+  skill: number;
+  expectedSalary: number;
+  traits: string[];
+  boosts: Record<string, number>;
+  availableUntilWeek: number;
+}
+
+export interface PendingOffer {
+  candidateId: string;
+  offeredSalary: number;
+  weekOffered: number;
+}
+
+export interface TeamState {
+  members: TeamMember[];
+  candidates: Candidate[];
+  pendingOffers: PendingOffer[];
+  teamSize: number;       // derived from members.length, kept for backward compat
+  avgSalary: number;      // derived from members avg, kept for backward compat
+  morale: number;         // 0-100, team-wide average
   aiAgents: AIAgent[];
 }
 

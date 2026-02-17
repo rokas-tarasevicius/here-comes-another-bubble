@@ -94,9 +94,10 @@ function formatCash(amount: number): string {
 }
 
 function formatMarketSize(size: number): string {
-  if (size >= 1_000_000) return `$${(size / 1_000_000).toFixed(0)}B`;
-  if (size >= 1_000) return `$${(size / 1_000).toFixed(0)}M`;
-  return `$${size}K`;
+  if (size >= 1_000_000_000) return `$${(size / 1_000_000_000).toFixed(0)}B`;
+  if (size >= 1_000_000) return `$${(size / 1_000_000).toFixed(0)}M`;
+  if (size >= 1_000) return `$${(size / 1_000).toFixed(0)}K`;
+  return `$${size}`;
 }
 
 // ─── Stat Bar (retro glossy progress bar) ───────────────────────────────
@@ -414,7 +415,7 @@ function StepMarket({
                 <MarketStat
                   label="Market Size"
                   value={seg.size}
-                  max={100_000}
+                  max={12_000_000_000}
                   color="green"
                 />
                 <MarketStat
@@ -630,7 +631,7 @@ function StepSummary({
           <h3 className="mt-1 font-[--font-retro-heading] text-3xl font-extrabold text-retro-blue-dark">{companyName}</h3>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Founder */}
           <div className="retro-inset flex items-start justify-between p-3">
             <div>

@@ -4,7 +4,9 @@ import type {
   MarketSegment,
   Difficulty,
   Tone,
+  TeamMember,
 } from '../types/index.ts';
+import { randomName, TRAIT_POOL } from '../data/names.ts';
 import { FOUNDER_CONFIGS } from '../data/founders.ts';
 import { MARKET_SEGMENTS } from '../data/markets.ts';
 import { COMPETITORS_BY_SEGMENT } from '../data/competitors.ts';
@@ -30,8 +32,35 @@ export function createInitialState(
   const startingBubble = difficulty === 'nightmare' ? 45 : 60;
 
   // Bigtech archetype starts with a team
-  const teamSize = archetype === 'bigtech' ? 2 : 0;
-  const avgSalary = archetype === 'bigtech' ? 4350 : 3000;
+  const startingMembers: TeamMember[] = [];
+  if (archetype === 'bigtech') {
+    startingMembers.push(
+      {
+        id: 'init-1',
+        name: randomName(),
+        role: 'engineer',
+        skill: 65,
+        salary: 4500,
+        morale: 87,
+        weekHired: 0,
+        traits: ['startup-veteran'],
+        boosts: { velocity: 5 },
+      },
+      {
+        id: 'init-2',
+        name: randomName(),
+        role: 'engineer',
+        skill: 60,
+        salary: 4200,
+        morale: 87,
+        weekHired: 0,
+        traits: ['team-player'],
+        boosts: { quality: 3 },
+      },
+    );
+  }
+  const teamSize = startingMembers.length;
+  const avgSalary = teamSize > 0 ? Math.round(startingMembers.reduce((s, m) => s + m.salary, 0) / teamSize) : 3000;
   const morale = archetype === 'bigtech' ? 87 : 100;
 
   // Use founder-specific starting cash from FOUNDER_CONFIGS
@@ -69,6 +98,9 @@ export function createInitialState(
       weekFounded: startWeek,
     },
     team: {
+      members: startingMembers,
+      candidates: [],
+      pendingOffers: [],
       teamSize,
       avgSalary,
       morale,

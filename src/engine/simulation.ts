@@ -270,7 +270,11 @@ function simulateRevenue(state: GameState): GameState {
       break;
 
     case 'freemium': {
-      const payingUsers = Math.floor(customers * 0.05);
+      // Price sensitivity: higher price = lower conversion rate
+      // Base 5% at $10/unit, decreasing as price increases
+      const baseConversionRate = 0.05;
+      const priceSensitivity = pricePerUnit > 10 ? Math.max(0.01, baseConversionRate - (pricePerUnit - 10) * 0.005) : baseConversionRate;
+      const payingUsers = Math.floor(customers * priceSensitivity);
       revenue = payingUsers * pricePerUnit * qualityModifier * bugPenalty;
       break;
     }
@@ -350,6 +354,12 @@ function simulateBurn(state: GameState): GameState {
 
 function simulateMarket(state: GameState): GameState {
   const diffMods = getDifficultyModifiers(state.meta.difficulty);
+
+  // Market size grows each week based on annual growth rate
+  const updatedSegmentData = {
+    ...state.market.segmentData,
+    size: state.market.segmentData.size * (1 + state.market.segmentData.growthRate / 52),
+  };
 
   let bubbleShock = 0;
   if (Math.random() < 0.02) {
@@ -459,6 +469,7 @@ function simulateMarket(state: GameState): GameState {
       talentMarketHeat: Math.round(newTalentHeat),
       investorSentiment: Math.round(newInvestorSentiment),
       competitors: updatedCompetitors,
+      segmentData: updatedSegmentData,
     },
     eventLog: [...state.eventLog, ...newLogEntries],
   };
@@ -611,13 +622,20 @@ function simulateTeamAttrition(state: GameState): GameState {
 
   if (lostCount === 0) return state;
 
-  lostCount = Math.min(state.team.teamSize, lostCount);
+  const memberCount = state.team.members?.length ?? state.team.teamSize;
+  lostCount = Math.min(memberCount, lostCount);
+
+  const newMembers = (state.team.members ?? []).slice(0, -lostCount);
+  const newSize = newMembers.length;
+  const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
 
   return {
     ...state,
     team: {
       ...state.team,
-      teamSize: state.team.teamSize - lostCount,
+      members: newMembers,
+      teamSize: newSize,
+      avgSalary: newAvg,
       morale: clamp(state.team.morale - 5, 0, 100),
     },
     eventLog: [...state.eventLog, ...newLogEntries],
@@ -971,58 +989,6 @@ function generateAutoDecisions(state: GameState): GameState {
         eventId: 'auto-first-feature',
         title: 'Time to Build!',
         description: 'Your startup journey begins. Pick your first feature to build.',
-        category: 'product',
-        decisionId,
-      });
-    }
-  }
-
-  // --- PRICING DECISION (auto-prompt when customers > 10 and still on free) ---
-  if (state.product.customers >= 10 && state.finances.pricingModel === 'free' && state.finances.pricePerUnit === 0) {
-    const alreadyPending = state.pendingDecisions.some(
-      (d) => d.eventId === 'auto-pricing-prompt',
-    );
-    const alreadyTriggered = state.eventLog.some(
-      (e) => e.eventId === 'auto-pricing-prompt',
-    );
-
-    if (!alreadyPending && !alreadyTriggered) {
-      const decisionId = generateId();
-
-      newDecisions.push({
-        id: decisionId,
-        eventId: 'auto-pricing-prompt',
-        prompt: `You have ${state.product.customers} users but no real pricing. Time to monetize?`,
-        options: [
-          {
-            id: 'pricing_freemium_10',
-            label: 'Go Freemium ($10/mo)',
-            description: '5% of users pay. Good balance of growth and revenue.',
-            effects: [],
-          },
-          {
-            id: 'pricing_subscription_20',
-            label: 'Subscription ($20/mo)',
-            description: 'All users pay. Higher revenue but slower growth.',
-            effects: [],
-          },
-          {
-            id: 'pricing_stay_free',
-            label: 'Stay Free (For Now)',
-            description: 'Keep growing fast. Monetize later.',
-            effects: [],
-          },
-        ],
-        deadline: week + 3,
-        defaultOptionId: 'pricing_stay_free',
-      });
-
-      newLogEntries.push({
-        id: generateId(),
-        week,
-        eventId: 'auto-pricing-prompt',
-        title: 'Time to Monetize?',
-        description: 'You have users! Should you start charging?',
         category: 'product',
         decisionId,
       });

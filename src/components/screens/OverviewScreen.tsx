@@ -272,9 +272,9 @@ export function OverviewScreen() {
             </div>
 
             {/* Growth Strategy */}
-            <div className="border-t border-[--color-retro-border] pt-3">
+            <div className="border-t border-[--color-retro-border] pt-3 flex flex-col gap-1">
               <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Growth Strategy</span>
-              <span className="retro-badge retro-badge-blue mt-1 inline-block">
+              <span className="retro-badge retro-badge-blue inline-block">
                 {gameState.meta.growthStrategy?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'None'}
               </span>
             </div>
@@ -284,6 +284,38 @@ export function OverviewScreen() {
         {/* Right Column: Weekly Summary */}
         <WeeklySummary gameState={gameState} />
       </div>
+
+      {/* ── Current Sprint: In-Progress Features ──────────────── */}
+      {product.features.filter(f => f.status === 'in-progress').length > 0 && (
+        <div className="retro-card flex flex-col gap-3">
+          <h3 className="retro-section-heading">Current Sprint</h3>
+          <div className="space-y-2">
+            {product.features.filter(f => f.status === 'in-progress').map(f => (
+              <div key={f.id} className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-[--color-retro-text] truncate">{f.name}</span>
+                    <span className="text-xs text-[--color-retro-text-muted] shrink-0">
+                      Q: {Math.round(f.quality)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="retro-progress w-32 !h-2.5">
+                    <div
+                      className="retro-progress-bar retro-progress-bar-blue"
+                      style={{ width: `${f.progress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted] w-10 text-right">
+                    {Math.round(f.progress)}%
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Bottom: Recent History Table ────────────────────────── */}
       <div className="retro-card flex flex-col gap-3">

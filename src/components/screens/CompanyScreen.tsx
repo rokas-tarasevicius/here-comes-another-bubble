@@ -39,6 +39,8 @@ export function CompanyScreen() {
   const setMarketingBudget = useGameStore((s) => s.setMarketingBudget);
   const hireTeam = useGameStore((s) => s.hireTeam);
   const fireTeam = useGameStore((s) => s.fireTeam);
+  const makeOffer = useGameStore((s) => s.makeOffer);
+  const fireMember = useGameStore((s) => s.fireMember);
 
   const startFeature = useGameStore((s) => s.startFeature);
 
@@ -47,13 +49,15 @@ export function CompanyScreen() {
   const [fireCount, setFireCount] = useState(1);
   const [marketingInput, setMarketingInput] = useState('');
   const [featureName, setFeatureName] = useState('');
+  const [offerSalaries, setOfferSalaries] = useState<Record<string, string>>({});
+  const [confirmFire, setConfirmFire] = useState<string | null>(null);
 
   if (!gameState) return null;
 
   const { team, company, product, finances, meta, founder } = gameState;
   const hiringCost = hireCount * hireSalary * 2;
   const canAffordHire = finances.cash >= hiringCost;
-  const canFire = team.teamSize > 0;
+  const canFire = (team.members?.length ?? team.teamSize) > 0;
 
   // Salary scaling by stage
   const salaryMultiplier =
@@ -241,11 +245,138 @@ export function CompanyScreen() {
         )}
       </div>
 
-      {/* Hire / Fire Controls */}
+      {/* Team Roster */}
+      <div className="retro-card">
+        <h3 className="retro-section-heading">Team Roster ({team.members?.length ?? team.teamSize} members)</h3>
+        {(!team.members || team.members.length === 0) ? (
+          <p className="text-sm text-[--color-retro-text-muted]">No team members yet. Hire from the candidate pool below or use quick hire.</p>
+        ) : (
+          <div className="space-y-2 max-h-64 overflow-y-auto">
+            {team.members.map(member => (
+              <div key={member.id} className="flex items-center justify-between gap-3 p-2 rounded border border-[--color-retro-border] bg-white/50">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-[--color-retro-text]">{member.name}</span>
+                    <span className="retro-badge retro-badge-blue text-[10px]">{member.role}</span>
+                    {member.traits.map(t => (
+                      <span key={t} className="retro-badge retro-badge-purple text-[10px]">{t}</span>
+                    ))}
+                  </div>
+                  <div className="flex gap-3 text-xs text-[--color-retro-text-muted] mt-0.5">
+                    <span>Skill: {member.skill}</span>
+                    <span>{formatCurrency(member.salary)}/wk</span>
+                    <span>Morale: {member.morale}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    if (confirmFire === member.id) {
+                      fireMember(member.id);
+                      setConfirmFire(null);
+                    } else {
+                      setConfirmFire(member.id);
+                    }
+                  }}
+                  className={`text-xs px-2 py-1 rounded border transition-colors cursor-pointer shrink-0 ${
+                    confirmFire === member.id
+                      ? 'border-red-500 bg-red-500/10 text-red-500'
+                      : 'border-[--color-retro-border] text-[--color-retro-text-muted] hover:border-red-400 hover:text-red-400'
+                  }`}
+                >
+                  {confirmFire === member.id ? 'Confirm?' : 'Fire'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Candidate Pool */}
+      <div className="retro-card">
+        <h3 className="retro-section-heading">Candidate Pool ({team.candidates?.length ?? 0} available)</h3>
+        {(!team.candidates || team.candidates.length === 0) ? (
+          <p className="text-sm text-[--color-retro-text-muted]">No candidates available. New candidates appear every 4 weeks.</p>
+        ) : (
+          <div className="space-y-3">
+            {team.candidates.map(candidate => {
+              const hasPendingOffer = team.pendingOffers?.some(o => o.candidateId === candidate.id);
+              const offerInput = offerSalaries[candidate.id] ?? String(candidate.expectedSalary);
+              const offerAmount = parseInt(offerInput) || candidate.expectedSalary;
+              const salaryRatio = offerAmount / candidate.expectedSalary;
+              let acceptProb = Math.round(Math.max(5, Math.min(95, 60 * salaryRatio)));
+              if (salaryRatio >= 1.2) acceptProb = Math.min(95, acceptProb);
+              if (salaryRatio < 0.8) acceptProb = Math.max(10, Math.round(acceptProb * 0.5));
+
+              return (
+                <div key={candidate.id} className="p-3 rounded border border-[--color-retro-border] bg-white/50">
+                  <div className="flex items-center justify-between gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-[--color-retro-text]">{candidate.name}</span>
+                        <span className="retro-badge retro-badge-blue text-[10px]">{candidate.role}</span>
+                        <span className="text-xs text-[--color-retro-text-muted]">Skill: {candidate.skill}</span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {candidate.traits.map(t => (
+                          <span key={t} className="retro-badge retro-badge-purple text-[10px]">{t}</span>
+                        ))}
+                        <span className="text-xs text-[--color-retro-text-muted]">
+                          Expects: {formatCurrency(candidate.expectedSalary)}/wk
+                        </span>
+                        <span className="text-xs text-[--color-retro-text-light]">
+                          (leaves W{candidate.availableUntilWeek})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {hasPendingOffer ? (
+                    <div className="text-xs text-[--color-retro-orange] font-medium">Offer pending — resolves next week</div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <label className="text-[10px] text-[--color-retro-text-light] uppercase">Salary Offer ($/wk)</label>
+                        <input
+                          type="number"
+                          min={1000}
+                          step={500}
+                          value={offerInput}
+                          onChange={(e) => setOfferSalaries(prev => ({ ...prev, [candidate.id]: e.target.value }))}
+                          className="retro-input w-full mt-0.5"
+                        />
+                      </div>
+                      <div className="flex flex-col items-center gap-1 shrink-0 w-20">
+                        <div className="text-[10px] text-[--color-retro-text-light] uppercase">Accept %</div>
+                        <div className="retro-progress w-full !h-3">
+                          <div
+                            className={`retro-progress-bar ${
+                              acceptProb >= 60 ? 'retro-progress-bar-green' : acceptProb >= 30 ? 'retro-progress-bar-orange' : 'retro-progress-bar-red'
+                            }`}
+                            style={{ width: `${acceptProb}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">{acceptProb}%</span>
+                      </div>
+                      <button
+                        onClick={() => makeOffer(candidate.id, offerAmount)}
+                        className="btn-glossy btn-green shrink-0 text-sm"
+                      >
+                        Make Offer
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Quick Hire (backward compat) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Hire */}
         <div className="retro-card">
-          <h3 className="retro-section-heading">Hire Team Members</h3>
+          <h3 className="retro-section-heading">Quick Hire (Generic)</h3>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -276,43 +407,41 @@ export function CompanyScreen() {
             </div>
             <div className="text-xs text-[--color-retro-text-muted]">
               Signing cost: {formatCurrency(hiringCost)} (2 weeks salary)
-              {hireCount >= 2 && <span className="text-[--color-retro-orange]"> &middot; Culture penalty for fast hiring</span>}
             </div>
             <button
               onClick={() => { hireTeam(hireCount, hireSalary); }}
               disabled={!canAffordHire}
               className="btn-glossy btn-blue w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {canAffordHire ? `Hire ${hireCount} for ${formatCurrency(hiringCost)}` : `Need ${formatCurrency(hiringCost)} (have ${formatCurrency(finances.cash)})`}
+              {canAffordHire ? `Quick Hire ${hireCount} for ${formatCurrency(hiringCost)}` : `Need ${formatCurrency(hiringCost)} (have ${formatCurrency(finances.cash)})`}
             </button>
           </div>
         </div>
 
-        {/* Fire */}
+        {/* Bulk Fire */}
         <div className="retro-card">
-          <h3 className="retro-section-heading">Let Go Team Members</h3>
+          <h3 className="retro-section-heading">Bulk Layoff</h3>
           <div className="space-y-3">
             <div>
               <label className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Count</label>
               <input
                 type="number"
                 min={1}
-                max={Math.max(1, team.teamSize)}
-                value={Math.min(fireCount, team.teamSize || 1)}
-                onChange={(e) => setFireCount(Math.max(1, Math.min(team.teamSize, parseInt(e.target.value) || 1)))}
+                max={Math.max(1, team.members?.length ?? team.teamSize)}
+                value={Math.min(fireCount, (team.members?.length ?? team.teamSize) || 1)}
+                onChange={(e) => setFireCount(Math.max(1, Math.min(team.members?.length ?? team.teamSize, parseInt(e.target.value) || 1)))}
                 className="retro-input mt-1 w-full"
               />
             </div>
             <div className="text-xs text-[--color-retro-text-muted]">
               Morale hit: {fireCount >= 3 ? '-12' : fireCount >= 2 ? '-8' : '-4'}
-              <span className="text-[--color-retro-orange]"> &middot; Culture -{Math.min(fireCount, team.teamSize) * 3} &middot; Reputation -{Math.min(fireCount, team.teamSize)}</span>
             </div>
             <button
               onClick={() => { fireTeam(fireCount); }}
               disabled={!canFire}
               className="btn-glossy btn-red w-full disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {canFire ? `Let go ${Math.min(fireCount, team.teamSize)} team member${Math.min(fireCount, team.teamSize) > 1 ? 's' : ''}` : 'No team to let go'}
+              {canFire ? `Let go ${Math.min(fireCount, team.members?.length ?? team.teamSize)} team member${Math.min(fireCount, team.members?.length ?? team.teamSize) > 1 ? 's' : ''}` : 'No team to let go'}
             </button>
           </div>
         </div>

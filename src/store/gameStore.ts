@@ -7,11 +7,16 @@ import type {
   Tone,
   ProductFocus,
   AcquisitionChannel,
+  PricingModel,
+  EventLogEntry,
+  TeamMember,
+  Candidate,
 } from '../types/index.ts';
 import type { PlayerDecision } from '../types/decisions.ts';
 import type { Feature } from '../types/index.ts';
 import { createInitialState, advanceWeek, applySeekFunding } from '../engine/index.ts';
 import { generateId } from '../utils/id.ts';
+import { randomName } from '../data/names.ts';
 
 // ─── Save slot metadata ──────────────────────────────────────────────
 
@@ -61,8 +66,11 @@ interface GameStoreActions {
   setAcquisitionChannel: (channel: AcquisitionChannel) => void;
   startFeature: (name: string, description: string, marketRelevance: number) => void;
   setMarketingBudget: (amount: number) => void;
+  setPricing: (model: PricingModel, price: number) => void;
   hireTeam: (count: number, salary: number) => void;
   fireTeam: (count: number) => void;
+  makeOffer: (candidateId: string, salary: number) => void;
+  fireMember: (memberId: string) => void;
   dismissWeekRecap: () => void;
   seekFunding: (targetStage: string) => void;
   saveGame: (slot?: number) => void;
@@ -223,22 +231,105 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     });
   },
 
+  setPricing(model, price) {
+    const { gameState } = get();
+    if (!gameState) return;
+
+    const currentModel = gameState.finances.pricingModel;
+    const week = gameState.meta.week;
+    const lastChange = gameState.finances.lastPricingChangeWeek ?? 0;
+
+    // Block model changes within 8-week cooldown
+    if (currentModel !== model && (week - lastChange) < 8 && lastChange > 0) {
+      return; // Too soon to switch models
+    }
+
+    let newState = { ...gameState };
+    const newLogEntries: EventLogEntry[] = [];
+
+    // Switching costs when changing pricing MODEL
+    if (currentModel !== model && gameState.product.customers > 0) {
+      let customerLoss = 0.15;
+      let reputationLoss = -5;
+
+      // Free → freemium is a natural transition
+      if (currentModel === 'free' && model === 'freemium') {
+        customerLoss = 0.05;
+        reputationLoss = -1;
+      }
+
+      const lostCustomers = Math.round(gameState.product.customers * customerLoss);
+      newLogEntries.push({
+        id: `pricing-${Date.now()}`,
+        week,
+        eventId: 'pricing-switch-penalty',
+        title: 'Pricing Model Changed',
+        description: `Switching from ${currentModel} to ${model} caused ${lostCustomers} customers to churn.`,
+        category: 'product',
+      });
+
+      newState = {
+        ...newState,
+        product: {
+          ...newState.product,
+          customers: Math.max(0, newState.product.customers - lostCustomers),
+        },
+        company: {
+          ...newState.company,
+          reputation: Math.max(0, newState.company.reputation + reputationLoss),
+        },
+      };
+    }
+
+    set({
+      gameState: {
+        ...newState,
+        finances: {
+          ...newState.finances,
+          pricingModel: model,
+          pricePerUnit: price,
+          lastPricingChangeWeek: currentModel !== model ? week : newState.finances.lastPricingChangeWeek,
+        },
+        eventLog: [...newState.eventLog, ...newLogEntries],
+      },
+    });
+  },
+
   hireTeam(count, salary) {
     const { gameState } = get();
     if (!gameState) return;
     const hiringCost = count * salary * 2;
     if (gameState.finances.cash < hiringCost) return;
-    const oldTotal = gameState.team.teamSize * gameState.team.avgSalary;
-    const newTotal = oldTotal + count * salary;
-    const newSize = gameState.team.teamSize + count;
+
+    const roles: Array<'engineer' | 'designer' | 'marketer' | 'sales' | 'ops'> = ['engineer', 'designer', 'marketer', 'sales', 'ops'];
+    const newMembers: TeamMember[] = [];
+    for (let i = 0; i < count; i++) {
+      newMembers.push({
+        id: `hire-${Date.now()}-${i}`,
+        name: randomName(),
+        role: roles[Math.floor(Math.random() * 2)], // mostly engineers/designers
+        skill: 40 + Math.floor(Math.random() * 30),
+        salary,
+        morale: 70 + Math.floor(Math.random() * 20),
+        weekHired: gameState.meta.week,
+        traits: [],
+        boosts: {},
+      });
+    }
+
+    const allMembers = [...gameState.team.members, ...newMembers];
+    const newSize = allMembers.length;
+    const newAvg = newSize > 0 ? Math.round(allMembers.reduce((s, m) => s + m.salary, 0) / newSize) : salary;
     const culturePenalty = count >= 3 ? -5 : count >= 2 ? -3 : 0;
+
     set({
       gameState: {
         ...gameState,
         team: {
           ...gameState.team,
+          members: allMembers,
           teamSize: newSize,
-          avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : salary,
+          avgSalary: newAvg,
         },
         company: {
           ...gameState.company,
@@ -254,21 +345,81 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
   fireTeam(count) {
     const { gameState } = get();
-    if (!gameState || gameState.team.teamSize === 0) return;
-    const actual = Math.min(count, gameState.team.teamSize);
+    if (!gameState || gameState.team.members.length === 0) return;
+    const actual = Math.min(count, gameState.team.members.length);
+    // Remove from the end (most recently hired)
+    const newMembers = gameState.team.members.slice(0, -actual);
+    const newSize = newMembers.length;
+    const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
     const moralePenalty = actual >= 3 ? -12 : actual >= 2 ? -8 : -4;
     set({
       gameState: {
         ...gameState,
         team: {
           ...gameState.team,
-          teamSize: gameState.team.teamSize - actual,
+          members: newMembers,
+          teamSize: newSize,
+          avgSalary: newAvg,
           morale: Math.max(0, gameState.team.morale + moralePenalty),
         },
         company: {
           ...gameState.company,
           culture: Math.max(0, gameState.company.culture - actual * 3),
           reputation: Math.max(0, gameState.company.reputation - actual),
+        },
+      },
+    });
+  },
+
+  makeOffer(candidateId, salary) {
+    const { gameState } = get();
+    if (!gameState) return;
+    const candidate = gameState.team.candidates.find(c => c.id === candidateId);
+    if (!candidate) return;
+
+    // Check if already have a pending offer for this candidate
+    if (gameState.team.pendingOffers.some(o => o.candidateId === candidateId)) return;
+
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          pendingOffers: [...gameState.team.pendingOffers, {
+            candidateId,
+            offeredSalary: salary,
+            weekOffered: gameState.meta.week,
+          }],
+        },
+      },
+    });
+  },
+
+  fireMember(memberId) {
+    const { gameState } = get();
+    if (!gameState) return;
+    const member = gameState.team.members.find(m => m.id === memberId);
+    if (!member) return;
+
+    const newMembers = gameState.team.members.filter(m => m.id !== memberId);
+    const newSize = newMembers.length;
+    const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
+    const moralePenalty = -4;
+
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          members: newMembers,
+          teamSize: newSize,
+          avgSalary: newAvg,
+          morale: Math.max(0, gameState.team.morale + moralePenalty),
+        },
+        company: {
+          ...gameState.company,
+          culture: Math.max(0, gameState.company.culture - 3),
+          reputation: Math.max(0, gameState.company.reputation - 1),
         },
       },
     });

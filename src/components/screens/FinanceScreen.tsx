@@ -13,6 +13,7 @@ export function FinanceScreen() {
   const gameState = useGameStore((s) => s.gameState);
   const addDecision = useGameStore((s) => s.addDecision);
   const seekFunding = useGameStore((s) => s.seekFunding);
+  const setPricing = useGameStore((s) => s.setPricing);
 
   if (!gameState) {
     return (
@@ -199,8 +200,10 @@ export function FinanceScreen() {
           fundingHistory={finances.fundingHistory}
           pricingModel={finances.pricingModel}
           pricePerUnit={finances.pricePerUnit}
+          lastPricingChangeWeek={finances.lastPricingChangeWeek}
+          currentWeek={gameState.meta.week}
           onSeekFunding={(targetStage) => seekFunding(targetStage)}
-          onChangePricing={(decision) => addDecision(decision)}
+          onChangePricing={(model, price) => setPricing(model, price)}
         />
       </div>
     </div>

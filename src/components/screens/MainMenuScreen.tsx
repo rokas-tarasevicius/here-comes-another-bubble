@@ -219,7 +219,7 @@ export function MainMenuScreen() {
   const setScreen = useGameStore((s) => s.setScreen);
 
   const [showAbout, setShowAbout] = useState(false);
-  const [showLoad, setShowLoad] = useState(false);
+
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-retro-bg px-4">
@@ -258,22 +258,6 @@ export function MainMenuScreen() {
             New Game
           </button>
 
-          {/* Load Game */}
-          <button
-            onClick={() => setShowLoad(true)}
-            className="btn-glossy btn-glossy-lg btn-primary w-full"
-          >
-            Load Game
-          </button>
-
-          {/* Leaderboard */}
-          <button
-            onClick={() => setScreen('leaderboard')}
-            className="btn-glossy btn-glossy-lg btn-silver w-full"
-          >
-            Leaderboard
-          </button>
-
           {/* About */}
           <button
             onClick={() => setShowAbout(true)}
@@ -289,7 +273,6 @@ export function MainMenuScreen() {
 
       {/* Modals */}
       {showAbout && <AboutModal onClose={() => setShowAbout(false)} />}
-      {showLoad && <LoadGameModal onClose={() => setShowLoad(false)} />}
     </div>
   );
 }

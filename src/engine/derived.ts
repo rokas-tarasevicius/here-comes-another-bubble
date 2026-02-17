@@ -15,7 +15,9 @@ export function calculateRunway(state: GameState): number {
  * Calculate total weekly burn: salaries + AI costs + fixed overhead.
  */
 export function calculateWeeklyBurn(state: GameState): number {
-  const salaries = state.team.teamSize * state.team.avgSalary;
+  const salaries = state.team.members
+    ? state.team.members.reduce((sum, m) => sum + m.salary, 0)
+    : state.team.teamSize * state.team.avgSalary;
   const aiCosts = state.team.aiAgents.reduce(
     (sum, agent) => sum + agent.costPerWeek,
     0,
@@ -72,6 +74,11 @@ export function calculatePMF(state: GameState): number {
  * Calculate average morale. With simplified types, just return team.morale.
  */
 export function calculateAvgMorale(state: GameState): number {
+  if (state.team.members && state.team.members.length > 0) {
+    const avgMemberMorale = state.team.members.reduce((sum, m) => sum + m.morale, 0) / state.team.members.length;
+    // Blend individual morale with team-wide morale
+    return Math.round((avgMemberMorale + state.team.morale) / 2);
+  }
   return state.team.morale;
 }
 

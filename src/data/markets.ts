@@ -9,7 +9,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Developer Tools',
     description:
       'Tools that help software engineers write, review, test, and ship code faster using AI. The hottest segment in SF right now — every developer wants an AI pair programmer.',
-    size: 5_000_000,
+    size: 5_000_000_000,
     growthRate: 0.20,
     competitionIntensity: 75,
     regulatoryRisk: 15,
@@ -31,7 +31,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Healthcare',
     description:
       'AI applications for clinical workflows, diagnostics, and patient care. Massive market potential but navigating HIPAA, FDA approvals, and hospital procurement cycles is not for the faint of heart.',
-    size: 3_000_000,
+    size: 3_000_000_000,
     growthRate: 0.15,
     competitionIntensity: 50,
     regulatoryRisk: 85,
@@ -51,7 +51,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Fintech',
     description:
       'AI-powered financial services: fraud prevention, risk modeling, compliance automation, and trading. Big money, big regulation, and banks that still run COBOL.',
-    size: 4_000_000,
+    size: 4_000_000_000,
     growthRate: 0.18,
     competitionIntensity: 70,
     regulatoryRisk: 75,
@@ -71,7 +71,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Education',
     description:
       'AI tutors, adaptive learning platforms, and assessment tools. Every parent wants personalized education for their kids, every school has no budget. Classic.',
-    size: 2_500_000,
+    size: 2_500_000_000,
     growthRate: 0.12,
     competitionIntensity: 40,
     regulatoryRisk: 30,
@@ -91,7 +91,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Enterprise',
     description:
       'Horizontal AI tools for businesses: document processing, workflow automation, meeting summarization. Every Fortune 500 company wants AI but none of them can agree on what that means.',
-    size: 8_000_000,
+    size: 8_000_000_000,
     growthRate: 0.22,
     competitionIntensity: 80,
     regulatoryRisk: 40,
@@ -111,7 +111,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Consumer',
     description:
       'Consumer-facing AI products: personal assistants, recommendation engines, smart home, and lifestyle apps. Massive TAM if you can crack distribution — but users are fickle and retention is brutal.',
-    size: 10_000_000,
+    size: 10_000_000_000,
     growthRate: 0.25,
     competitionIntensity: 90,
     regulatoryRisk: 25,
@@ -131,7 +131,7 @@ export const MARKET_SEGMENTS: Record<MarketSegment, MarketSegmentData> = {
     name: 'AI Creative Tools',
     description:
       'Generative AI for creators: images, video, music, copy, and 3D assets. The segment everyone is talking about on Twitter. Copyright lawsuits pending.',
-    size: 3_500_000,
+    size: 3_500_000_000,
     growthRate: 0.30,
     competitionIntensity: 65,
     regulatoryRisk: 35,
