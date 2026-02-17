@@ -121,6 +121,7 @@ function LoadGameModal({ onClose }: { onClose: () => void }) {
 
   function handleLoad(slot: number) {
     loadGame(slot);
+    onClose();
   }
 
   function handleDelete(slot: number) {
@@ -180,7 +181,9 @@ function LoadGameModal({ onClose }: { onClose: () => void }) {
                       <div className="mt-0.5 flex items-center gap-3 text-xs text-retro-text-muted">
                         <span>Week {slot.week}</span>
                         <span className="text-retro-border">&bull;</span>
-                        <span className="font-semibold text-retro-green">{formatValuation(slot.valuation)}</span>
+                        <span className="font-semibold text-retro-green">{formatValuation(slot.cash)}</span>
+                        <span className="text-retro-border">&bull;</span>
+                        <span>Val: {formatValuation(slot.valuation)}</span>
                         <span className="text-retro-border">&bull;</span>
                         <span>{formatDate(slot.savedAt)}</span>
                       </div>

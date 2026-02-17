@@ -57,7 +57,7 @@ export function TechDebtMeter({ value }: TechDebtMeterProps) {
 
       {/* Semicircle gauge */}
       <div className="flex flex-col items-center">
-        <svg width="160" height="90" viewBox="0 0 160 90">
+        <svg width="160" height="95" viewBox="0 0 160 95">
           {/* Background arc */}
           <path
             d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}

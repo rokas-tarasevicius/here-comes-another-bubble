@@ -9,7 +9,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   return (
-    <div className="flex h-screen min-w-[1024px] flex-col bg-[--color-retro-bg] text-[--color-retro-text]">
+    <div className="flex h-screen min-w-0 flex-col overflow-x-auto bg-[--color-retro-bg] text-[--color-retro-text]">
       {/* Top bar */}
       <Header />
 
@@ -19,12 +19,14 @@ export function AppShell({ children }: AppShellProps) {
         <Sidebar />
 
         {/* Center — main content area */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children}
         </main>
 
-        {/* Right panel — event feed */}
-        <EventFeed />
+        {/* Right panel — event feed (hidden below lg) */}
+        <div className="hidden lg:block">
+          <EventFeed />
+        </div>
       </div>
     </div>
   );

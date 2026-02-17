@@ -235,19 +235,6 @@ function simulateTechDebtConsequences(state: GameState): GameState {
     });
   }
 
-  // Natural tech debt reduction: proportional to team size when few features in progress
-  const inProgressCount = state.product.features.filter(f => f.status === 'in-progress').length;
-  let techDebtReduction = 0;
-  if (inProgressCount <= 1 && state.team.teamSize > 0) {
-    techDebtReduction = state.team.teamSize * 0.8;
-  }
-
-  const newTechDebtTotal = clamp(
-    state.product.techDebtTotal - techDebtReduction,
-    0,
-    100,
-  );
-
   // Apply morale penalty from high tech debt
   const newMorale = moralePenalty > 0
     ? clamp(state.team.morale - moralePenalty, 0, 100)
@@ -261,7 +248,6 @@ function simulateTechDebtConsequences(state: GameState): GameState {
     },
     product: {
       ...state.product,
-      techDebtTotal: Math.round(newTechDebtTotal * 10) / 10,
       customers,
     },
     eventLog: [...state.eventLog, ...newLogEntries],
@@ -788,7 +774,7 @@ function simulateCustomers(state: GameState): GameState {
     0.01,
     0.25,
   );
-  const churned = currentCustomers * effectiveChurn / 4;
+  const churned = currentCustomers * effectiveChurn;
 
   // Task 4: Individual competitor customer stealing
   let competitorStolen = 0;
@@ -1046,7 +1032,7 @@ function generateAutoDecisions(state: GameState): GameState {
   // --- TEAM DECISIONS (every 2-3 weeks, but not too early) ---
   // Don't overwhelm early-game players with hire decisions when they can't afford it
   const canSustainHire = state.finances.cash > 30000; // Need enough cash to sustain a hire
-  if (week > 4 && canSustainHire && (week % 2 === 0 || Math.random() < 0.3)) {
+  if (week > 4 && canSustainHire && week % 3 === 0) {
     const alreadyPending = state.pendingDecisions.some(
       (d) => d.eventId === 'auto-team-growth',
     );
@@ -1103,7 +1089,7 @@ function generateAutoDecisions(state: GameState): GameState {
   }
 
   // --- PRODUCT DECISIONS (every 2-3 weeks) ---
-  if (week % 2 === 0 || Math.random() < 0.4) {
+  if (week % 3 === 0) {
     const demands = state.market.segmentData.customerDemand;
     const existingNames = state.product.features.map((f) =>
       f.name.toLowerCase(),
@@ -1230,7 +1216,7 @@ function generateAutoDecisions(state: GameState): GameState {
   }
 
   // --- STRATEGY DECISIONS (every 6-8 weeks) ---
-  if (week > 4 && (week % 6 === 0 || (week % 8 === 0))) {
+  if (week > 4 && week % 7 === 0) {
     const alreadyPending = state.pendingDecisions.some(
       (d) => d.eventId === 'auto-board-meeting',
     );

@@ -227,9 +227,9 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
               {/* Effect previews */}
               {option.effects.length > 0 && (
                 <div className="flex flex-wrap gap-x-2 gap-y-1">
-                  {combineEffects(option.effects).map((eff, i) => (
+                  {combineEffects(option.effects).map((eff) => (
                     <span
-                      key={i}
+                      key={`${eff.path}-${eff.operation}`}
                       className={`${effectBadgeClass(eff)} font-[--font-retro-mono]`}
                       style={{ fontSize: '10px' }}
                     >

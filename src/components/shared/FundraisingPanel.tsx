@@ -115,7 +115,7 @@ export function FundraisingPanel({
             onClick={handleSeekFunding}
             className="btn-glossy btn-green w-full"
           >
-            Seek Funding ({nextStage.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())})
+            Seek Funding ({nextStage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())})
           </button>
         )}
       </div>
@@ -141,7 +141,7 @@ export function FundraisingPanel({
                 {fundingHistory.map((round, i) => (
                   <tr key={i}>
                     <td className="font-semibold text-[--color-retro-text]">
-                      {round.stage.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                      {round.stage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                     </td>
                     <td className="font-[--font-retro-mono] text-[--color-retro-green] font-semibold">
                       {formatCurrency(round.amount)}

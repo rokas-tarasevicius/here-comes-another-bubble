@@ -353,7 +353,6 @@ export const CRISIS_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: -30000 },
           { path: 'team.morale', operation: 'add', value: 5 },
           { path: 'company.culture', operation: 'add', value: 5 },
-          { path: 'company.culture', operation: 'add', value: 5 },
         ],
       },
       {
@@ -453,7 +452,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     cooldownWeeks: 8,
     weight: 2,
     condition: (state: GameState) =>
-      state.team.aiAgents.length > 0 || state.company.culture > 30,
+      state.team.aiAgents.length > 0,
     descriptions: {
       default:
         'Your primary AI provider is experiencing a major outage. Your product is effectively crippled, and there is no ETA for resolution.',

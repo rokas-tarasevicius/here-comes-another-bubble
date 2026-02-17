@@ -154,7 +154,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           'Accept the offer. $500K for 7% equity, three months of intense mentorship, and a Demo Day slot.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: 500000 },
-          { path: 'finances.founderEquity', operation: 'multiply', value: 0.93 },
+          { path: 'finances.founderEquity', operation: 'add', value: -0.07 },
           { path: 'founder.reputation', operation: 'add', value: 15 },
           { path: 'market.investorSentiment', operation: 'add', value: 15 },
           { path: 'founder.network', operation: 'add', value: 20 },
@@ -321,7 +321,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
           { path: 'finances.cash', operation: 'add', value: 500000 },
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'team.morale', operation: 'add', value: -8 },
-          { path: 'product.customers', operation: 'add', value: -50 },
+          { path: 'product.customers', operation: 'add', value: -20 },
         ],
       },
       {

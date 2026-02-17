@@ -148,7 +148,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                   <tr
                     key={row.id}
                     className={rowOpacity}
-                    style={row.isPlayer ? { background: '#d8e6f3' } : undefined}
+                    style={row.isPlayer ? { background: 'var(--color-retro-blue-pale)' } : undefined}
                   >
                     {/* Name */}
                     <td>

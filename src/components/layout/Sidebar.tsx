@@ -23,9 +23,9 @@ export function Sidebar() {
   const pendingCount = gameState?.pendingDecisions.length ?? 0;
 
   return (
-    <aside className="retro-sidebar flex w-48 flex-col">
+    <aside className="retro-sidebar flex w-12 md:w-12 lg:w-48 flex-col">
       {/* Navigation links */}
-      <nav className="flex-1 px-2 py-4">
+      <nav className="flex-1 px-1 lg:px-2 py-4">
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive = currentScreen === item.id;
@@ -33,16 +33,18 @@ export function Sidebar() {
               <li key={item.id}>
                 <button
                   onClick={() => setScreen(item.id)}
-                  className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  aria-current={isActive ? 'page' : undefined}
+                  title={item.label}
+                  className={`flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-white/15 text-[--color-retro-orange]'
                       : 'text-white/80 hover:bg-white/10 hover:text-white'
                   }`}
                 >
                   <span className="text-base">{item.icon}</span>
-                  <span>{item.label}</span>
+                  <span className="hidden lg:inline">{item.label}</span>
                   {item.id === 'decisions' && pendingCount > 0 && (
-                    <span className="retro-badge retro-badge-orange ml-auto text-[10px]">
+                    <span className="retro-badge retro-badge-orange ml-auto text-[10px] hidden lg:inline-flex">
                       {pendingCount}
                     </span>
                   )}
@@ -54,20 +56,22 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Save & Menu */}
-      <div className="border-t border-white/10 px-2 py-4 space-y-1 bg-black/10">
+      <div className="border-t border-white/10 px-1 lg:px-2 py-4 space-y-1 bg-black/10">
         <button
           onClick={() => saveGame()}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          title="Save Game"
+          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <span className="text-base">{'\u{1F4BE}'}</span>
-          <span>Save Game</span>
+          <span className="hidden lg:inline">Save Game</span>
         </button>
         <button
           onClick={() => setScreen('title')}
-          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          title="Main Menu"
+          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
         >
           <span className="text-base">{'\u{1F3E0}'}</span>
-          <span>Main Menu</span>
+          <span className="hidden lg:inline">Main Menu</span>
         </button>
       </div>
     </aside>

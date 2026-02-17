@@ -1,4 +1,4 @@
-import type { GameState, EventLogEntry, PendingDecision } from '../types/index.ts';
+import type { GameState, EventLogEntry, PendingDecision, Feature } from '../types/index.ts';
 import { ALL_EVENTS } from '../data/events/index.ts';
 import { generateId } from '../utils/id.ts';
 
@@ -58,6 +58,8 @@ function applyEffects(state: GameState, effects: { path: string; operation: 'add
     }
   }
 
+  next.finances.founderEquity = Math.max(0, Math.min(1, next.finances.founderEquity));
+
   return next;
 }
 
@@ -116,6 +118,100 @@ function autoResolveExpired(state: GameState): GameState {
 
     if (defaultOption) {
       next = applyEffects(next, defaultOption.effects);
+
+      const optionId = defaultOption.id;
+
+      // Handle hire_* side effects
+      if (optionId.startsWith('hire_')) {
+        const hireParts = optionId.split('_');
+        const hireCount = parseInt(hireParts[1], 10) || 1;
+        const hireSalary = parseInt(hireParts[2], 10) || 3500;
+        const oldTotal = next.team.teamSize * next.team.avgSalary;
+        const newTotal = oldTotal + hireCount * hireSalary;
+        const newSize = next.team.teamSize + hireCount;
+        next = {
+          ...next,
+          team: {
+            ...next.team,
+            teamSize: newSize,
+            avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : hireSalary,
+          },
+        };
+      }
+
+      // Handle team-eng_* / team-growth_* side effects
+      if (optionId.startsWith('team-eng_') || optionId.startsWith('team-growth_')) {
+        const parts = optionId.split('_');
+        const count = parseInt(parts[1], 10) || 2;
+        const salary = parseInt(parts[2], 10) || 3500;
+        const oldTotal = next.team.teamSize * next.team.avgSalary;
+        const newTotal = oldTotal + count * salary;
+        const newSize = next.team.teamSize + count;
+        next = {
+          ...next,
+          team: {
+            ...next.team,
+            teamSize: newSize,
+            avgSalary: newSize > 0 ? Math.round(newTotal / newSize) : salary,
+          },
+        };
+      }
+
+      // Handle feature_* side effects
+      if (optionId.startsWith('feature_')) {
+        const parts = optionId.split('_');
+        const relevance = parseInt(parts[parts.length - 1], 10);
+        const featureSlug = parts.slice(1, -1).join('-');
+        const featureName = featureSlug
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, (c: string) => c.toUpperCase());
+        const newFeature: Feature = {
+          id: generateId(),
+          name: featureName,
+          description: `Auto-generated feature: ${featureName}`,
+          status: 'in-progress' as const,
+          progress: 0,
+          quality: 0,
+          marketRelevance: isNaN(relevance) ? 70 : relevance,
+        };
+        next = {
+          ...next,
+          product: {
+            ...next.product,
+            features: [...next.product.features, newFeature],
+          },
+        };
+      }
+
+      // Handle strategy_* side effects
+      if (optionId.startsWith('strategy_')) {
+        const strategy = optionId.replace('strategy_', '');
+        next = {
+          ...next,
+          meta: {
+            ...next.meta,
+            growthStrategy: strategy,
+          },
+        };
+      }
+
+      // Handle layoff_* side effects
+      if (optionId.startsWith('layoff_')) {
+        const layoffParts = optionId.split('_');
+        const layoffCount = parseInt(layoffParts[1], 10) || 1;
+        const actualLayoffs = Math.min(next.team.teamSize, layoffCount);
+        next = {
+          ...next,
+          team: {
+            ...next.team,
+            teamSize: next.team.teamSize - actualLayoffs,
+          },
+          company: {
+            ...next.company,
+            culture: Math.max(0, next.company.culture - 10),
+          },
+        };
+      }
 
       // Update the event log entry with the resolution
       const logIdx = updatedLog.findIndex(

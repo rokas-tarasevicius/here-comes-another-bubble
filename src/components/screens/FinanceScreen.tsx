@@ -44,8 +44,9 @@ export function FinanceScreen() {
   // P&L calculations
   const totalSalaries = team.teamSize * team.avgSalary;
   const totalAICosts = team.aiAgents.reduce((sum, a) => sum + a.costPerWeek, 0);
-  const overhead = Math.round(finances.monthlyExpenses / 4 - totalSalaries - totalAICosts);
-  const overheadEstimate = Math.max(0, overhead);
+  const isGarageStage = company.stage === 'garage' || company.stage === 'pre-seed';
+  const baseCost = isGarageStage ? 100 : 500;
+  const overheadEstimate = baseCost + team.teamSize * 50;
   const totalExpenses = totalSalaries + totalAICosts + overheadEstimate;
   const netIncome = finances.weeklyRevenue - totalExpenses;
 
@@ -155,14 +156,14 @@ export function FinanceScreen() {
                   {formatCurrency(totalAICosts)}
                 </span>
               </div>
-              {overheadEstimate > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-[--color-retro-text-muted]">Overhead</span>
-                  <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                    {formatCurrency(overheadEstimate)}
-                  </span>
-                </div>
-              )}
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-[--color-retro-text-muted]">
+                  Overhead ({isGarageStage ? 'garage' : 'office'} + infra)
+                </span>
+                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
+                  {formatCurrency(overheadEstimate)}
+                </span>
+              </div>
             </div>
             <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
               <span className="text-[--color-retro-text]">Total Expenses</span>

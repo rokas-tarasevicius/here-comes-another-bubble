@@ -247,8 +247,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Let them work without AI. Diversity of approach has value. But the precedent...',
         effects: [
           { path: 'team.morale', operation: 'add', value: 5 },
-          { path: 'company.culture', operation: 'add', value: -8 },
-          { path: 'company.culture', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: -5 },
         ],
       },
       {
@@ -258,9 +257,8 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'AI tools are now required for all engineers. Efficient but authoritarian.',
         effects: [
           { path: 'team.morale', operation: 'add', value: -10 },
-          { path: 'company.culture', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
-          { path: 'company.culture', operation: 'add', value: -5 },
         ],
       },
       {
@@ -270,8 +268,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'AI tools encouraged but not required. Track productivity either way. Let the data decide.',
         effects: [
           { path: 'team.morale', operation: 'add', value: 2 },
-          { path: 'company.culture', operation: 'add', value: 2 },
-          { path: 'company.culture', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -5000 },
         ],
       },
@@ -338,7 +335,6 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           { path: 'team.morale', operation: 'add', value: -3 },
           { path: 'company.culture', operation: 'add', value: 8 },
           { path: 'product.overallQuality', operation: 'add', value: 7 },
-          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -10000 },
         ],
       },
@@ -862,7 +858,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'This is a fad. The future is AI. Don\'t let nostalgia dictate product strategy.',
         effects: [
           { path: 'company.culture', operation: 'add', value: 5 },
-          { path: 'product.customers', operation: 'add', value: -10 },
+          { path: 'product.customers', operation: 'add', value: -5 },
           { path: 'company.reputation', operation: 'add', value: -3 },
         ],
       },
@@ -905,9 +901,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Sign the AI Usage Agreement. Your team feels heard. Your AI integration slows down.',
         effects: [
           { path: 'team.morale', operation: 'add', value: 12 },
-          { path: 'company.culture', operation: 'add', value: -12 },
-          { path: 'company.culture', operation: 'add', value: 8 },
-          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 1 },
         ],
       },
       {
@@ -917,8 +911,6 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Accept the spirit but push back on specifics. Find middle ground.',
         effects: [
           { path: 'team.morale', operation: 'add', value: 5 },
-          { path: 'company.culture', operation: 'add', value: -5 },
-          { path: 'company.culture', operation: 'add', value: 5 },
           { path: 'finances.cash', operation: 'add', value: -5000 },
         ],
       },
@@ -929,8 +921,6 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'This is a startup, not a union shop. AI is the future. Get on board or get out.',
         effects: [
           { path: 'team.morale', operation: 'add', value: -15 },
-          { path: 'company.culture', operation: 'add', value: 10 },
-          { path: 'company.culture', operation: 'add', value: -10 },
           { path: 'product.overallQuality', operation: 'add', value: 3 },
         ],
       },
@@ -1172,7 +1162,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'You can\'t match cash but you can offer significant equity. If the company succeeds, they\'ll do better here.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -20000 },
-          { path: 'finances.founderEquity', operation: 'add', value: -0.02 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.98 },
           { path: 'team.morale', operation: 'add', value: 5 },
         ],
       },

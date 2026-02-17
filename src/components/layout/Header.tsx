@@ -58,25 +58,25 @@ export function Header() {
   const stageLabel = STAGE_LABELS[company.stage] ?? company.stage;
 
   return (
-    <header className="retro-header flex items-center justify-between px-6 py-3">
+    <header className="retro-header flex flex-wrap items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-3">
       {/* Left: Company name + stage badge */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-[--font-retro-heading] font-bold text-[--color-retro-text]">{company.name}</h1>
+      <div className="flex items-center gap-2 md:gap-3 min-w-0">
+        <h1 className="text-sm md:text-lg font-[--font-retro-heading] font-bold text-[--color-retro-text] truncate">{company.name}</h1>
         <span
-          className={`text-xs ${stageBadgeClass}`}
+          className={`text-xs shrink-0 ${stageBadgeClass}`}
         >
           {stageLabel}
         </span>
       </div>
 
       {/* Center: Date display */}
-      <div className="retro-badge retro-badge-blue font-[--font-retro-mono] text-xs">
+      <div className="retro-badge retro-badge-blue font-[--font-retro-mono] text-xs shrink-0">
         {dateStr}
       </div>
 
       {/* Right: Cash + pending warning + Next Week button */}
-      <div className="flex items-center gap-4">
-        <span className="font-[--font-retro-mono] text-sm font-bold text-[--color-retro-green-dark]">
+      <div className="flex items-center gap-2 md:gap-4">
+        <span className="font-[--font-retro-mono] text-xs md:text-sm font-bold text-[--color-retro-green-dark]">
           {formatCash(finances.cash)}
         </span>
 
@@ -89,7 +89,7 @@ export function Header() {
         <button
           onClick={endWeek}
           disabled={isSimulating}
-          className={`btn-glossy text-sm ${
+          className={`btn-glossy text-xs md:text-sm ${
             isSimulating
               ? 'btn-silver cursor-not-allowed opacity-60'
               : 'btn-green'

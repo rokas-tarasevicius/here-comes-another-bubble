@@ -1,31 +1,37 @@
 import { useGameStore } from '../../store/index.ts';
 import { DecisionCard } from '../shared/DecisionCard.tsx';
+import { formatCurrency } from '../../utils/format.ts';
 import type { PlayerDecision } from '../../types/decisions.ts';
+import type { PendingDecision } from '../../types/game.ts';
 
 // ─── Decision label helpers ──────────────────────────────────────────────
 
-function describeDecision(decision: PlayerDecision): string {
+function describeDecision(decision: PlayerDecision, pendingDecisions: PendingDecision[]): string {
   switch (decision.type) {
-    case 'respond-to-event':
-      return `Event response: decision ${decision.decisionId} \u2192 option ${decision.optionId}`;
+    case 'respond-to-event': {
+      const pending = pendingDecisions.find((d) => d.id === decision.decisionId);
+      const optionLabel = pending?.options.find((o) => o.id === decision.optionId)?.label;
+      const title = pending?.prompt ?? decision.decisionId;
+      return optionLabel ? `${title}: ${optionLabel}` : title;
+    }
     case 'start-feature':
       return `Start feature: ${decision.name}`;
     case 'set-pricing':
-      return `Set pricing: ${decision.model} at $${decision.pricePerUnit}`;
+      return `Change pricing to ${decision.model} at ${formatCurrency(decision.pricePerUnit)}/unit`;
     case 'hire-ai-agent':
       return `Hire AI agent: ${decision.name} (${decision.provider})`;
     case 'fire-ai-agent':
-      return `Remove AI agent ${decision.agentId}`;
+      return `Remove AI agent`;
     case 'seek-funding':
-      return `Seek funding: ${decision.targetStage}`;
+      return `Seek funding`;
     case 'change-segment':
-      return `Pivot to ${decision.newSegment}`;
+      return `Pivot to ${decision.newSegment.replace(/-/g, ' ')}`;
     case 'hire-team':
-      return `Hire ${decision.count} team member${decision.count > 1 ? 's' : ''} at $${decision.salary.toLocaleString()}/wk`;
+      return `Hire ${decision.count} team member${decision.count > 1 ? 's' : ''}`;
     case 'fire-team':
-      return `Let go ${decision.count} team member${decision.count > 1 ? 's' : ''}`;
+      return `Lay off ${decision.count} team member${decision.count > 1 ? 's' : ''}`;
     case 'set-marketing-budget':
-      return `Set marketing budget to $${decision.amount.toLocaleString()}/wk`;
+      return `Set marketing budget: ${formatCurrency(decision.amount)}/wk`;
     case 'set-growth-strategy':
       return `Switch growth strategy to ${decision.strategy.replace(/-/g, ' ')}`;
     default:
@@ -76,6 +82,13 @@ export function DecisionScreen() {
   const { pendingDecisions, meta } = gameState;
   const currentWeek = meta.week;
 
+  // Filter out decisions that have already been responded to this turn
+  const unrespondedDecisions = pendingDecisions.filter(
+    (d) => !decisionsThisTurn.some(
+      (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+    )
+  );
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
@@ -83,9 +96,9 @@ export function DecisionScreen() {
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
             Pending Decisions
-            {pendingDecisions.length > 0 && (
+            {unrespondedDecisions.length > 0 && (
               <span className="ml-2 retro-badge retro-badge-orange">
-                {pendingDecisions.length}
+                {unrespondedDecisions.length}
               </span>
             )}
           </h2>
@@ -94,9 +107,9 @@ export function DecisionScreen() {
           </span>
         </div>
 
-        {pendingDecisions.length > 0 ? (
+        {unrespondedDecisions.length > 0 ? (
           <div className="flex flex-col gap-4">
-            {pendingDecisions.map((decision) => (
+            {unrespondedDecisions.map((decision) => (
               <DecisionCard
                 key={decision.id}
                 decision={decision}
@@ -152,10 +165,13 @@ export function DecisionScreen() {
             {decisionsThisTurn.map((decision, index) => {
               const badgeClass =
                 TYPE_BADGE_CLASSES[decision.type] ?? 'retro-badge retro-badge-gray';
+              const decisionKey = decision.type === 'respond-to-event'
+                ? `event-${decision.decisionId}`
+                : `${decision.type}-${index}`;
 
               return (
                 <div
-                  key={index}
+                  key={decisionKey}
                   className="flex items-center justify-between gap-3 p-4 transition-colors hover:bg-[--color-retro-bg-alt]"
                 >
                   <div className="flex items-center gap-3 min-w-0">
@@ -163,7 +179,7 @@ export function DecisionScreen() {
                       {decisionTypeLabel(decision.type)}
                     </span>
                     <span className="truncate text-sm text-[--color-retro-text]">
-                      {describeDecision(decision)}
+                      {describeDecision(decision, pendingDecisions)}
                     </span>
                   </div>
                   <button

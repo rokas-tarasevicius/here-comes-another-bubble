@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { FOUNDER_DISPLAY } from '../../data/founders.ts';
 import { MARKET_SEGMENTS } from '../../data/markets.ts';
+import { formatCurrency } from '../../utils/format.ts';
 import type { FounderArchetype, MarketSegment, Difficulty, Tone } from '../../types/index.ts';
 
 // ─── Constants ──────────────────────────────────────────────────────────
@@ -125,6 +126,12 @@ function StatBar({ label, value, color }: { label: string; value: number; color:
 
 // ─── Market Stat Indicator ──────────────────────────────────────────────
 
+function formatMarketStatValue(label: string, value: number): string {
+  if (typeof value === 'number' && value <= 1) return `${(value * 100).toFixed(0)}%`;
+  if (label === 'Market Size') return formatCurrency(value);
+  return String(value);
+}
+
 function MarketStat({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = Math.min((value / max) * 100, 100);
   const barClasses: Record<string, string> = {
@@ -139,7 +146,7 @@ function MarketStat({ label, value, max, color }: { label: string; value: number
       <div className="mb-1 flex items-center justify-between">
         <span className="font-[--font-retro] text-xs text-retro-text-muted">{label}</span>
         <span className="font-[--font-retro-mono] text-xs text-retro-text-light">
-          {typeof value === 'number' && value <= 1 ? `${(value * 100).toFixed(0)}%` : value}
+          {formatMarketStatValue(label, value)}
         </span>
       </div>
       <div className="retro-progress h-2">

@@ -114,7 +114,7 @@ export function FeatureBoard() {
       )}
 
       {/* Kanban columns */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {COLUMNS.map((col) => {
           const colFeatures = features.filter((f) => f.status === col.status);
 

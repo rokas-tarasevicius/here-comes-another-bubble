@@ -91,9 +91,11 @@ function App() {
       }
 
       // Escape = back to main menu (from gameplay)
-      if (e.key === 'Escape' && gameState) {
+      if (e.key === 'Escape' && gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
         e.preventDefault();
-        setScreen('title');
+        if (window.confirm('Return to main menu? Unsaved progress will be lost.')) {
+          setScreen('title');
+        }
       }
     }
 

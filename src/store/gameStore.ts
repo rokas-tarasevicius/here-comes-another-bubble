@@ -20,6 +20,7 @@ export interface SaveSlot {
   companyName: string;
   week: number;
   valuation: number;
+  cash: number;
   savedAt: string;
 }
 
@@ -39,6 +40,7 @@ interface GameStoreState {
   decisionsThisTurn: PlayerDecision[];
   isSimulating: boolean;
   showWeekRecap: boolean;
+  lastSaveTime: number | null;
 }
 
 interface GameStoreActions {
@@ -80,6 +82,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   decisionsThisTurn: [],
   isSimulating: false,
   showWeekRecap: false,
+  lastSaveTime: null,
 
   // ── Actions ────────────────────────────────────────────────────────
 
@@ -293,6 +296,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         `${SAVE_KEY_PREFIX}${slot}`,
         JSON.stringify(payload),
       );
+      set({ lastSaveTime: Date.now() });
     } catch {
       // Storage full or unavailable
     }
@@ -330,6 +334,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
           companyName: payload.gameState.company.name,
           week: payload.gameState.meta.week,
           valuation: payload.gameState.company.valuation,
+          cash: payload.gameState.finances.cash,
           savedAt: payload.savedAt,
         });
       } catch {

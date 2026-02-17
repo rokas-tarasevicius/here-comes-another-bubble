@@ -42,13 +42,16 @@ export function BackgroundMusic() {
       return;
     }
 
-    const tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    document.head.appendChild(tag);
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
 
     window.onYouTubeIframeAPIReady = () => createPlayer();
 
     return () => {
+      window.onYouTubeIframeAPIReady = undefined;
       playerRef.current?.destroy();
       playerRef.current = null;
     };
@@ -88,6 +91,7 @@ export function BackgroundMusic() {
         onClick={toggle}
         className="fixed bottom-4 right-4 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-retro-border bg-retro-card text-lg shadow-md transition-all hover:shadow-lg"
         title={isPlaying ? 'Pause music' : 'Play music'}
+        aria-label={isPlaying ? 'Pause music' : 'Play music'}
         style={{ fontFamily: 'var(--font-retro-mono)' }}
       >
         {isPlaying ? '\u266B' : '\u266A'}

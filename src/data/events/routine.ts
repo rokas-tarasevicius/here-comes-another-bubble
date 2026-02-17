@@ -945,7 +945,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         description: 'Stock options instead of cash. Startup classic.',
         effects: [
           { path: 'team.morale', operation: 'add', value: 1 },
-          { path: 'finances.founderEquity', operation: 'add', value: -0.02 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.98 },
         ],
         tone: 'satirical',
       },

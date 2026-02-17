@@ -71,7 +71,7 @@ export function CompanyScreen() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-5xl mx-auto">
+    <div className="space-y-6 p-6 max-w-5xl mx-auto min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Company</h1>

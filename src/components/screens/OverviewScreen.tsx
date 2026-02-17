@@ -128,7 +128,9 @@ export function OverviewScreen() {
         <KPICard
           title="Revenue"
           value={formatCurrency(finances.weeklyRevenue)}
-          subtitle={`${finances.pricingModel} \u00B7 ${formatCurrency(finances.pricePerUnit)}/unit`}
+          subtitle={finances.pricePerUnit > 0
+            ? `${finances.pricingModel} \u00B7 ${formatCurrency(finances.pricePerUnit)}/unit`
+            : finances.pricingModel}
           trend={revenueTrend}
           trendValue={trendPercent(revenueHistory)}
           color={revenueTrendColor}

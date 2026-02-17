@@ -47,7 +47,7 @@ export function MarketScreen() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Market Intelligence</h1>
@@ -127,7 +127,9 @@ export function MarketScreen() {
       </div>
 
       {/* Competitor Table */}
-      <CompetitorTable competitors={competitors} player={playerRow} />
+      <div className="overflow-x-auto">
+        <CompetitorTable competitors={competitors} player={playerRow} />
+      </div>
     </div>
   );
 }

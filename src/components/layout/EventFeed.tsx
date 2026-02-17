@@ -43,7 +43,7 @@ export function EventFeed() {
     });
 
   return (
-    <aside className="flex w-80 flex-col border-l border-[--color-retro-border] bg-[--color-retro-card]">
+    <aside className="flex w-80 flex-col overflow-hidden border-l border-[--color-retro-border] bg-[--color-retro-card]">
       <div className="px-4 py-3">
         <h2 className="retro-section-heading">Event Feed</h2>
       </div>
@@ -80,10 +80,10 @@ export function EventFeed() {
                       W{event.week}
                     </span>
                   </div>
-                  <p className="text-sm font-medium text-[--color-retro-text]">
+                  <p className="text-sm font-medium text-[--color-retro-text] truncate" title={event.title}>
                     {event.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-[--color-retro-text-muted] line-clamp-2">
+                  <p className="mt-0.5 text-xs text-[--color-retro-text-muted] line-clamp-2" title={event.description}>
                     {event.description}
                   </p>
                 </li>

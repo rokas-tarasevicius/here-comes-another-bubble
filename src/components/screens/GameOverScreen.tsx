@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-[--color-retro-orange]';
+    case 'S': return 'text-yellow-400';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -20,7 +20,7 @@ function gradeColor(grade: string): string {
 
 function gradeBorderColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'border-[--color-retro-orange]';
+    case 'S': return 'border-yellow-400';
     case 'A': return 'border-[--color-retro-green]';
     case 'B': return 'border-[--color-retro-blue]';
     case 'C': return 'border-[--color-retro-border-dark]';

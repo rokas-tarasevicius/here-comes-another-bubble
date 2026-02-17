@@ -916,48 +916,4 @@ export const MARKET_EVENTS: GameEvent[] = [
     decisionDeadlineWeeks: 2,
   },
 
-  // ─── 20. Government AI Contract ────────────────────────────────────────
-  {
-    id: 'market-government-ai-contract',
-    title: 'Government AI Contract',
-    category: 'market',
-    minWeek: 12,
-    maxOccurrences: 0,
-    cooldownWeeks: 16,
-    weight: 2,
-    condition: (state) =>
-      state.company.reputation > 30 && state.product.pmfScore > 25,
-    descriptions: {
-      default: 'A government agency is looking for AI vendors. You might qualify.',
-      realistic:
-        'The Department of Defense published an RFP for AI-powered analytics tools. The contract is worth $2M over 3 years. Your product meets most requirements.',
-      satirical:
-        'The government wants AI! The RFP is 847 pages, requires FedRAMP compliance, and the procurement process takes longer than your company has existed. But the contract is worth $2M and they\'ll definitely pay. Eventually. Maybe.',
-      mixed:
-        'Government AI contract opportunity: $2M, prestigious, and recession-proof. The catch: 6 months of paperwork, security clearances, and a procurement process designed in 1987. Your lawyer is excited. Your engineers are not.',
-    },
-    immediateEffects: [],
-    decisionOptions: [
-      {
-        id: 'pursue-contract',
-        label: 'Pursue the Contract',
-        description: 'Invest time in the proposal. $5K in legal and compliance costs.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -5_000 },
-          { path: 'finances.weeklyRevenue', operation: 'add', value: 2_000 },
-          { path: 'company.reputation', operation: 'add', value: 5 },
-          { path: 'founder.bizSkill', operation: 'add', value: 2 },
-        ],
-      },
-      {
-        id: 'pass-contract',
-        label: 'Pass on It',
-        description: 'Government contracts aren\'t your thing. Stay focused on commercial.',
-        effects: [
-          { path: 'product.pmfScore', operation: 'add', value: 1 },
-        ],
-      },
-    ],
-    decisionDeadlineWeeks: 4,
-  },
 ];

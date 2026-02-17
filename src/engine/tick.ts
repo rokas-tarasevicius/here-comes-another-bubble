@@ -585,9 +585,20 @@ const INVESTOR_NAMES = [
   'Khosla Ventures', 'Bessemer Venture Partners', 'NEA', 'Spark Capital',
 ];
 
-export function applySeekFunding(state: GameState, _targetStage: string): GameState {
+const STAGE_ORDER: CompanyStage[] = ['garage', 'pre-seed', 'seed', 'series-a', 'series-b', 'series-c', 'growth', 'public'];
+
+export function applySeekFunding(state: GameState, targetStage: string): GameState {
   const currentStage = state.company.stage;
-  const config = STAGE_TO_FUNDING[currentStage];
+  const currentIdx = STAGE_ORDER.indexOf(currentStage);
+  const targetIdx = STAGE_ORDER.indexOf(targetStage as CompanyStage);
+
+  // Use targetStage if it's a valid stage ahead of current, and has funding config
+  let lookupStage = currentStage;
+  if (targetIdx > currentIdx && STAGE_TO_FUNDING[targetStage]) {
+    lookupStage = targetStage as CompanyStage;
+  }
+
+  const config = STAGE_TO_FUNDING[lookupStage];
 
   if (!config) {
     const logEntry: EventLogEntry = {
@@ -684,7 +695,7 @@ export function applySeekFunding(state: GameState, _targetStage: string): GameSt
       ...state.finances,
       cash: state.finances.cash + amount,
       fundingHistory: [...state.finances.fundingHistory, fundingRound],
-      founderEquity: Math.round((state.finances.founderEquity * (1 - dilution)) * 1000) / 1000,
+      founderEquity: Math.max(0, Math.round((state.finances.founderEquity * (1 - dilution)) * 1000) / 1000),
     },
     founder: {
       ...state.founder,
@@ -1031,21 +1042,54 @@ export function advanceWeek(
   // 1. Apply player decisions
   let next = applyDecisions(state, decisions);
 
+  // 1.5 Update counters before simulation reads them
+  const lowMoraleWeeks = next.team.morale < 40
+    ? (next.meta.lowMoraleWeeks ?? 0) + 1
+    : 0;
+  const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
+    ? (next.meta.contentSeoWeeks ?? 0) + 1
+    : 0;
+  next = {
+    ...next,
+    meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks },
+  };
+
   // 2. Run simulation
   next = simulateWeek(next);
+
+  // 2.5 Save pre-event values for derived state conflict resolution
+  const preEventBurn = next.finances.weeklyBurn;
+  const preEventRevenue = next.finances.weeklyRevenue;
+  const preEventValuation = next.company.valuation;
 
   // 3. Process events
   next = processEvents(next);
 
-  // 4. Update derived metrics
-  const burn = calculateWeeklyBurn(next);
-  const valuation = calculateValuation(next);
+  // 3.5 Detect event-applied modifiers
+  const postEventBurn = next.finances.weeklyBurn;
+  const postEventRevenue = next.finances.weeklyRevenue;
+  const postEventValuation = next.company.valuation;
+
+  const burnRatio = preEventBurn > 0 && postEventBurn !== preEventBurn
+    ? postEventBurn / preEventBurn : 1;
+  const revenueRatio = preEventRevenue > 0 && postEventRevenue !== preEventRevenue
+    ? postEventRevenue / preEventRevenue : 1;
+  const valuationRatio = preEventValuation > 0 && postEventValuation !== preEventValuation
+    ? postEventValuation / preEventValuation : 1;
+
+  // 4. Update derived metrics, preserving event modifiers as multipliers
+  let burn = calculateWeeklyBurn(next);
+  let valuation = calculateValuation(next);
   const avgMorale = calculateAvgMorale(next);
   const pmfScore = calculatePMF(next);
 
+  burn = Math.round(burn * burnRatio);
+  const weeklyRevenue = Math.round(next.finances.weeklyRevenue * revenueRatio * 100) / 100;
+  valuation = Math.round(valuation * valuationRatio);
+
   next = {
     ...next,
-    finances: { ...next.finances, weeklyBurn: burn },
+    finances: { ...next.finances, weeklyBurn: burn, weeklyRevenue },
     company: { ...next.company, valuation },
     team: { ...next.team, morale: avgMorale },
     product: { ...next.product, pmfScore },
@@ -1073,20 +1117,7 @@ export function advanceWeek(
     next = { ...next, founder: updatedFounder };
   }
 
-  // 8. Task 8: Track consecutive low morale weeks
-  const lowMoraleWeeks = next.team.morale < 40
-    ? (next.meta.lowMoraleWeeks ?? 0) + 1
-    : 0;
-
-  // Track content-SEO weeks for compounding effect
-  const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
-    ? (next.meta.contentSeoWeeks ?? 0) + 1
-    : 0;
-
-  next = {
-    ...next,
-    meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks },
-  };
+  // 8. (lowMoraleWeeks and contentSeoWeeks now updated in step 1.5 before simulation)
 
   // 9. Task 10: Morale impact from funding events this week
   const fundingThisWeek = next.eventLog.filter(

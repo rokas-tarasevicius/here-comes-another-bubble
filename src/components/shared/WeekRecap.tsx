@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { formatCurrency, formatNumber } from '../../utils/format.ts';
 
@@ -45,10 +46,10 @@ export function WeekRecap() {
   const { weekHistory, eventLog, meta } = gameState;
 
   // We need at least the current week's summary
-  if (weekHistory.length === 0) {
-    dismissWeekRecap();
-    return null;
-  }
+  useEffect(() => {
+    if (weekHistory.length === 0) dismissWeekRecap();
+  }, [weekHistory.length, dismissWeekRecap]);
+  if (weekHistory.length === 0) return null;
 
   const latest = weekHistory[weekHistory.length - 1];
   const previous = weekHistory.length >= 2 ? weekHistory[weekHistory.length - 2] : null;
@@ -96,6 +97,8 @@ export function WeekRecap() {
       className="fixed inset-0 z-50 flex items-center justify-center"
       style={{ background: 'rgba(0, 0, 0, 0.6)' }}
       onClick={dismissWeekRecap}
+      role="dialog"
+      aria-modal="true"
     >
       <div
         className="retro-card-raised w-full max-w-md mx-4"
@@ -160,6 +163,7 @@ export function WeekRecap() {
         <button
           onClick={dismissWeekRecap}
           className="btn-glossy btn-blue w-full"
+          autoFocus
         >
           Continue
         </button>
