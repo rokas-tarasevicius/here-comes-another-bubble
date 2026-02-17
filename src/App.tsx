@@ -12,6 +12,7 @@ import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
 import { WeekRecap } from './components/shared/WeekRecap.tsx';
+import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
 
@@ -111,30 +112,30 @@ function App() {
     }
   }, [gameState?.meta.gameOver, gameState?.meta.gameWon, currentScreen, setScreen]);
 
-  // Title / New Game screens (no AppShell)
+  let screen;
   if (currentScreen === 'title') {
-    return <MainMenuScreen />;
+    screen = <MainMenuScreen />;
+  } else if (currentScreen === 'newgame') {
+    screen = <NewGameScreen />;
+  } else if (currentScreen === 'gameover') {
+    screen = <GameOverScreen />;
+  } else if (currentScreen === 'leaderboard') {
+    screen = <LeaderboardScreen />;
+  } else {
+    screen = (
+      <>
+        <AppShell>
+          <GameplayScreen />
+        </AppShell>
+        <WeekRecap />
+      </>
+    );
   }
 
-  if (currentScreen === 'newgame') {
-    return <NewGameScreen />;
-  }
-
-  if (currentScreen === 'gameover') {
-    return <GameOverScreen />;
-  }
-
-  if (currentScreen === 'leaderboard') {
-    return <LeaderboardScreen />;
-  }
-
-  // All gameplay screens wrapped in AppShell
   return (
     <>
-      <AppShell>
-        <GameplayScreen />
-      </AppShell>
-      <WeekRecap />
+      {screen}
+      <BackgroundMusic />
     </>
   );
 }
