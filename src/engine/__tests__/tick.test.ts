@@ -55,6 +55,7 @@ describe('advanceWeek', () => {
         founderEquity: 1.0,
         monthlyExpenses: 0,
         marketingSpend: 0,
+        lastPricingChangeWeek: 0,
       },
     });
 

@@ -15,9 +15,6 @@ const hasAIAgents = (state: GameState): boolean =>
 const hasCodingAgent = (state: GameState): boolean =>
   state.team.aiAgents.some((a) => a.type === 'coding');
 
-const hasEmployees = (state: GameState): boolean =>
-  state.team.teamSize > 0;
-
 const hasEngineers = (state: GameState): boolean =>
   state.team.teamSize >= 1;
 

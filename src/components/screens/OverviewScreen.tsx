@@ -70,12 +70,6 @@ function trendPercent(data: number[]): string {
   return `${sign}${pct.toFixed(1)}%`;
 }
 
-function pmfColor(score: number): 'red' | 'amber' | 'emerald' {
-  if (score < 30) return 'red';
-  if (score < 60) return 'amber';
-  return 'emerald';
-}
-
 function bubbleColor(index: number): string {
   if (index < 30) return 'text-[--color-retro-green]';
   if (index < 60) return 'text-[--color-retro-orange]';

@@ -1,5 +1,5 @@
 import { useGameStore } from '../../store/index.ts';
-import { formatCurrency, formatPercent } from '../../utils/format.ts';
+import { formatCurrency } from '../../utils/format.ts';
 import { KPICard } from '../shared/KPICard.tsx';
 import { CashFlowChart } from '../shared/CashFlowChart.tsx';
 import { RunwayCountdown } from '../shared/RunwayCountdown.tsx';

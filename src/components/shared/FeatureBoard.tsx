@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
-import type { Feature, FeatureStatus } from '../../types/game.ts';
+import type { FeatureStatus } from '../../types/game.ts';
 
 const COLUMNS: { status: FeatureStatus; label: string; badgeClass: string }[] = [
   { status: 'planned', label: 'Planned', badgeClass: 'retro-badge retro-badge-gray' },
@@ -13,12 +13,6 @@ function qualityColor(quality: number): string {
   if (quality < 30) return 'text-[--color-retro-red]';
   if (quality <= 60) return 'text-[--color-retro-orange]';
   return 'text-[--color-retro-green]';
-}
-
-function techDebtColor(debt: number): string {
-  if (debt < 30) return 'text-[--color-retro-green]';
-  if (debt <= 60) return 'text-[--color-retro-orange]';
-  return 'text-[--color-retro-red]';
 }
 
 interface NewFeatureFormState {
@@ -40,12 +34,6 @@ export function FeatureBoard() {
   if (!gameState) return null;
 
   const { features } = gameState.product;
-  const { employees } = gameState.team;
-  const { aiAgents } = gameState.team;
-
-  // Build lookup maps for assigned names
-  const employeeMap = new Map(employees.map((e) => [e.id, e.name]));
-  const agentMap = new Map(aiAgents.map((a) => [a.id, a.name]));
 
   function handleSubmitFeature(e: React.FormEvent) {
     e.preventDefault();
@@ -61,19 +49,6 @@ export function FeatureBoard() {
 
     setForm({ name: '', description: '', marketRelevance: '50' });
     setShowForm(false);
-  }
-
-  function getAssignedNames(feature: Feature): string[] {
-    const names: string[] = [];
-    for (const id of feature.assignedEmployees) {
-      const name = employeeMap.get(id);
-      if (name) names.push(name);
-    }
-    for (const id of feature.assignedAgents) {
-      const name = agentMap.get(id);
-      if (name) names.push(name);
-    }
-    return names;
   }
 
   return (
@@ -162,76 +137,48 @@ export function FeatureBoard() {
                     <p className="text-xs text-[--color-retro-text-light]">No features</p>
                   </div>
                 )}
-                {colFeatures.map((feature) => {
-                  const assignedNames = getAssignedNames(feature);
-                  const totalAssigned = feature.assignedEmployees.length + feature.assignedAgents.length;
+                {colFeatures.map((feature) => (
+                  <div
+                    key={feature.id}
+                    className="retro-card-raised"
+                  >
+                    {/* Feature name */}
+                    <h4 className="mb-1 text-sm font-bold text-[--color-retro-text]">{feature.name}</h4>
+                    {feature.description && (
+                      <p className="mb-2 text-xs text-[--color-retro-text-light] line-clamp-2">
+                        {feature.description}
+                      </p>
+                    )}
 
-                  return (
-                    <div
-                      key={feature.id}
-                      className="retro-card-raised"
-                    >
-                      {/* Feature name */}
-                      <h4 className="mb-1 text-sm font-bold text-[--color-retro-text]">{feature.name}</h4>
-                      {feature.description && (
-                        <p className="mb-2 text-xs text-[--color-retro-text-light] line-clamp-2">
-                          {feature.description}
-                        </p>
-                      )}
-
-                      {/* Progress bar */}
-                      {(col.status === 'in-progress' || col.status === 'planned') && (
-                        <div className="mb-2">
-                          <div className="mb-0.5 flex items-center justify-between">
-                            <span className="text-xs text-[--color-retro-text-muted]">Progress</span>
-                            <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
-                              {feature.progress}%
-                            </span>
-                          </div>
-                          <div className="retro-progress" style={{ height: '10px' }}>
-                            <div
-                              className="retro-progress-bar"
-                              style={{ width: `${feature.progress}%` }}
-                            />
-                          </div>
+                    {/* Progress bar */}
+                    {(col.status === 'in-progress' || col.status === 'planned') && (
+                      <div className="mb-2">
+                        <div className="mb-0.5 flex items-center justify-between">
+                          <span className="text-xs text-[--color-retro-text-muted]">Progress</span>
+                          <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
+                            {feature.progress}%
+                          </span>
                         </div>
-                      )}
-
-                      {/* Stats row */}
-                      <div className="mb-2 flex items-center gap-3 text-xs font-semibold">
-                        <span className={qualityColor(feature.quality)}>
-                          Q:{feature.quality}
-                        </span>
-                        <span className={techDebtColor(feature.techDebt)}>
-                          TD:{feature.techDebt}
-                        </span>
-                        <span className="text-[--color-retro-blue]">
-                          MR:{feature.marketRelevance}
-                        </span>
+                        <div className="retro-progress" style={{ height: '10px' }}>
+                          <div
+                            className="retro-progress-bar"
+                            style={{ width: `${feature.progress}%` }}
+                          />
+                        </div>
                       </div>
+                    )}
 
-                      {/* Assigned team */}
-                      {totalAssigned > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {assignedNames.length <= 3 ? (
-                            assignedNames.map((name, i) => (
-                              <span
-                                key={i}
-                                className="retro-badge retro-badge-gray"
-                              >
-                                {name}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="retro-badge retro-badge-gray">
-                              {totalAssigned} assigned
-                            </span>
-                          )}
-                        </div>
-                      )}
+                    {/* Stats row */}
+                    <div className="flex items-center gap-3 text-xs font-semibold">
+                      <span className={qualityColor(feature.quality)}>
+                        Q:{feature.quality}
+                      </span>
+                      <span className="text-[--color-retro-blue]">
+                        MR:{feature.marketRelevance}
+                      </span>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
           );

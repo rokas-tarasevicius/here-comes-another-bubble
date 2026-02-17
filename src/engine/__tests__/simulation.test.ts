@@ -1,15 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { simulateWeek } from '../simulation.ts';
 import { advanceWeek } from '../tick.ts';
 import { createInitialState } from '../init.ts';
 import type { GameState, AIAgent, Feature, Competitor } from '../../types/index.ts';
 
 // ─── Helpers ────────────────────────────────────────────────────────────
-
-function makeTestState(overrides?: Partial<GameState>): GameState {
-  const base = createInitialState('TestCo', 'balanced', 'ai-devtools', 'normal', 'realistic');
-  return { ...base, ...overrides };
-}
 
 function makeDeepState(overrides: {
   meta?: Partial<GameState['meta']>;
@@ -86,13 +81,6 @@ function makeCompetitor(overrides?: Partial<Competitor>): Competitor {
   };
 }
 
-/** Run simulateWeek with fixed random to eliminate noise */
-function simulateWeekDeterministic(state: GameState, randomValue = 0.5): GameState {
-  vi.spyOn(Math, 'random').mockReturnValue(randomValue);
-  const result = simulateWeek(state);
-  vi.restoreAllMocks();
-  return result;
-}
 
 // ─── Tests ──────────────────────────────────────────────────────────────
 

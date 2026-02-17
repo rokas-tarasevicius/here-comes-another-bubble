@@ -585,7 +585,7 @@ const INVESTOR_NAMES = [
   'Khosla Ventures', 'Bessemer Venture Partners', 'NEA', 'Spark Capital',
 ];
 
-export function applySeekFunding(state: GameState, targetStage: string): GameState {
+export function applySeekFunding(state: GameState, _targetStage: string): GameState {
   const currentStage = state.company.stage;
   const config = STAGE_TO_FUNDING[currentStage];
 

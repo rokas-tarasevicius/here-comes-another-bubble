@@ -153,8 +153,9 @@ describe('removeDecision', () => {
       marketRelevance: 80,
     });
     useGameStore.getState().addDecision({
-      type: 'post-job',
-      role: 'engineer',
+      type: 'hire-team',
+      count: 1,
+      salary: 5000,
     });
 
     // Remove the middle one (index 1)
@@ -163,13 +164,14 @@ describe('removeDecision', () => {
     const { decisionsThisTurn } = useGameStore.getState();
     expect(decisionsThisTurn).toHaveLength(2);
     expect(decisionsThisTurn[0].type).toBe('set-pricing');
-    expect(decisionsThisTurn[1].type).toBe('post-job');
+    expect(decisionsThisTurn[1].type).toBe('hire-team');
   });
 
   it('does nothing for an out-of-range index', () => {
     useGameStore.getState().addDecision({
-      type: 'post-job',
-      role: 'engineer',
+      type: 'hire-team',
+      count: 1,
+      salary: 5000,
     });
 
     useGameStore.getState().removeDecision(99);
@@ -181,12 +183,14 @@ describe('removeDecision', () => {
 describe('clearDecisions', () => {
   it('empties the decisions queue', () => {
     useGameStore.getState().addDecision({
-      type: 'post-job',
-      role: 'engineer',
+      type: 'hire-team',
+      count: 1,
+      salary: 5000,
     });
     useGameStore.getState().addDecision({
-      type: 'post-job',
-      role: 'designer',
+      type: 'hire-team',
+      count: 2,
+      salary: 4000,
     });
 
     useGameStore.getState().clearDecisions();
