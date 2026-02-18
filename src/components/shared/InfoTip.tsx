@@ -28,8 +28,6 @@ export function InfoTip({ text }: InfoTipProps) {
 
     parent.style.cursor = 'help';
     parent.style.borderBottom = '1px dashed rgba(0,0,0,0.18)';
-    parent.style.width = 'fit-content';
-    parent.style.paddingBottom = '2px';
 
     const enter = () => { updatePos(); setOpen(true); };
     const leave = () => setOpen(false);
@@ -40,8 +38,6 @@ export function InfoTip({ text }: InfoTipProps) {
       parent.removeEventListener('mouseleave', leave);
       parent.style.cursor = '';
       parent.style.borderBottom = '';
-      parent.style.width = '';
-      parent.style.paddingBottom = '';
     };
   }, [updatePos]);
 

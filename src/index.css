@@ -646,6 +646,8 @@ button.retro-card:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   line-height: 1;
+  width: fit-content;
+  padding-bottom: 2px;
 }
 
 .retro-value {
