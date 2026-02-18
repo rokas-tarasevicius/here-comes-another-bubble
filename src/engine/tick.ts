@@ -1176,10 +1176,10 @@ export function advanceWeek(
     : 0;
   const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
     ? (next.meta.contentSeoWeeks ?? 0) + 1
-    : 0;
+    : (next.meta.contentSeoWeeks ?? 0);
   next = {
     ...next,
-    meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks },
+    meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks, fundingSoughtThisWeek: false },
   };
 
   // 2. Run simulation (capture decision PMF bonus before simulation overwrites it)

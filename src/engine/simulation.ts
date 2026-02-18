@@ -403,6 +403,30 @@ function simulateMarket(state: GameState): GameState {
     },
   );
 
+  // Player market pressure: as the player grows, competitors gradually lose share
+  const annualRevPerCust = updatedSegmentData.revenuePerCustomer * 52;
+  const totalMarketCust = annualRevPerCust > 0
+    ? updatedSegmentData.size / annualRevPerCust
+    : 1;
+  const playerShare = totalMarketCust > 0
+    ? state.product.customers / totalMarketCust
+    : 0;
+
+  if (playerShare > 0.005) {
+    const aliveComps = updatedCompetitors.filter(c => c.alive);
+    const compTotal = aliveComps.reduce((s, c) => s + c.marketShare, 0);
+    if (compTotal > 0) {
+      const pressureFactor = Math.min(0.02, playerShare * 0.1);
+      for (const comp of updatedCompetitors) {
+        if (!comp.alive) continue;
+        const qualityGap = Math.max(0, state.product.overallQuality - comp.productQuality) / 100;
+        const basePressure = pressureFactor * (comp.marketShare / compTotal);
+        const loss = basePressure * (1 + qualityGap);
+        comp.marketShare = clamp(comp.marketShare - loss, 0.005, 1);
+      }
+    }
+  }
+
   // Task 4: Competitor quality comparison affects reputation
   let reputationDelta = 0;
   const aliveCompetitors = updatedCompetitors.filter(c => c.alive);

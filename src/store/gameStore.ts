@@ -485,7 +485,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const { gameState } = get();
     if (!gameState) return;
     const nextState = applySeekFunding(gameState, targetStage);
-    set({ gameState: nextState });
+    set({ gameState: { ...nextState, meta: { ...nextState.meta, fundingSoughtThisWeek: true } } });
   },
 
   continueInfiniteMode() {
