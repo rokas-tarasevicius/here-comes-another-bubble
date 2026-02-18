@@ -301,7 +301,7 @@ export function Header() {
   ];
 
   return (
-    <header className="retro-header px-3 md:px-6 py-2.5 md:py-3">
+    <header className="retro-header relative z-10 px-3 md:px-6 py-2.5 md:py-3">
       <div className="flex items-center justify-between gap-3 md:gap-5">
         {/* Left: Company identity */}
         <div className="flex items-center gap-2.5 md:gap-3 min-w-0">

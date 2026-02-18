@@ -94,10 +94,10 @@ function formatCash(amount: number): string {
 }
 
 function formatMarketSize(size: number): string {
-  if (size >= 1_000_000_000) return `$${(size / 1_000_000_000).toFixed(0)}B`;
-  if (size >= 1_000_000) return `$${(size / 1_000_000).toFixed(0)}M`;
-  if (size >= 1_000) return `$${(size / 1_000).toFixed(0)}K`;
-  return `$${size}`;
+  if (size >= 1_000_000_000) return `$${(size / 1_000_000_000).toFixed(0)}B TAM`;
+  if (size >= 1_000_000) return `$${(size / 1_000_000).toFixed(0)}M TAM`;
+  if (size >= 1_000) return `$${(size / 1_000).toFixed(0)}K TAM`;
+  return `$${size} TAM`;
 }
 
 // ─── Stat Bar (retro glossy progress bar) ───────────────────────────────
@@ -264,6 +264,64 @@ function StepIndicator({
 
 // ─── Step 1: Company Name ───────────────────────────────────────────────
 
+const SUGGESTED_NAMES = [
+  // Silicon Valley (the show)
+  'Pied Piper',
+  'Hooli',
+  'Aviato',
+  'Nucleus',
+  'Bachmanity',
+  'Raviga Capital',
+  'EndFrame',
+  'Not Hotdog',
+  'Hooli XYZ',
+  'PiperNet',
+  'Dinesh Cloud',
+  'Gavin Belson AI',
+  'Erlich Ventures',
+  // Parody / startup culture
+  'Bro.app',
+  'Disruptify',
+  'Synerjy',
+  'PivotPivot',
+  'BlockchAIn',
+  'TechBro Inc.',
+  'Series Yolo',
+  'VC Bait',
+  'Vaporware.io',
+  'Scalr',
+  'Optimizelyyy',
+  'Uber for Dogs',
+  'AI Powered AI',
+  'NothingBurger',
+  'Decacorn Labs',
+  'Brogrammer HQ',
+  'YoloCorp',
+  'Agile Synergy',
+  'Ship It Later',
+  'ThinkDifferenter',
+  'Blaize.ai',
+  'Pivot.ly',
+  'Disrupt Labs',
+  'MoveF4st',
+  'SynergyOS',
+  'DeepThink AI',
+  'Burnr',
+  'Fundme.io',
+  'Stealth.ai',
+  'pre$eed',
+  'Cap Table Co.',
+];
+
+function pickSuggestions(count: number): string[] {
+  const shuffled = [...SUGGESTED_NAMES];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, count);
+}
+
 function StepCompanyName({
   value,
   onChange,
@@ -271,6 +329,8 @@ function StepCompanyName({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const [suggestions] = useState(() => pickSuggestions(10));
+
   return (
     <div className="flex flex-col items-center">
       <div className="mb-2 text-retro-blue">
@@ -296,6 +356,49 @@ function StepCompanyName({
         <p className="mt-2 text-center font-retro-mono text-xs text-retro-text-light">
           {value.length}/40 characters
         </p>
+      </div>
+
+      {/* Suggested names */}
+      <div className="mt-6 flex w-full max-w-sm flex-col items-center">
+        <div className="mb-4 flex items-center gap-3 w-full">
+          <div className="h-px flex-1" style={{ background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.08))' }} />
+          <span className="text-[10px] font-medium text-[--color-retro-text-light] tracking-wide">or pick one</span>
+          <div className="h-px flex-1" style={{ background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.08))' }} />
+        </div>
+        <div
+          className="retro-inset w-full rounded-xl px-4 py-3.5"
+        >
+          <div className="flex flex-wrap justify-center gap-1.5">
+            {suggestions.map((name) => {
+              const selected = value === name;
+              return (
+                <button
+                  key={name}
+                  onClick={() => onChange(name)}
+                  className={`cursor-pointer rounded-full px-3 py-1 text-[11px] font-medium transition-all duration-150 ${
+                    selected
+                      ? ''
+                      : 'hover:text-[--color-retro-text] hover:shadow-[0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] hover:-translate-y-px active:translate-y-0 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]'
+                  }`}
+                  style={selected ? {
+                    background: 'linear-gradient(to bottom, #5e91c4, #3a6a9e)',
+                    color: '#fff',
+                    boxShadow: '0 1px 3px rgba(51,102,153,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    textShadow: '0 1px 1px rgba(0,0,0,0.15)',
+                  } : {
+                    background: 'linear-gradient(to bottom, #ffffff, #f5f3f0)',
+                    color: 'var(--color-retro-text-muted)',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
+                    border: '1px solid rgba(0,0,0,0.06)',
+                  }}
+                >
+                  {name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
