@@ -1184,7 +1184,7 @@ function generateAutoDecisions(state: GameState): GameState {
     if (!alreadyPending) {
       const partners = [
         { name: 'AWS', benefit: 'cloud-credits', desc: '$50K in cloud credits. First taste is free — the addiction comes later. +5 reputation', cashBonus: 50000, repBonus: 5 },
-        { name: 'Y Combinator', benefit: 'accelerator', desc: 'A hoodie, a network, and the right to say "we\'re YC-backed" at every party. +10 reputation', cashBonus: 25000, repBonus: 10 },
+        { name: 'Google Cloud', benefit: 'cloud-credits', desc: '$40K in GCP credits and a "startup partner" badge for your website. +4 reputation', cashBonus: 40000, repBonus: 4 },
         { name: 'Microsoft', benefit: 'enterprise-access', desc: 'Enterprise customer pipeline. Your product will be buried somewhere in Microsoft Teams where no one will find it. +3 reputation', cashBonus: 0, repBonus: 3 },
         { name: 'Stripe', benefit: 'payments', desc: 'Stripe takes 2.9% of your dreams, but at least the API is nice. +$20K credits', cashBonus: 20000, repBonus: 2 },
       ];
@@ -1343,7 +1343,7 @@ function generateAutoDecisions(state: GameState): GameState {
         options: [
           { id: 'pivot-b2b', label: 'Pivot to Enterprise', description: 'Longer sales cycles, bigger contracts, more meetings about meetings. +3 reputation with VCs.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'product.churnRate', operation: 'multiply' as const, value: 0.9 }] },
           { id: 'pivot-stay', label: 'Stay the Course', description: 'Ignore the advice. They\'re advisors — advising is literally all they do. +2 culture for having conviction.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 2 }] },
-          { id: 'pivot-fire-advisor', label: 'Fire the Advisor', description: 'Remove them from the cap table while you\'re at it. Just kidding. Unless...? +1% equity back.', effects: [{ path: 'finances.founderEquity', operation: 'multiply' as const, value: 1.01 }] },
+          { id: 'pivot-fire-advisor', label: 'Fire the Advisor', description: 'Remove them from the cap table while you\'re at it. Just kidding. Burn the bridge, gain peace of mind.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 3 }, { path: 'founder.network', operation: 'add' as const, value: -5 }] },
         ],
         log: { title: 'Advisor Pivot Pressure', description: 'Everyone has an opinion about what you should be building. None of them are building it.', category: 'market' as const },
       },

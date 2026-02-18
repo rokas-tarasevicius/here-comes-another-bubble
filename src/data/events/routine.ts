@@ -778,7 +778,6 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     },
     immediateEffects: [
       { path: 'product.customers', operation: 'add', value: -1 },
-      { path: 'finances.weeklyRevenue', operation: 'add', value: -500 },
     ],
     decisionOptions: [
       {
@@ -786,7 +785,6 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         label: 'Offer Discount to Win Back',
         description: 'Reach out with 30% off. Might save them.',
         effects: [
-          { path: 'finances.weeklyRevenue', operation: 'add', value: 350 },
           { path: 'product.customers', operation: 'add', value: 1 },
           { path: 'company.reputation', operation: 'add', value: -1 },
         ],

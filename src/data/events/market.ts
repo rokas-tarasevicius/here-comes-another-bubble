@@ -258,8 +258,7 @@ export const MARKET_EVENTS: GameEvent[] = [
         label: 'Target Their Customers',
         description: 'Their customers are uncertain. Offer them a smooth migration.',
         effects: [
-          { path: 'product.customers', operation: 'add', value: 5 },
-          { path: 'finances.weeklyRevenue', operation: 'add', value: 1_000 },
+          { path: 'product.customers', operation: 'add', value: 8 },
           { path: 'company.reputation', operation: 'add', value: 2 },
         ],
       },

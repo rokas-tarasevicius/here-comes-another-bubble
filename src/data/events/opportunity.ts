@@ -1004,7 +1004,6 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'product.customers', operation: 'multiply', value: 0.7 },
           { path: 'product.churnRate', operation: 'multiply', value: 0.7 },
-          { path: 'finances.weeklyRevenue', operation: 'add', value: 3000 },
         ],
       },
     ],
