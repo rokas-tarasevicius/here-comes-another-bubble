@@ -1442,6 +1442,202 @@ function generateAutoDecisions(state: GameState): GameState {
     }
   }
 
+  // --- FOUNDER LIFE DECISIONS (random funny events every 2-4 weeks) ---
+  if (week > 2 && Math.random() < 0.4) {
+    const founderEvents = [
+      {
+        eventId: 'auto-founder-pitch-deck',
+        prompt: 'Your co-founder spent the entire weekend redesigning the pitch deck instead of shipping features. It does have really nice gradients now.',
+        options: [
+          { id: 'pitch-approve', label: 'It\'s Beautiful, Ship It', description: 'The gradients ARE really nice. Investors love design. +3 reputation, -1 week of eng productivity.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'product.techDebtTotal', operation: 'add' as const, value: 2 }] },
+          { id: 'pitch-reject', label: 'Back to Coding', description: 'Pitch decks don\'t write code. Neither does your co-founder, apparently. +2 quality.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 2 }] },
+          { id: 'pitch-hire', label: 'Hire a Designer', description: 'Maybe if someone else handles the pixels, your co-founder will write actual code. -$2K.', effects: [{ path: 'finances.cash', operation: 'add' as const, value: -2000 }, { path: 'company.reputation', operation: 'add' as const, value: 2 }] },
+        ],
+        log: { title: 'Pitch Deck Perfectionism', description: 'The pitch deck has been redesigned for the 14th time.', category: 'product' as const },
+      },
+      {
+        eventId: 'auto-founder-twitter',
+        prompt: 'A tech influencer with 500K followers just roasted your product on Twitter. The thread is going viral. Your DMs are a war zone.',
+        options: [
+          { id: 'twitter-clap-back', label: 'Clap Back Publicly', description: 'Ratio them. High risk, high reward. Could go viral in a good way or become a meme. ±5 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: Math.random() > 0.5 ? 5 : -5 }] },
+          { id: 'twitter-ignore', label: 'Touch Grass', description: 'Close Twitter. Go for a walk. The internet has a 48-hour memory anyway.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 2 }] },
+          { id: 'twitter-dm', label: 'DM Them Free Access', description: 'Turn a hater into an advocate. The influencer playbook. +3 reputation, -$1K in credits.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'finances.cash', operation: 'add' as const, value: -1000 }] },
+        ],
+        log: { title: 'Twitter Drama', description: 'Someone with too many followers has opinions about your product.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-vc-coffee',
+        prompt: 'A VC partner wants to "grab coffee and learn more about your space." Translation: free consulting disguised as networking.',
+        options: [
+          { id: 'vc-go', label: 'Take the Meeting', description: 'Spend 3 hours preparing, 1 hour talking, get a "let\'s stay in touch" email. +2 reputation, lose a day.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 2 }, { path: 'product.techDebtTotal', operation: 'add' as const, value: 1 }] },
+          { id: 'vc-skip', label: 'Politely Decline', description: '"My calendar is packed this quarter." They\'ll respect the hustle. Or forget you exist.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 1 }] },
+          { id: 'vc-reverse', label: 'Reverse-Pitch Them', description: 'Show up with a term sheet. Power move. Either genius or delusional. +5 reputation if it works.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }] },
+        ],
+        log: { title: 'VC Coffee Chat', description: 'A venture capitalist wants to "pick your brain." Your brain has been picked enough.', category: 'funding' as const },
+      },
+      {
+        eventId: 'auto-founder-imposter',
+        prompt: 'You just saw your competitor\'s Series B announcement on TechCrunch. They raised $40M. You\'re eating ramen. Imposter syndrome hits different today.',
+        options: [
+          { id: 'imposter-grind', label: 'Channel It Into Work', description: 'Nothing cures imposter syndrome like shipping features at 2 AM. +3 quality, -2 morale.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 3 }, { path: 'team.morale', operation: 'add' as const, value: -2 }] },
+          { id: 'imposter-team', label: 'Rally the Team', description: '"They have money. We have conviction." Give a speech. +5 morale, +2 culture.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 5 }, { path: 'company.culture', operation: 'add' as const, value: 2 }] },
+          { id: 'imposter-stalk', label: 'Deep-Dive Their Product', description: 'Study the enemy. Their product is actually kind of mid. +2 reputation from competitive intel.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 2 }] },
+        ],
+        log: { title: 'Imposter Syndrome', description: 'Your competitor just raised more money than you\'ve ever seen in your life.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-conference',
+        prompt: 'There\'s a huge AI conference next week. Tickets are $2,500. Everyone who\'s anyone will be there. Also everyone who\'s no one.',
+        options: [
+          { id: 'conf-attend', label: 'Attend & Network', description: 'Collect 200 business cards you\'ll never follow up on. +5 reputation, -$2,500.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }, { path: 'finances.cash', operation: 'add' as const, value: -2500 }] },
+          { id: 'conf-speak', label: 'Apply to Speak', description: 'Give a talk called "Scaling AI in Production" despite having 12 users. +8 reputation if accepted, -$2,500.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 8 }, { path: 'finances.cash', operation: 'add' as const, value: -2500 }] },
+          { id: 'conf-skip', label: 'Skip It, Ship Instead', description: 'While everyone\'s networking, you\'re coding. Contrarian alpha. +3 quality.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 3 }] },
+        ],
+        log: { title: 'Conference FOMO', description: 'Another AI conference. Another opportunity to feel inadequate while wearing a lanyard.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-acquihire',
+        prompt: 'A FAANG company just offered your lead engineer $450K/year to come work on "AI infrastructure." They\'re currently making $80K at your startup.',
+        options: [
+          { id: 'acqui-match', label: 'Counter-Offer with Equity', description: 'Promise them 1% equity. "This will be worth millions!" They\'ve heard that before. -2% equity, might keep them.', effects: [{ path: 'finances.founderEquity', operation: 'multiply' as const, value: 0.98 }, { path: 'team.morale', operation: 'add' as const, value: 3 }] },
+          { id: 'acqui-speech', label: 'Give the Mission Speech', description: '"We\'re not building a product, we\'re changing the world." 50% chance they stay. +3 culture.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 3 }, { path: 'team.morale', operation: 'add' as const, value: Math.random() > 0.5 ? 5 : -5 }] },
+          { id: 'acqui-let-go', label: 'Wish Them Well', description: 'You can\'t compete with FAANG money. At least they\'ll refer candidates. -1 team size but +3 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'team.morale', operation: 'add' as const, value: -5 }] },
+        ],
+        log: { title: 'FAANG Poaching', description: 'Big tech is waving big checks at your team again.', category: 'team' as const },
+      },
+      {
+        eventId: 'auto-founder-pivotitis',
+        prompt: 'Your advisor just sent a 3,000-word email about why you should pivot to B2B enterprise. Your other advisor says consumer is the future. They\'re both wrong.',
+        options: [
+          { id: 'pivot-b2b', label: 'Pivot to Enterprise', description: 'Longer sales cycles, bigger contracts, more meetings about meetings. +3 reputation with VCs.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'product.churnRate', operation: 'multiply' as const, value: 0.9 }] },
+          { id: 'pivot-stay', label: 'Stay the Course', description: 'Ignore the advice. They\'re advisors — advising is literally all they do. +2 culture for having conviction.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 2 }] },
+          { id: 'pivot-fire-advisor', label: 'Fire the Advisor', description: 'Remove them from the cap table while you\'re at it. Just kidding. Unless...? +1% equity back.', effects: [{ path: 'finances.founderEquity', operation: 'multiply' as const, value: 1.01 }] },
+        ],
+        log: { title: 'Advisor Pivot Pressure', description: 'Everyone has an opinion about what you should be building. None of them are building it.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-hackernews',
+        prompt: 'Someone posted your landing page on Hacker News. The comments are... a lot. "This is just a wrapper around GPT" has 847 upvotes.',
+        options: [
+          { id: 'hn-engage', label: 'Reply in the Thread', description: 'Explain your moat. They won\'t care but at least you tried. 50/50 it helps. ±3 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: Math.random() > 0.5 ? 3 : -3 }] },
+          { id: 'hn-ignore', label: 'Close the Tab', description: 'HN comments are where dreams go to die. Protect your mental health. +2 morale.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 2 }] },
+          { id: 'hn-launch', label: 'Do a Proper Show HN', description: 'Launch with a detailed technical post. The nerds will respect the engineering. +5 reputation, +10 customers.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }, { path: 'product.customers', operation: 'add' as const, value: 10 }] },
+        ],
+        log: { title: 'Hacker News Roast', description: 'The orange website has opinions about your startup.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-burnout',
+        prompt: 'You\'ve worked 80-hour weeks for 3 months straight. Your eye is twitching. You forgot your mom\'s birthday. Your houseplant is dead.',
+        options: [
+          { id: 'burnout-vacation', label: 'Take a Week Off', description: 'Radical self-care. The startup will survive without you. Probably. +10 morale, lose a week of progress.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 10 }, { path: 'product.techDebtTotal', operation: 'add' as const, value: 3 }] },
+          { id: 'burnout-push', label: 'Push Through', description: '"I\'ll sleep when I\'m funded." This is fine. Everything is fine. -5 morale, +2 quality.', effects: [{ path: 'team.morale', operation: 'add' as const, value: -5 }, { path: 'product.overallQuality', operation: 'add' as const, value: 2 }] },
+          { id: 'burnout-delegate', label: 'Learn to Delegate', description: 'Let the team handle things. It won\'t be done YOUR way, but it\'ll be done. +5 culture, +3 morale.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 5 }, { path: 'team.morale', operation: 'add' as const, value: 3 }] },
+        ],
+        log: { title: 'Founder Burnout', description: 'The startup grind is grinding you down.', category: 'team' as const },
+      },
+      {
+        eventId: 'auto-founder-copycat',
+        prompt: 'A YC startup just launched with your EXACT same idea. Same landing page layout. Same tagline. Different font though, so legally distinct.',
+        options: [
+          { id: 'copy-outship', label: 'Outship Them', description: 'Move faster. Ship more. Be better. The best revenge is a better product. +3 quality, +2 morale.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 3 }, { path: 'team.morale', operation: 'add' as const, value: 2 }] },
+          { id: 'copy-differentiate', label: 'Differentiate Hard', description: 'Pivot your positioning to something they can\'t copy. +5 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }] },
+          { id: 'copy-tweet', label: 'Subtweet Them', description: '"Interesting seeing our exact product with a different CSS theme." Tech Twitter will eat this up. ±5 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: Math.random() > 0.4 ? 5 : -5 }] },
+        ],
+        log: { title: 'Copycat Competitor', description: 'Imitation is the sincerest form of IP theft.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-tiktok',
+        prompt: 'Your intern posted a "day in the life at a startup" TikTok. It went viral. 2M views. It shows your "office" which is a WeWork hot desk. The comments are brutal.',
+        options: [
+          { id: 'tiktok-lean-in', label: 'Lean Into It', description: 'Authenticity is the brand now. Post more behind-the-scenes chaos. +5 reputation, +15 customers.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }, { path: 'product.customers', operation: 'add' as const, value: 15 }] },
+          { id: 'tiktok-delete', label: 'Ask Them to Delete It', description: 'Too late. The internet already has screenshots. -2 morale (intern is upset).', effects: [{ path: 'team.morale', operation: 'add' as const, value: -2 }] },
+          { id: 'tiktok-hire', label: 'Make Them Head of Content', description: 'This intern has more marketing instinct than your entire team. +3 reputation, +5 customers/week from content.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'product.customers', operation: 'add' as const, value: 20 }] },
+        ],
+        log: { title: 'Viral TikTok', description: 'Your startup is famous on TikTok. This is either great or terrible.', category: 'market' as const },
+      },
+      {
+        eventId: 'auto-founder-naming',
+        prompt: 'Your domain name costs $15/year. A "brand consultant" is offering to help you rebrand for $25,000. They suggest changing from your current name to something ending in ".ai".',
+        options: [
+          { id: 'name-rebrand', label: 'Rebrand to .ai', description: 'Every serious AI company has a .ai domain. You ARE a serious AI company. Right? +3 reputation, -$25K.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 3 }, { path: 'finances.cash', operation: 'add' as const, value: -25000 }] },
+          { id: 'name-keep', label: 'Keep the Name', description: 'Google started in a garage with a misspelled word. You\'re fine. +2 culture.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 2 }] },
+          { id: 'name-diy', label: 'DIY Rebrand', description: 'Buy the .ai domain for $50 and update the logo in Figma yourself. +1 reputation, -$50.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 1 }, { path: 'finances.cash', operation: 'add' as const, value: -50 }] },
+        ],
+        log: { title: 'Rebranding Pressure', description: 'Someone thinks your startup name isn\'t "AI enough."', category: 'product' as const },
+      },
+      {
+        eventId: 'auto-founder-standup',
+        prompt: 'Your daily standup has ballooned to 45 minutes. Half the team is on mute doing other work. Someone\'s cat walked across their keyboard and unmuted them.',
+        options: [
+          { id: 'standup-async', label: 'Switch to Async Updates', description: 'Slack threads instead of meetings. Engineers rejoice. +3 morale, +2 culture.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 3 }, { path: 'company.culture', operation: 'add' as const, value: 2 }] },
+          { id: 'standup-strict', label: 'Enforce 15-Min Max', description: 'Timer on screen. Hard cutoff. Brutal but effective. +1 quality from recovered eng time.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 1 }] },
+          { id: 'standup-cancel', label: 'Cancel Standups Entirely', description: 'Meetings are where productivity goes to die. Ship faster. +5 morale, -2 culture (less alignment).', effects: [{ path: 'team.morale', operation: 'add' as const, value: 5 }, { path: 'company.culture', operation: 'add' as const, value: -2 }] },
+        ],
+        log: { title: 'Meeting Bloat', description: 'Your 15-minute standup has become a 45-minute therapy session.', category: 'team' as const },
+      },
+      {
+        eventId: 'auto-founder-free-pizza',
+        prompt: 'The team has been crunching hard. Do you order pizza for the office? (This is somehow a controversial decision in startup culture.)',
+        options: [
+          { id: 'pizza-fancy', label: 'Artisanal Pizza ($500)', description: 'Wood-fired, organic, locally-sourced. Because your startup has "culture." +5 morale, -$500.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 5 }, { path: 'finances.cash', operation: 'add' as const, value: -500 }] },
+          { id: 'pizza-dominos', label: 'Dominos ($50)', description: 'It\'s pizza. It does the job. Your engineers don\'t care about artisanal anything. +3 morale, -$50.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 3 }, { path: 'finances.cash', operation: 'add' as const, value: -50 }] },
+          { id: 'pizza-none', label: 'No Pizza, Ship Faster', description: '"We\'re not a pizza company, we\'re a tech company." -2 morale. You monster.', effects: [{ path: 'team.morale', operation: 'add' as const, value: -2 }] },
+        ],
+        log: { title: 'Pizza Diplomacy', description: 'The eternal startup question: is pizza a perk or a bribe?', category: 'team' as const },
+      },
+      {
+        eventId: 'auto-founder-metrics',
+        prompt: 'Your investor just asked for your "north star metric." You have 47 dashboards and none of them agree on anything. Your Mixpanel, Amplitude, and Google Analytics show three different user counts.',
+        options: [
+          { id: 'metrics-pick', label: 'Pick the Best-Looking Number', description: 'DAUs are up if you squint at the chart from the right angle. Technically not lying. +2 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 2 }] },
+          { id: 'metrics-fix', label: 'Actually Fix Analytics', description: 'Spend a week unfucking your event tracking. No features shipped, but at least you\'ll know your real numbers. +3 quality.', effects: [{ path: 'product.overallQuality', operation: 'add' as const, value: 3 }, { path: 'product.techDebtTotal', operation: 'add' as const, value: -5 }] },
+          { id: 'metrics-vibes', label: '"We Track Vibes"', description: 'Tell your investor you\'re "pre-metrics." They\'ll either respect the honesty or never return your calls. ±3 reputation.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: Math.random() > 0.5 ? 3 : -3 }] },
+        ],
+        log: { title: 'Metrics Crisis', description: 'Your analytics are a mess and your investor wants numbers.', category: 'product' as const },
+      },
+      {
+        eventId: 'auto-founder-remote',
+        prompt: 'Half your team wants to work from Bali. The other half wants a real office. You\'re currently operating out of a garage that smells like your roommate\'s cat.',
+        options: [
+          { id: 'remote-full', label: 'Go Fully Remote', description: 'Save on rent. Lose on whiteboard sessions. Everyone works in their pajamas. +3 morale, -1 culture.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 3 }, { path: 'company.culture', operation: 'add' as const, value: -1 }] },
+          { id: 'remote-office', label: 'Get a Real Office', description: 'WeWork it is. $3K/month but at least you have a "headquarters" for the pitch deck. +3 culture, -$3K.', effects: [{ path: 'company.culture', operation: 'add' as const, value: 3 }, { path: 'finances.cash', operation: 'add' as const, value: -3000 }] },
+          { id: 'remote-hybrid', label: 'Hybrid (Please Everyone)', description: 'Tuesdays and Thursdays in person. Nobody is happy. The true startup compromise. +1 morale, +1 culture.', effects: [{ path: 'team.morale', operation: 'add' as const, value: 1 }, { path: 'company.culture', operation: 'add' as const, value: 1 }] },
+        ],
+        log: { title: 'Remote Work Debate', description: 'The where-should-we-work conversation that never ends.', category: 'team' as const },
+      },
+    ];
+
+    // Pick a random event that isn't already pending
+    const available = founderEvents.filter(
+      (e) => !state.pendingDecisions.some((d) => d.eventId === e.eventId)
+        && !newDecisions.some((d) => d.eventId === e.eventId)
+    );
+
+    if (available.length > 0) {
+      const event = available[Math.floor(Math.random() * available.length)];
+      const decisionId = generateId();
+
+      newDecisions.push({
+        id: decisionId,
+        eventId: event.eventId,
+        prompt: event.prompt,
+        options: event.options,
+        deadline: week + 1,
+        defaultOptionId: event.options[1].id,
+      });
+
+      newLogEntries.push({
+        id: generateId(),
+        week,
+        eventId: event.eventId,
+        title: event.log.title,
+        description: event.log.description,
+        category: event.log.category,
+        decisionId,
+      });
+    }
+  }
+
   // --- Task 11: BUBBLE EMERGENCY DECISION (bubble < 15 with funding) ---
   const hasFunding = state.finances.fundingHistory.length > 0;
   if (state.market.bubbleIndex < 15 && hasFunding) {
