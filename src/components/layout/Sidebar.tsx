@@ -71,9 +71,26 @@ function IconHome() {
   );
 }
 
+function IconTeam() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+    </svg>
+  );
+}
+
+function IconChevronLeft() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: <IconOverview /> },
   { id: 'company', label: 'Company', icon: <IconCompany /> },
+  { id: 'team', label: 'Team', icon: <IconTeam /> },
   { id: 'finance', label: 'Finance', icon: <IconFinance /> },
   { id: 'market', label: 'Market', icon: <IconMarket /> },
   { id: 'decisions', label: 'Decisions', icon: <IconDecisions /> },
@@ -87,6 +104,7 @@ export function Sidebar() {
 
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+  const [collapsed, setCollapsed] = useState(false);
 
   const handleSave = useCallback(() => {
     saveGame();
@@ -103,8 +121,11 @@ export function Sidebar() {
     : 0;
 
   return (
-    <aside className="retro-sidebar flex w-12 md:w-12 lg:w-48 flex-col">
-      <nav className="flex-1 px-1 lg:px-2 py-4">
+    <aside
+      className="retro-sidebar flex flex-col overflow-hidden"
+      data-collapsed={collapsed || undefined}
+    >
+      <nav className="flex-1 px-2 py-4">
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = currentScreen === item.id;
@@ -114,24 +135,31 @@ export function Sidebar() {
                   onClick={() => setScreen(item.id)}
                   aria-current={isActive ? 'page' : undefined}
                   title={item.label}
-                  className="retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium"
+                  className="retro-sidebar-item group relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap"
                   data-active={isActive || undefined}
                 >
                   <span className="shrink-0 opacity-75 group-data-active:opacity-100">{item.icon}</span>
-                  <span className="hidden lg:inline">{item.label}</span>
+                  <span className="sidebar-label">{item.label}</span>
                   {item.id === 'decisions' && pendingCount > 0 && (
-                    <span className="ml-auto hidden lg:inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
-                      style={{
-                        background: 'linear-gradient(to bottom, #ee8833, #cc6622)',
-                        color: '#fff',
-                        boxShadow: '0 1px 3px rgba(204,102,34,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
-                        textShadow: '0 -1px 0 rgba(0,0,0,0.2)',
-                        minWidth: 18,
-                        textAlign: 'center' as const,
-                      }}
-                    >
-                      {pendingCount}
-                    </span>
+                    <>
+                      <span
+                        className="sidebar-label ml-auto inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
+                        style={{
+                          background: 'linear-gradient(to bottom, #ee8833, #cc6622)',
+                          color: '#fff',
+                          boxShadow: '0 1px 3px rgba(204,102,34,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
+                          textShadow: '0 -1px 0 rgba(0,0,0,0.2)',
+                          minWidth: 18,
+                          textAlign: 'center' as const,
+                        }}
+                      >
+                        {pendingCount}
+                      </span>
+                      <span
+                        className="sidebar-badge-dot absolute top-1 right-1 h-2 w-2 rounded-full"
+                        style={{ background: '#ee8833' }}
+                      />
+                    </>
                   )}
                 </button>
               </li>
@@ -140,27 +168,37 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      {/* Bottom section */}
-      <div className="px-1 lg:px-2 py-3 space-y-0.5"
+      <div className="px-2 py-3 space-y-0.5"
         style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.12)' }}
       >
         <button
           onClick={handleSave}
           title="Save Game"
-          className={`retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium ${
+          className={`retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap ${
             saveState === 'saved' ? 'retro-sidebar-item--saved' : ''
           }`}
         >
           <span className="shrink-0 opacity-75">{saveState === 'saved' ? <IconCheck /> : <IconSave />}</span>
-          <span className="hidden lg:inline">{saveState === 'saved' ? 'Saved!' : 'Save'}</span>
+          <span className="sidebar-label">{saveState === 'saved' ? 'Saved!' : 'Save'}</span>
         </button>
         <button
           onClick={() => setScreen('title')}
           title="Main Menu"
-          className="retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium"
+          className="retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap"
         >
           <span className="shrink-0 opacity-75"><IconHome /></span>
-          <span className="hidden lg:inline">Menu</span>
+          <span className="sidebar-label">Menu</span>
+        </button>
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="retro-sidebar-item sidebar-toggle hidden lg:flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap"
+        >
+          <span className="shrink-0 opacity-75 sidebar-collapse-icon">
+            <IconChevronLeft />
+          </span>
+          <span className="sidebar-label">Collapse</span>
         </button>
       </div>
     </aside>

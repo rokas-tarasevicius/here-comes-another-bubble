@@ -188,8 +188,12 @@ export function Header() {
   const cashHistory = weekHistory.map((w) => w.cash);
   const revenueHistory = weekHistory.map((w) => w.revenue);
   const burnHistory = weekHistory.map((w) => w.burn);
+  const valuationHistory = weekHistory.map((w) => w.valuation);
   const customerHistory = weekHistory.map((w) => w.customers);
+  const churnHistory = weekHistory.map((w) => w.churnRate);
   const teamHistory = weekHistory.map((w) => w.teamSize);
+  const moraleHistory = weekHistory.map((w) => w.avgMorale);
+  const pmfHistory = weekHistory.map((w) => w.pmfScore);
   const totalTeam = team.teamSize + team.aiAgents.length;
 
   function weekChange(data: number[]): { change: string; dir: 'up' | 'down' | 'flat' } {
@@ -209,11 +213,15 @@ export function Header() {
     };
   }
 
+  const valuationChange = weekChange(valuationHistory);
   const cashChange = weekChange(cashHistory);
   const revenueChange = weekChange(revenueHistory);
   const burnChange = weekChange(burnHistory);
   const usersChange = weekChange(customerHistory);
+  const churnChange = weekChange(churnHistory);
   const teamChange = weekChange(teamHistory);
+  const moraleChange = weekChange(moraleHistory);
+  const pmfChange = weekChange(pmfHistory);
 
   // Runway calculation
   const netBurn = finances.weeklyBurn - finances.weeklyRevenue;
@@ -222,6 +230,19 @@ export function Header() {
   const runwayStr = isProfitable ? '\u221E' : runwayWeeks === Infinity ? '\u221E' : `${runwayWeeks}w`;
 
   const readouts: ReadoutConfig[] = [
+    {
+      label: 'Valuation',
+      value: formatCash(company.valuation),
+      sparklineData: valuationHistory,
+      sparklineColor: '#b45309',
+      valueClass: 'text-[#92400e]',
+      bg: 'linear-gradient(to bottom, #fef3c7, #fef9e7)',
+      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(180,83,9,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      isCurrency: true,
+      change: valuationChange.change,
+      changeDirection: valuationChange.dir,
+      hasChart: true,
+    },
     {
       label: 'Cash',
       value: formatCash(finances.cash),
@@ -274,6 +295,26 @@ export function Header() {
       hasChart: true,
     },
     {
+      label: 'Morale',
+      value: `${Math.round(team.morale)}`,
+      sparklineData: moraleHistory,
+      sparklineColor: team.morale >= 60 ? '#2b7a2b' : team.morale >= 40 ? '#b45309' : '#cc3333',
+      valueClass: team.morale >= 60
+        ? 'text-[--color-retro-green-dark]'
+        : team.morale >= 40
+          ? 'text-[--color-retro-orange]'
+          : 'text-[--color-retro-red]',
+      bg: team.morale >= 60
+        ? 'linear-gradient(to bottom, #e6f3e6, #eef7ee)'
+        : team.morale >= 40
+          ? 'linear-gradient(to bottom, #fef3c7, #fef9e7)'
+          : 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
+      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
+      change: moraleChange.change,
+      changeDirection: moraleChange.dir,
+      hasChart: true,
+    },
+    {
       label: 'Users',
       value: product.customers.toLocaleString(),
       sparklineData: customerHistory,
@@ -283,6 +324,42 @@ export function Header() {
       shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(109,40,217,0.08), 0 1px 0 rgba(255,255,255,0.7)',
       change: usersChange.change,
       changeDirection: usersChange.dir,
+      hasChart: true,
+    },
+    {
+      label: 'Churn',
+      value: `${(product.churnRate * 100).toFixed(1)}%`,
+      sparklineData: churnHistory,
+      sparklineColor: '#cc3333',
+      valueClass: product.churnRate > 0.1
+        ? 'text-[--color-retro-red]'
+        : product.churnRate > 0.05
+          ? 'text-[--color-retro-orange]'
+          : 'text-[--color-retro-green-dark]',
+      bg: 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
+      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(153,43,43,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      change: churnChange.change,
+      changeDirection: churnChange.dir === 'up' ? 'down' : churnChange.dir === 'down' ? 'up' : 'flat',
+      hasChart: true,
+    },
+    {
+      label: 'PMF',
+      value: `${Math.round(product.pmfScore)}`,
+      sparklineData: pmfHistory,
+      sparklineColor: product.pmfScore >= 60 ? '#2b7a2b' : product.pmfScore >= 30 ? '#b45309' : '#cc3333',
+      valueClass: product.pmfScore >= 60
+        ? 'text-[--color-retro-green-dark]'
+        : product.pmfScore >= 30
+          ? 'text-[--color-retro-orange]'
+          : 'text-[--color-retro-red]',
+      bg: product.pmfScore >= 60
+        ? 'linear-gradient(to bottom, #e6f3e6, #eef7ee)'
+        : product.pmfScore >= 30
+          ? 'linear-gradient(to bottom, #fef3c7, #fef9e7)'
+          : 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
+      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
+      change: pmfChange.change,
+      changeDirection: pmfChange.dir,
       hasChart: true,
     },
     {
@@ -302,23 +379,28 @@ export function Header() {
 
   return (
     <header className="retro-header relative z-10 px-3 md:px-6 py-2.5 md:py-3">
-      <div className="flex items-center justify-between gap-3 md:gap-5">
-        {/* Left: Company identity */}
-        <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
-          <h1
-            className="text-base md:text-xl font-extrabold tracking-tight text-[--color-retro-text] truncate"
-            style={{ textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}
-          >
-            {company.name}
-          </h1>
-          <span className={`retro-badge retro-badge-sm shrink-0 ${stageBadgeClass}`}>
-            {stageLabel}
-          </span>
-        </div>
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* Company name */}
+        <h1
+          className="text-base md:text-xl font-extrabold tracking-tight text-[--color-retro-text] shrink-0"
+          style={{ textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}
+        >
+          {company.name}
+        </h1>
 
-        {/* Center: Key metrics with sparkline tooltips */}
-        <div className="hidden sm:flex items-stretch gap-1.5 shrink-0">
-          {/* Date (no sparkline) */}
+        {/* Separator */}
+        <span className="header-sep hidden sm:block" aria-hidden="true" />
+
+        {/* Stage badge */}
+        <span className={`retro-badge retro-badge-sm shrink-0 hidden sm:inline-flex ${stageBadgeClass}`}>
+          {stageLabel}
+        </span>
+
+        {/* Separator */}
+        <span className="header-sep hidden sm:block" aria-hidden="true" />
+
+        {/* Metrics */}
+        <div className="hidden sm:flex items-stretch gap-1.5 min-w-0">
           <div
             className="flex items-baseline gap-2 rounded-lg px-3 py-2"
             style={{
@@ -336,7 +418,10 @@ export function Header() {
           ))}
         </div>
 
-        {/* Right: Action button */}
+        {/* Spacer pushes action button right */}
+        <div className="flex-1" />
+
+        {/* Action button */}
         <button
           onClick={hasUrgentUnresolved ? () => setScreen('decisions') : endWeek}
           disabled={isSimulating}

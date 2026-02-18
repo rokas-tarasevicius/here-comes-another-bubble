@@ -911,6 +911,7 @@ function createWeekSummary(state: GameState): WeekSummary {
     revenue: state.finances.weeklyRevenue,
     burn: state.finances.weeklyBurn,
     customers: state.product.customers,
+    churnRate: state.product.churnRate,
     valuation: state.company.valuation,
     teamSize: state.team.teamSize + state.team.aiAgents.length,
     avgMorale: state.team.morale,

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CompanyStage, FundingRound, PricingModel } from '../../types/game.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
+import { InfoTip } from './InfoTip.tsx';
 
 export interface FundraisingPanelProps {
   stage: CompanyStage;
@@ -83,12 +84,12 @@ export function FundraisingPanel({
     <div className="space-y-4">
       {/* Fundraising */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">Fundraising</h3>
+        <h3 className="retro-section-heading">Fundraising<InfoTip text="Raise capital from investors to extend your runway. Each round dilutes your equity. Investor interest depends on your valuation, reputation, and market conditions. You can only seek funding once per week." /></h3>
 
         {/* Equity progress bar */}
         <div className="mb-3">
           <div className="flex items-baseline justify-between mb-1.5">
-            <span className="retro-label">Founder Equity</span>
+            <span className="retro-label">Founder Equity<InfoTip text="Your ownership stake. Diluted each funding round. Keep above 10% to maintain board control. Your final payout at exit = valuation × equity." /></span>
             <span className="retro-value text-[--color-retro-green]">{formatPercent(equityPercent)}</span>
           </div>
           <div className="retro-progress">
@@ -106,7 +107,7 @@ export function FundraisingPanel({
             <span className="retro-stat-tag-value">{STAGE_LABELS[stage]}</span>
           </span>
           <span className="retro-stat-tag">
-            <span className="retro-stat-tag-label">Diluted</span>
+            <span className="retro-stat-tag-label">Diluted<InfoTip text="Total equity given away to investors across all rounds. Every fundraise increases dilution. Higher dilution = lower founder payout at exit." /></span>
             <span className="retro-stat-tag-value text-[--color-retro-orange]">{formatPercent(dilutionPercent)}</span>
           </span>
           {fundingHistory.length > 0 && (
@@ -172,7 +173,7 @@ export function FundraisingPanel({
 
       {/* Pricing */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">Pricing</h3>
+        <h3 className="retro-section-heading">Pricing<InfoTip text="Set your revenue model and unit price. Subscription = fixed per customer/week. Usage-Based = variable. Higher price = more revenue per customer but slower growth. 8-week cooldown between model switches." /></h3>
 
         <div className="flex items-center gap-2 flex-wrap mb-4">
           <span className="retro-stat-tag">

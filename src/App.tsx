@@ -8,6 +8,7 @@ import { OverviewScreen } from './components/screens/OverviewScreen.tsx';
 import { FinanceScreen } from './components/screens/FinanceScreen.tsx';
 import { MarketScreen } from './components/screens/MarketScreen.tsx';
 import { CompanyScreen } from './components/screens/CompanyScreen.tsx';
+import { TeamScreen } from './components/screens/TeamScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
@@ -20,6 +21,7 @@ import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
 const GAMEPLAY_SCREENS = [
   { id: 'overview', Component: OverviewScreen },
   { id: 'company', Component: CompanyScreen },
+  { id: 'team', Component: TeamScreen },
   { id: 'finance', Component: FinanceScreen },
   { id: 'market', Component: MarketScreen },
   { id: 'decisions', Component: DecisionScreen },

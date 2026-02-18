@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { CashFlowChart } from '../shared/CashFlowChart.tsx';
 import { FundraisingPanel } from '../shared/FundraisingPanel.tsx';
+import { InfoTip } from '../shared/InfoTip.tsx';
 
 /**
  * Finance dashboard screen showing cash position, revenue, burn rate,
@@ -53,12 +54,12 @@ export function FinanceScreen() {
         {/* P&L Section */}
         <div className="retro-card">
           <h3 className="retro-section-heading">
-            Weekly P&L
+            Weekly P&L<InfoTip text="Profit & Loss statement for this week. Revenue minus expenses = net income. Negative net income drains your cash reserves and shortens runway." />
           </h3>
 
           {/* Revenue Breakdown */}
           <div className="mb-4">
-            <span className="retro-label mb-2 block">Revenue</span>
+            <span className="retro-label mb-2 block">Revenue<InfoTip text="Income from paying customers. Revenue = customers × unit price. Grow revenue by acquiring more customers or increasing your price (carefully — high prices reduce growth)." /></span>
             <div className="space-y-1.5">
               <div className="retro-stat-row">
                 <span className="text-xs text-[--color-retro-text-muted]">
@@ -82,7 +83,7 @@ export function FinanceScreen() {
 
           {/* Expense Breakdown */}
           <div className="mb-4">
-            <span className="retro-label mb-2 block">Expenses</span>
+            <span className="retro-label mb-2 block">Expenses<InfoTip text="All weekly costs: salaries, AI agents, overhead (scales with team size and stage), and marketing. Keep expenses below revenue to become profitable." /></span>
             <div className="space-y-1.5">
               <div className="retro-stat-row">
                 <span className="text-xs text-[--color-retro-text-muted]">Salaries ({team.teamSize} members)</span>
@@ -93,7 +94,7 @@ export function FinanceScreen() {
                 <span className="retro-value text-[--color-retro-red]">{formatCurrency(totalAICosts)}</span>
               </div>
               <div className="retro-stat-row">
-                <span className="text-xs text-[--color-retro-text-muted]">Overhead ({isGarageStage ? 'garage' : 'office'} + infra)</span>
+                <span className="text-xs text-[--color-retro-text-muted]">Overhead ({isGarageStage ? 'garage' : 'office'} + infra)<InfoTip text="Fixed costs that increase with team size. Garage stage is cheap ($100 base), office costs more ($500 base). Each team member adds $50/wk in infrastructure." /></span>
                 <span className="retro-value text-[--color-retro-red]">{formatCurrency(overheadEstimate)}</span>
               </div>
               {finances.marketingSpend > 0 && (

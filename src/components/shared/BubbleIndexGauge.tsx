@@ -1,3 +1,5 @@
+import { InfoTip } from './InfoTip.tsx';
+
 export interface BubbleIndexGaugeProps {
   value: number;   // 0-100
   trend: number;   // positive = inflating, negative = deflating
@@ -29,7 +31,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
   return (
     <div className="retro-card">
       <h3 className="retro-section-heading">
-        Bubble Index
+        Bubble Index<InfoTip text="Market hype meter (0–100). When it pops (reaches critical levels), valuations crash, funding dries up, and customers flee. High bubble inflates your valuation — but the crash is brutal. Survive it to win." />
       </h3>
 
       {/* Gauge */}

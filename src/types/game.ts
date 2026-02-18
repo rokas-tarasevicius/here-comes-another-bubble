@@ -307,6 +307,7 @@ export interface WeekSummary {
   revenue: number;
   burn: number;
   customers: number;
+  churnRate: number;
   valuation: number;
   teamSize: number;
   avgMorale: number;

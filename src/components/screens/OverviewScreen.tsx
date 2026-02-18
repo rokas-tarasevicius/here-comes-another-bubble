@@ -1,6 +1,7 @@
 import { useGameStore } from '../../store/index.ts';
 import type { CompanyStage } from '../../types/game.ts';
 import { WeeklySummary } from '../shared/WeeklySummary.tsx';
+import { InfoTip } from '../shared/InfoTip.tsx';
 import { formatCurrency, formatNumber, formatPercent } from '../../utils/format.ts';
 
 // ─── Stage display labels ────────────────────────────────────────────
@@ -82,7 +83,7 @@ export function OverviewScreen() {
                 </span>
               </div>
               <div className="flex flex-col gap-1.5">
-                <span className="retro-label">Valuation</span>
+                <span className="retro-label">Valuation<InfoTip text="Your company's estimated worth. Driven by revenue, growth rate, market hype, and funding stage. Win condition: reach a successful exit at high valuation." /></span>
                 <span className="retro-value-lg text-[--color-retro-text]">
                   {formatCurrency(company.valuation)}
                 </span>
@@ -92,19 +93,19 @@ export function OverviewScreen() {
             {/* Secondary stats */}
             <div className="retro-stat-footer">
               <span className="retro-stat-tag">
-                <span className="retro-stat-tag-label">Equity</span>
+                <span className="retro-stat-tag-label">Equity<InfoTip text="Your ownership percentage. Diluted by fundraising. Your exit payout = valuation × equity. Try to balance growth with keeping a meaningful stake." /></span>
                 <span className="retro-stat-tag-value">{formatPercent(finances.founderEquity * 100)}</span>
               </span>
               <span className="retro-stat-tag">
-                <span className="retro-stat-tag-label">Bubble</span>
+                <span className="retro-stat-tag-label">Bubble<InfoTip text="Market hype level. When high, valuations and funding are easy — but a pop crashes everything. Monitor trends in the Market tab." /></span>
                 <span className={`retro-stat-tag-value ${bubbleColor(market.bubbleIndex)}`}>{market.bubbleIndex}</span>
               </span>
               <span className="retro-stat-tag">
-                <span className="retro-stat-tag-label">Rep</span>
+                <span className="retro-stat-tag-label">Rep<InfoTip text="Company reputation. Affects hiring, fundraising, and customer trust. Grows from good decisions, shipping quality features, and press events." /></span>
                 <span className="retro-stat-tag-value">{company.reputation}</span>
               </span>
               <span className="retro-stat-tag">
-                <span className="retro-stat-tag-label">Investors</span>
+                <span className="retro-stat-tag-label">Investors<InfoTip text="How eager investors are to fund you. Influenced by your growth metrics, bubble index, and reputation. Higher sentiment = better funding terms." /></span>
                 <span className="retro-stat-tag-value">{market.investorSentiment}</span>
               </span>
               <span className="retro-stat-tag">

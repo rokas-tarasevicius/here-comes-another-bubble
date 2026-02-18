@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 import { BubbleIndexGauge } from '../shared/BubbleIndexGauge.tsx';
 import { CompetitorTable } from '../shared/CompetitorTable.tsx';
+import { InfoTip } from '../shared/InfoTip.tsx';
 
 /**
  * Market intelligence screen showing market overview, bubble index,
@@ -29,6 +30,7 @@ export function MarketScreen() {
   const playerRow = {
     name: company.name,
     funding: finances.fundingHistory.reduce((sum, r) => sum + r.amount, 0),
+    valuation: company.valuation,
     teamSize: team.teamSize + team.aiAgents.length,
     productQuality: product.overallQuality,
     marketShare: totalMarketCustomers > 0
@@ -74,13 +76,13 @@ export function MarketScreen() {
           {/* Hero metrics */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
             <div className="flex flex-col gap-1.5">
-              <span className="retro-label">Market Size</span>
+              <span className="retro-label">Market Size<InfoTip text="Total addressable market (TAM) in dollars. A larger market means more room to grow but also attracts more competitors." /></span>
               <span className="retro-value-lg text-[--color-retro-green]">
                 {formatCurrency(segmentData.size)}
               </span>
             </div>
             <div className="flex flex-col gap-1.5">
-              <span className="retro-label">Annual Growth</span>
+              <span className="retro-label">Annual Growth<InfoTip text="How fast the market is expanding per year. Higher growth markets increase TAM each week, creating opportunities — but can also inflate the bubble." /></span>
               <span className="retro-value-lg text-[--color-retro-blue]">
                 {formatPercent(segmentData.growthRate * 100)}
               </span>
@@ -94,11 +96,11 @@ export function MarketScreen() {
               <span className="retro-stat-tag-value text-[--color-retro-blue]">+{formatCurrency(segmentData.size * segmentData.growthRate / 52)}</span>
             </span>
             <span className="retro-stat-tag">
-              <span className="retro-stat-tag-label">Competition</span>
+              <span className="retro-stat-tag-label">Competition<InfoTip text="How fierce the competitor landscape is (0–100). High competition makes it harder to acquire customers and increases churn. Competitors can die or merge." /></span>
               <span className={`retro-stat-tag-value ${intensityColor(segmentData.competitionIntensity)}`}>{segmentData.competitionIntensity}/100</span>
             </span>
             <span className="retro-stat-tag">
-              <span className="retro-stat-tag-label">Reg. Risk</span>
+              <span className="retro-stat-tag-label">Reg. Risk<InfoTip text="Regulatory risk (0–100). High values mean governments may impose restrictions, fines, or compliance costs. Can trigger surprise regulatory events." /></span>
               <span className={`retro-stat-tag-value ${intensityColor(segmentData.regulatoryRisk)}`}>{segmentData.regulatoryRisk}/100</span>
             </span>
           </div>
