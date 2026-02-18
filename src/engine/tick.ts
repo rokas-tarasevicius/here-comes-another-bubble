@@ -1170,7 +1170,10 @@ export function advanceWeek(
   const pmfScore = Math.max(0, Math.min(100, basePmf + decisionPmfDelta + eventPmfDelta));
 
   burn = Math.round(burn * burnRatio);
-  const weeklyRevenue = Math.round(next.finances.weeklyRevenue * revenueRatio * 100) / 100;
+  // Revenue is NOT recalculated from scratch (unlike burn and valuation),
+  // so the event modifications are already baked into next.finances.weeklyRevenue.
+  // We must NOT re-apply the ratio — that would double-count event effects.
+  const weeklyRevenue = next.finances.weeklyRevenue;
   valuation = Math.round(valuation * valuationRatio);
 
   next = {

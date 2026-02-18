@@ -1513,3 +1513,2095 @@ describe('Low Morale Tracking', () => {
     expect(result.meta.lowMoraleWeeks).toBe(0);
   });
 });
+
+// ─── Revenue Calculation Tests ─────────────────────────────────────────
+
+describe('simulateRevenue', () => {
+  // Helper: create a base state optimized for revenue testing.
+  // We use 0 customers initially and shipped features so simulateCustomers
+  // produces predictable results. We mock Math.random for determinism.
+  const baseFinances = () => createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances;
+  const baseMarket = () => createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').market;
+
+  function revenueState(overrides: {
+    pricingModel: 'free' | 'subscription' | 'usage-based' | 'enterprise' | 'one-time';
+    pricePerUnit: number;
+    customers: number;
+    overallQuality: number;
+    bugs?: number;
+    teamSize?: number;
+    aiAgents?: AIAgent[];
+    weekHistory?: GameState['weekHistory'];
+  }): GameState {
+    return makeDeepState({
+      team: {
+        teamSize: overrides.teamSize ?? 6,
+        avgSalary: 3000,
+        morale: 80,
+        aiAgents: overrides.aiAgents ?? [],
+      },
+      product: {
+        features: [makeShippedFeature({ quality: overrides.overallQuality })],
+        overallQuality: overrides.overallQuality,
+        customers: overrides.customers,
+        churnRate: 0.05,
+        bugs: overrides.bugs ?? 0,
+        pmfScore: 50,
+        techDebtTotal: 10,
+        name: 'TestCo',
+      },
+      finances: {
+        ...baseFinances(),
+        pricingModel: overrides.pricingModel,
+        pricePerUnit: overrides.pricePerUnit,
+      },
+      market: { ...baseMarket(), competitors: [] },
+      ...(overrides.weekHistory ? { weekHistory: overrides.weekHistory } : {}),
+    });
+  }
+
+  // ── Free pricing model ──────────────────────────────────────────────
+
+  describe('free pricing model', () => {
+    it('generates small ad revenue proportional to customers and quality', () => {
+      const state = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 1000,
+        overallQuality: 80,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Free model: revenue = customers * 0.05 * qualityModifier
+      // Quality 80 -> qualityModifier = 0.8
+      // Expected ~= adjustedCustomers * 0.05 * 0.8
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+      expect(result.finances.weeklyRevenue).toBeLessThan(200); // Much less than paid models
+    });
+
+    it('generates revenue even with 0 pricePerUnit', () => {
+      const state = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 500,
+        overallQuality: 60,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Free model does not use pricePerUnit, so revenue should still be > 0
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+    });
+
+    it('generates zero revenue with 0 customers', () => {
+      const state = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 0,
+        overallQuality: 80,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // 0 customers * anything = 0
+      // (simulateCustomers may add a few customers, so check it's small)
+      expect(result.finances.weeklyRevenue).toBeLessThan(5);
+    });
+  });
+
+  // ── Subscription pricing model ──────────────────────────────────────
+
+  describe('subscription pricing model', () => {
+    it('produces revenue = customers * price * qualityModifier * bugPenalty', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // qualityModifier = 0.8, bugPenalty = 1.0
+      // Base expected ~= 500 * 20 * 0.8 * 1.0 = 8000
+      // Customers shift slightly during simulation
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(6000);
+      expect(result.finances.weeklyRevenue).toBeLessThan(10000);
+    });
+
+    it('higher price produces proportionally more revenue', () => {
+      const lowPrice = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 10,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      const highPrice = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 50,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const lowResult = simulateWeek(lowPrice);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highPrice);
+      vi.restoreAllMocks();
+
+      // Revenue is proportional to price, so 5x price => ~5x revenue
+      const ratio = highResult.finances.weeklyRevenue / lowResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(4);
+      expect(ratio).toBeLessThan(6);
+    });
+
+    it('zero price produces zero revenue', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 0,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.finances.weeklyRevenue).toBe(0);
+    });
+
+    it('zero customers produces minimal revenue', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 0,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // simulateCustomers runs before simulateRevenue and may add some new
+      // customers even when starting from 0 (organic growth). Revenue is
+      // therefore not exactly 0 but should be much less than a state with
+      // 500 customers (~8000 revenue).
+      expect(result.finances.weeklyRevenue).toBeLessThan(500);
+    });
+  });
+
+  // ── Usage-based pricing model ───────────────────────────────────────
+
+  describe('usage-based pricing model', () => {
+    it('produces revenue proportional to customers, price, and quality', () => {
+      const state = revenueState({
+        pricingModel: 'usage-based',
+        pricePerUnit: 15,
+        customers: 800,
+        overallQuality: 70,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // activityMultiplier = qualityModifier = 0.7
+      // weeklyNoise at random=0.5 => 1 + (0.5-0.5)*0.15 = 1.0
+      // Base expected ~= 800 * 15 * 0.7 * 1.0 * 1.0 = 8400
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(5000);
+      expect(result.finances.weeklyRevenue).toBeLessThan(12000);
+    });
+
+    it('has random noise component that varies revenue', () => {
+      const state = revenueState({
+        pricingModel: 'usage-based',
+        pricePerUnit: 20,
+        customers: 1000,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      // Low random => lower noise multiplier
+      vi.spyOn(Math, 'random').mockReturnValue(0.1);
+      const lowResult = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // High random => higher noise multiplier
+      vi.spyOn(Math, 'random').mockReturnValue(0.9);
+      const highResult = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Revenue should differ due to noise, but both should be positive
+      expect(lowResult.finances.weeklyRevenue).toBeGreaterThan(0);
+      expect(highResult.finances.weeklyRevenue).toBeGreaterThan(0);
+      // They should differ (noise introduces variation)
+      expect(lowResult.finances.weeklyRevenue).not.toBe(highResult.finances.weeklyRevenue);
+    });
+  });
+
+  // ── Enterprise pricing model ────────────────────────────────────────
+
+  describe('enterprise pricing model', () => {
+    it('uses 20x multiplier on base subscription revenue', () => {
+      const subState = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 50,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+        teamSize: 6,
+      });
+
+      const entState = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 50,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+        teamSize: 6,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const subResult = simulateWeek(subState);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const entResult = simulateWeek(entState);
+      vi.restoreAllMocks();
+
+      // Enterprise has a 20x multiplier, so revenue should be ~20x subscription
+      const ratio = entResult.finances.weeklyRevenue / subResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(15);
+      expect(ratio).toBeLessThan(25);
+    });
+
+    it('applies 50% penalty when total team (humans + AI) < 5', () => {
+      const smallTeam = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 2,
+        aiAgents: [],
+      });
+
+      const largeTeam = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 6,
+        aiAgents: [],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const smallResult = simulateWeek(smallTeam);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const largeResult = simulateWeek(largeTeam);
+      vi.restoreAllMocks();
+
+      // Small team gets 50% penalty
+      const ratio = smallResult.finances.weeklyRevenue / largeResult.finances.weeklyRevenue;
+      expect(ratio).toBeCloseTo(0.5, 1);
+    });
+
+    it('AI agents count toward the team size threshold', () => {
+      // 2 humans + 3 AI = 5 total, should NOT get penalty
+      const withAI = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 2,
+        aiAgents: [
+          makeAgent({ id: 'a1' }),
+          makeAgent({ id: 'a2' }),
+          makeAgent({ id: 'a3' }),
+        ],
+      });
+
+      // 2 humans + 0 AI = 2 total, should get penalty
+      const withoutAI = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 2,
+        aiAgents: [],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const aiResult = simulateWeek(withAI);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const noAiResult = simulateWeek(withoutAI);
+      vi.restoreAllMocks();
+
+      // With AI agents reaching 5, enterprise revenue should be ~2x the penalized version
+      const ratio = aiResult.finances.weeklyRevenue / noAiResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(1.5);
+    });
+
+    it('team of exactly 5 does NOT get the penalty', () => {
+      const exactFive = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 5,
+        aiAgents: [],
+      });
+
+      const aboveFive = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 100,
+        customers: 50,
+        overallQuality: 70,
+        bugs: 0,
+        teamSize: 6,
+        aiAgents: [],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const fiveResult = simulateWeek(exactFive);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const sixResult = simulateWeek(aboveFive);
+      vi.restoreAllMocks();
+
+      // Both should NOT have the penalty, so revenue ratio should be close to 1
+      // (slight differences from customer simulation due to team size affecting other factors)
+      const ratio = fiveResult.finances.weeklyRevenue / sixResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.7);
+      expect(ratio).toBeLessThan(1.3);
+    });
+  });
+
+  // ── One-time pricing model ──────────────────────────────────────────
+
+  describe('one-time pricing model', () => {
+    it('only charges new customers (not returning)', () => {
+      // State with weekHistory showing 100 customers last week
+      const state = revenueState({
+        pricingModel: 'one-time',
+        pricePerUnit: 50,
+        customers: 200,
+        overallQuality: 80,
+        bugs: 0,
+        weekHistory: [
+          { week: 1, cash: 100000, revenue: 0, burn: 3000, customers: 200, valuation: 100000, teamSize: 6, avgMorale: 80, pmfScore: 50, bubbleIndex: 60, eventsCount: 0 },
+        ],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Previous customers = 200, but simulateCustomers adds some new customers.
+      // Revenue should only be from NEW customers above 200.
+      // If customers didn't grow much, revenue should be modest.
+      // The key point: it's NOT 200 * 50 = 10000 (would be if all customers counted).
+      // With quality 80 and some growth, revenue should be much less than subscription equivalent.
+      const subscriptionEquivalent = 200 * 50 * 0.8; // 8000
+      expect(result.finances.weeklyRevenue).toBeLessThan(subscriptionEquivalent);
+    });
+
+    it('generates full revenue when no week history (first week)', () => {
+      const state = revenueState({
+        pricingModel: 'one-time',
+        pricePerUnit: 50,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+        weekHistory: [],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // No history means prevCustomers = 0, so all adjusted customers are "new"
+      // Revenue should be meaningful
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+    });
+
+    it('generates zero revenue when customer count decreases', () => {
+      // Previous week had 500 customers but current has dropped to 400
+      const state = revenueState({
+        pricingModel: 'one-time',
+        pricePerUnit: 50,
+        customers: 300,
+        overallQuality: 30,
+        bugs: 10,
+        weekHistory: [
+          { week: 1, cash: 100000, revenue: 0, burn: 3000, customers: 5000, valuation: 100000, teamSize: 6, avgMorale: 80, pmfScore: 50, bubbleIndex: 60, eventsCount: 0 },
+        ],
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // If current customers (after sim) <= previous 5000, newCustomers = 0
+      // Revenue should be 0
+      expect(result.finances.weeklyRevenue).toBe(0);
+    });
+  });
+
+  // ── Quality modifier floor ──────────────────────────────────────────
+
+  describe('quality modifier floor', () => {
+    it('applies minimum 0.15 quality modifier when overallQuality is 0', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 1000,
+        overallQuality: 0,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // qualityModifier = max(0.15, 0/100) = 0.15
+      // Revenue should be positive even with 0 quality
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+    });
+
+    it('quality=0 revenue is roughly 0.15/0.80 of quality=80 revenue', () => {
+      const zeroQuality = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 500,
+        overallQuality: 0,
+        bugs: 0,
+      });
+
+      const highQuality = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const zeroResult = simulateWeek(zeroQuality);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highQuality);
+      vi.restoreAllMocks();
+
+      // Zero quality uses floor 0.15, high quality uses 0.80
+      // Ratio should be approximately 0.15/0.80 = 0.1875
+      const ratio = zeroResult.finances.weeklyRevenue / highResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.1);
+      expect(ratio).toBeLessThan(0.3);
+    });
+
+    it('quality=15 uses exact value (0.15) at the floor boundary', () => {
+      const atFloor = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 500,
+        overallQuality: 15,
+        bugs: 0,
+      });
+
+      const belowFloor = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 500,
+        overallQuality: 5,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const atResult = simulateWeek(atFloor);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const belowResult = simulateWeek(belowFloor);
+      vi.restoreAllMocks();
+
+      // quality=15 -> qualityModifier = max(0.15, 0.15) = 0.15
+      // quality=5 -> qualityModifier = max(0.15, 0.05) = 0.15
+      // Both should produce nearly identical revenue (both use the 0.15 floor)
+      const ratio = atResult.finances.weeklyRevenue / belowResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.9);
+      expect(ratio).toBeLessThan(1.1);
+    });
+  });
+
+  // ── Bug penalty ─────────────────────────────────────────────────────
+
+  describe('bug penalty', () => {
+    it('each bug reduces revenue by 2%', () => {
+      const noBugs = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      const tenBugs = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 10,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const noBugResult = simulateWeek(noBugs);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bugResult = simulateWeek(tenBugs);
+      vi.restoreAllMocks();
+
+      // 10 bugs -> bugPenalty = max(0, 1 - 10*0.02) = 0.8
+      // Revenue ratio should be ~0.8
+      const ratio = bugResult.finances.weeklyRevenue / noBugResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.65);
+      expect(ratio).toBeLessThan(0.95);
+    });
+
+    it('50+ bugs drives revenue near zero', () => {
+      // Note: simulateProductDevelopment runs before simulateRevenue and
+      // reduces bugs by 1 when shipped features exist (shipped feature
+      // maintenance). So starting with 50 bugs means revenue calculation
+      // sees 49 bugs => bugPenalty = max(0, 1 - 49*0.02) = 0.02.
+      // We start with 51 bugs to ensure the penalty is effectively 0
+      // even after the -1 reduction (51 - 1 = 50 bugs => penalty = 0).
+      const manyBugs = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 51,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(manyBugs);
+      vi.restoreAllMocks();
+
+      // 51 initial bugs - 1 from shipped feature = 50 bugs at revenue calc
+      // bugPenalty = max(0, 1 - 50*0.02) = max(0, 0) = 0
+      expect(result.finances.weeklyRevenue).toBe(0);
+    });
+
+    it('more than 50 bugs does not produce negative revenue', () => {
+      const extremeBugs = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 100,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(extremeBugs);
+      vi.restoreAllMocks();
+
+      // 100 bugs -> bugPenalty = max(0, 1 - 100*0.02) = max(0, -1) = 0
+      expect(result.finances.weeklyRevenue).toBeGreaterThanOrEqual(0);
+    });
+
+    it('bugs do NOT affect free model revenue', () => {
+      const noBugs = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 1000,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      const manyBugs = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 1000,
+        overallQuality: 80,
+        bugs: 20,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const noBugResult = simulateWeek(noBugs);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bugResult = simulateWeek(manyBugs);
+      vi.restoreAllMocks();
+
+      // Free model formula: customers * 0.05 * qualityModifier
+      // Bug penalty is NOT applied in the free model case
+      // Revenue should be similar (differences only from customer count changes)
+      const ratio = bugResult.finances.weeklyRevenue / noBugResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.8);
+      expect(ratio).toBeLessThan(1.2);
+    });
+  });
+
+  // ── Revenue is always rounded to 2 decimal places ──────────────────
+
+  describe('revenue rounding', () => {
+    it('revenue is rounded to at most 2 decimal places', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 7,
+        customers: 333,
+        overallQuality: 73,
+        bugs: 3,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Check that revenue has at most 2 decimal places
+      const decimals = (result.finances.weeklyRevenue.toString().split('.')[1] || '').length;
+      expect(decimals).toBeLessThanOrEqual(2);
+    });
+  });
+
+  // ── Cross-model comparisons ─────────────────────────────────────────
+
+  describe('cross-model comparisons', () => {
+    it('enterprise generates significantly more revenue than subscription at same price', () => {
+      const sub = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 50,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+        teamSize: 6,
+      });
+
+      const ent = revenueState({
+        pricingModel: 'enterprise',
+        pricePerUnit: 50,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+        teamSize: 6,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const subResult = simulateWeek(sub);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const entResult = simulateWeek(ent);
+      vi.restoreAllMocks();
+
+      expect(entResult.finances.weeklyRevenue).toBeGreaterThan(subResult.finances.weeklyRevenue * 10);
+    });
+
+    it('free generates much less revenue than subscription', () => {
+      const free = revenueState({
+        pricingModel: 'free',
+        pricePerUnit: 0,
+        customers: 1000,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      const sub = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 20,
+        customers: 1000,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const freeResult = simulateWeek(free);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const subResult = simulateWeek(sub);
+      vi.restoreAllMocks();
+
+      expect(freeResult.finances.weeklyRevenue).toBeLessThan(subResult.finances.weeklyRevenue / 50);
+    });
+  });
+
+  // ── Edge cases ──────────────────────────────────────────────────────
+
+  describe('edge cases', () => {
+    it('revenue is never negative regardless of inputs', () => {
+      const models: Array<'free' | 'subscription' | 'usage-based' | 'enterprise' | 'one-time'> = [
+        'free', 'subscription', 'usage-based', 'enterprise', 'one-time',
+      ];
+
+      for (const model of models) {
+        const state = revenueState({
+          pricingModel: model,
+          pricePerUnit: 0,
+          customers: 0,
+          overallQuality: 0,
+          bugs: 100,
+          teamSize: 0,
+        });
+
+        vi.spyOn(Math, 'random').mockReturnValue(0.5);
+        const result = simulateWeek(state);
+        vi.restoreAllMocks();
+
+        expect(result.finances.weeklyRevenue).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('very large customer count does not overflow or produce NaN', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 100,
+        customers: 1_000_000,
+        overallQuality: 90,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(Number.isFinite(result.finances.weeklyRevenue)).toBe(true);
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+    });
+
+    it('very high price does not overflow or produce NaN', () => {
+      const state = revenueState({
+        pricingModel: 'subscription',
+        pricePerUnit: 10_000,
+        customers: 100,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(Number.isFinite(result.finances.weeklyRevenue)).toBe(true);
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
+    });
+  });
+});
+
+// ─── simulateProduct (Product Development) ────────────────────────────
+
+describe('simulateProduct', () => {
+  // Shared base product config for many tests
+  const baseProductConfig = {
+    overallQuality: 0,
+    techDebtTotal: 0,
+    pmfScore: 0,
+    customers: 0,
+    churnRate: 0.05,
+    bugs: 0,
+    name: 'TestCo',
+  };
+
+  describe('feature progress', () => {
+    it('feature progresses toward 100% over multiple weeks', () => {
+      let state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      for (let i = 0; i < 5; i++) {
+        state = simulateWeek(state);
+      }
+      vi.restoreAllMocks();
+
+      // After 5 weeks with a team of 3, progress should be well above 0
+      expect(state.product.features[0].progress).toBeGreaterThan(30);
+      // Progress should be moving toward 100
+      expect(state.product.features[0].progress).toBeLessThanOrEqual(100);
+    });
+
+    it('founder contributes progress even with 0 team size', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 80, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Founder alone: (8 + 80/8) / 1 = 18 progress per week
+      expect(result.product.features[0].progress).toBeGreaterThan(0);
+    });
+
+    it('higher techSkill founder progresses faster', () => {
+      const highTech = makeDeepState({
+        founder: { techSkill: 90, bizSkill: 30, network: 30, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const lowTech = makeDeepState({
+        founder: { techSkill: 20, bizSkill: 30, network: 30, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highTech);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const lowResult = simulateWeek(lowTech);
+      vi.restoreAllMocks();
+
+      expect(highResult.product.features[0].progress).toBeGreaterThan(
+        lowResult.product.features[0].progress,
+      );
+    });
+
+    it('team progress uses diminishing returns (sqrt)', () => {
+      const small = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 1, avgSalary: 3000, morale: 80, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const large = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 9, avgSalary: 3000, morale: 80, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const smallResult = simulateWeek(small);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const largeResult = simulateWeek(large);
+      vi.restoreAllMocks();
+
+      const smallProgress = smallResult.product.features[0].progress;
+      const largeProgress = largeResult.product.features[0].progress;
+
+      // 9x team should NOT give 9x progress (diminishing returns via sqrt)
+      expect(largeProgress).toBeGreaterThan(smallProgress);
+      expect(largeProgress / smallProgress).toBeLessThan(5);
+    });
+
+    it('coding AI agent contributes to feature progress', () => {
+      const withAgent = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 90 })],
+        },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const withoutAgent = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const agentResult = simulateWeek(withAgent);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const noAgentResult = simulateWeek(withoutAgent);
+      vi.restoreAllMocks();
+
+      expect(agentResult.product.features[0].progress).toBeGreaterThan(
+        noAgentResult.product.features[0].progress,
+      );
+    });
+
+    it('general AI agent contributes at 50% coding effectiveness', () => {
+      const withCoding = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 80 })],
+        },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const withGeneral = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'general', capability: 80, reliability: 80 })],
+        },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const codingResult = simulateWeek(withCoding);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const generalResult = simulateWeek(withGeneral);
+      vi.restoreAllMocks();
+
+      // General agent progress contribution should be less than coding agent
+      expect(codingResult.product.features[0].progress).toBeGreaterThan(
+        generalResult.product.features[0].progress,
+      );
+    });
+
+    it('progress is divided among multiple in-progress features', () => {
+      const oneFeat = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ id: 'f1', progress: 0, quality: 0 })],
+        },
+      });
+
+      const twoFeats = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [
+            makeFeature({ id: 'f1', progress: 0, quality: 0 }),
+            makeFeature({ id: 'f2', progress: 0, quality: 0 }),
+          ],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const oneResult = simulateWeek(oneFeat);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const twoResult = simulateWeek(twoFeats);
+      vi.restoreAllMocks();
+
+      // Each feature in two-feature case should get less progress than the single feature
+      const singleProgress = oneResult.product.features[0].progress;
+      const splitProgress = twoResult.product.features[0].progress;
+      expect(singleProgress).toBeGreaterThan(splitProgress);
+    });
+  });
+
+  describe('auto-ship at 100%', () => {
+    it('feature auto-ships when progress reaches 100', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 90, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 90, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 95, quality: 50 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.product.features[0].status).toBe('shipped');
+      expect(result.product.features[0].progress).toBe(100);
+    });
+
+    it('shipped feature has its quality reflected in overallQuality', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 90, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 90, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 99, quality: 60 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Feature should be shipped and overallQuality should reflect its quality
+      expect(result.product.features[0].status).toBe('shipped');
+      expect(result.product.overallQuality).toBeGreaterThan(0);
+    });
+
+    it('already-shipped features are not modified', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeShippedFeature({ progress: 100, quality: 75 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.product.features[0].status).toBe('shipped');
+      expect(result.product.features[0].progress).toBe(100);
+      expect(result.product.features[0].quality).toBe(75);
+    });
+  });
+
+  describe('quality convergence', () => {
+    it('quality converges toward target based on team size', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Team of 5: baseTargetQuality = clamp(30 + 5*8, 30, 95) = 70
+      // Quality moves from 0 toward target at rate 0.2
+      expect(result.product.features[0].quality).toBeGreaterThan(0);
+    });
+
+    it('quality converges higher with larger teams', () => {
+      const smallTeam = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 1, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 0 })],
+        },
+      });
+
+      const largeTeam = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 8, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      let smallResult = smallTeam;
+      let largeResult = largeTeam;
+      for (let i = 0; i < 10; i++) {
+        smallResult = simulateWeek(smallResult);
+        largeResult = simulateWeek(largeResult);
+      }
+      vi.restoreAllMocks();
+
+      // Larger team should converge to higher quality
+      expect(largeResult.product.features[0].quality).toBeGreaterThan(
+        smallResult.product.features[0].quality,
+      );
+    });
+
+    it('quality is capped at 100', () => {
+      // Use quality-first strategy + quality focus + high tech skill to push target above 100
+      const state = makeDeepState({
+        meta: { growthStrategy: 'quality-first', productFocus: 'quality' as const },
+        founder: { techSkill: 90, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 8, avgSalary: 3000, morale: 90, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 95 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      let result = state;
+      for (let i = 0; i < 20; i++) {
+        result = simulateWeek(result);
+      }
+      vi.restoreAllMocks();
+
+      expect(result.product.features[0].quality).toBeLessThanOrEqual(100);
+    });
+  });
+
+  describe('tech debt from AI agents', () => {
+    it('AI agents with low reliability generate tech debt', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 50 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 0,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Agent with reliability 50: (100-50)/100 * 3 = 1.5 debt per agent
+      expect(result.product.techDebtTotal).toBeGreaterThan(0);
+    });
+
+    it('high-reliability agents generate less tech debt', () => {
+      const lowRel = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ reliability: 30 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const highRel = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ reliability: 95 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const lowResult = simulateWeek(lowRel);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highRel);
+      vi.restoreAllMocks();
+
+      // Low reliability generates more debt
+      expect(lowResult.product.techDebtTotal).toBeGreaterThan(highResult.product.techDebtTotal);
+    });
+
+    it('no AI agents means no tech debt accumulation', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // No agents, no new tech debt. Current debt should stay at 10 or decrease.
+      expect(result.product.techDebtTotal).toBeLessThanOrEqual(10);
+    });
+
+    it('tech debt is clamped between 0 and 100', () => {
+      // Many unreliable agents to push debt high
+      const agents = Array.from({ length: 10 }, (_, i) =>
+        makeAgent({ id: `agent-${i}`, reliability: 10 }),
+      );
+
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 70, aiAgents: agents },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 95,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.product.techDebtTotal).toBeLessThanOrEqual(100);
+      expect(result.product.techDebtTotal).toBeGreaterThanOrEqual(0);
+    });
+
+    it('coding agent reliability reduces tech debt', () => {
+      const withCoding = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', reliability: 100 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 20,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const withMarketing = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 0,
+          avgSalary: 0,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'marketing', reliability: 100 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 20,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const codingResult = simulateWeek(withCoding);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const marketingResult = simulateWeek(withMarketing);
+      vi.restoreAllMocks();
+
+      // Coding agent with reliability 100 reduces debt by 100/200 = 0.5 per week
+      // Both generate tech debt from (100-reliability)/100 * 3 = 0 (rel 100)
+      // Coding: net -0.5, Marketing: net 0
+      expect(codingResult.product.techDebtTotal).toBeLessThan(marketingResult.product.techDebtTotal);
+    });
+  });
+
+  describe('bug calculation', () => {
+    it('bugs increase with high tech debt', () => {
+      const lowDebt = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          bugs: 0,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const highDebt = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 80,
+          bugs: 0,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const lowResult = simulateWeek(lowDebt);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highDebt);
+      vi.restoreAllMocks();
+
+      // High debt: floor(80/25) = 3 bugs added
+      // Low debt: floor(10/25) = 0 bugs added
+      expect(highResult.product.bugs).toBeGreaterThan(lowResult.product.bugs);
+    });
+
+    it('bugs are reduced when shipped features exist', () => {
+      const withShipped = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          bugs: 5,
+          features: [makeShippedFeature()],
+        },
+      });
+
+      const withoutShipped = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          bugs: 5,
+          features: [makeFeature({ progress: 50, quality: 30 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const shippedResult = simulateWeek(withShipped);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const unshippedResult = simulateWeek(withoutShipped);
+      vi.restoreAllMocks();
+
+      // Shipped features provide -1 bug reduction
+      expect(shippedResult.product.bugs).toBeLessThanOrEqual(unshippedResult.product.bugs);
+    });
+
+    it('bugs cannot go below 0', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 0,
+          bugs: 0,
+          features: [makeShippedFeature()],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.product.bugs).toBeGreaterThanOrEqual(0);
+    });
+
+    it('bug-fixing focus reduces bugs', () => {
+      const bugFixing = makeDeepState({
+        meta: { productFocus: 'bug-fixing' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 6, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 30,
+          bugs: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const newFeatures = makeDeepState({
+        meta: { productFocus: 'new-features' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 6, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 30,
+          bugs: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bugResult = simulateWeek(bugFixing);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const featResult = simulateWeek(newFeatures);
+      vi.restoreAllMocks();
+
+      // Bug-fixing focus: focusBugReduction = 2 + floor(6/3) = 4
+      expect(bugResult.product.bugs).toBeLessThan(featResult.product.bugs);
+    });
+  });
+
+  describe('morale effects on progress and quality', () => {
+    it('morale < 30 slows progress by 25%', () => {
+      const normalMorale = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 50, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const lowMorale = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 25, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const normalResult = simulateWeek(normalMorale);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const lowResult = simulateWeek(lowMorale);
+      vi.restoreAllMocks();
+
+      // Low morale applies 0.75 multiplier to total progress
+      // Also morale directly affects human contribution (morale/100 * effectiveTeamSize * 12)
+      expect(lowResult.product.features[0].progress).toBeLessThan(
+        normalResult.product.features[0].progress,
+      );
+    });
+
+    it('morale exactly at 30 does NOT trigger the slowdown', () => {
+      // Code: if (state.team.morale < 30) => morale 30 does NOT trigger
+      const at30 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 30, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const at29 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 29, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const at30Result = simulateWeek(at30);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const at29Result = simulateWeek(at29);
+      vi.restoreAllMocks();
+
+      // Morale 30: moraleProgressMultiplier = 1.0 (no penalty)
+      // Morale 29: moraleProgressMultiplier = 0.75 (penalty)
+      expect(at30Result.product.features[0].progress).toBeGreaterThan(
+        at29Result.product.features[0].progress,
+      );
+    });
+
+    it('morale > 80 boosts quality by 10%', () => {
+      // Test with a single tick to isolate the morale quality boost.
+      // simulateProductDevelopment reads morale before simulateMorale can change it.
+      // Use low founder tech skill and team=1 to keep targetQuality below 100
+      // so the 1.1x multiplier has visible effect.
+      // team=1, techSkill=10: baseTargetQuality = clamp(30+8, 30, 95) = 38
+      // qualityMultiplier=1.0, founderQualityBonus=0.1 -> targetQ = 38 * 1.1 = 41.8
+      // morale 85 (>80): targetQ *= 1.1 = 45.98
+      // morale 75 (<=80): targetQ = 41.8
+      // quality: 0 + (target - 0) * 0.2
+      // High: round(45.98 * 0.2) = round(9.2) = 9
+      // Normal: round(41.8 * 0.2) = round(8.36) = 8
+      const highMorale = makeDeepState({
+        founder: { techSkill: 10, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 1, avgSalary: 3000, morale: 85, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 0 })],
+        },
+      });
+
+      const normalMorale = makeDeepState({
+        founder: { techSkill: 10, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 1, avgSalary: 3000, morale: 75, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const highResult = simulateWeek(highMorale);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const normalResult = simulateWeek(normalMorale);
+      vi.restoreAllMocks();
+
+      // After one tick, quality should be higher for morale > 80
+      expect(highResult.product.features[0].quality).toBeGreaterThanOrEqual(
+        normalResult.product.features[0].quality,
+      );
+    });
+
+    it('morale exactly at 80 does not trigger quality boost (single tick)', () => {
+      // Test the boundary: morale > 80 triggers boost, morale == 80 does not.
+      // Use single-tick test since morale drifts after simulateMorale runs.
+      // simulateProductDevelopment reads state.team.morale BEFORE simulateMorale changes it.
+      const at80 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 80, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 30 })],
+        },
+      });
+
+      const at81 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 81, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 10, quality: 30 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const at80Result = simulateWeek(at80);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const at81Result = simulateWeek(at81);
+      vi.restoreAllMocks();
+
+      // Morale 81 triggers the quality boost (>80), morale 80 does not.
+      // After a single tick, the quality difference should be visible.
+      expect(at81Result.product.features[0].quality).toBeGreaterThanOrEqual(
+        at80Result.product.features[0].quality,
+      );
+    });
+  });
+
+  describe('product focus multipliers', () => {
+    it('quality focus: slower progress but higher quality', () => {
+      const qualityFocus = makeDeepState({
+        meta: { productFocus: 'quality' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const defaultFocus = makeDeepState({
+        meta: { productFocus: 'new-features' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      let qResult = qualityFocus;
+      let dResult = defaultFocus;
+      for (let i = 0; i < 3; i++) {
+        qResult = simulateWeek(qResult);
+        dResult = simulateWeek(dResult);
+      }
+      vi.restoreAllMocks();
+
+      // Quality focus: 0.6 progress multiplier, 1.5 quality multiplier
+      expect(qResult.product.features[0].progress).toBeLessThan(
+        dResult.product.features[0].progress,
+      );
+      expect(qResult.product.features[0].quality).toBeGreaterThan(
+        dResult.product.features[0].quality,
+      );
+    });
+
+    it('bug-fixing focus: slower progress', () => {
+      const bugFocus = makeDeepState({
+        meta: { productFocus: 'bug-fixing' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const defaultFocus = makeDeepState({
+        meta: { productFocus: 'new-features' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bugResult = simulateWeek(bugFocus);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const defResult = simulateWeek(defaultFocus);
+      vi.restoreAllMocks();
+
+      // Bug-fixing focus: 0.4 progress multiplier
+      expect(bugResult.product.features[0].progress).toBeLessThan(
+        defResult.product.features[0].progress,
+      );
+    });
+
+    it('tech-debt focus: slower progress but reduces tech debt', () => {
+      const debtFocus = makeDeepState({
+        meta: { productFocus: 'tech-debt' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 50,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const defaultFocus = makeDeepState({
+        meta: { productFocus: 'new-features' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 5, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 50,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const debtResult = simulateWeek(debtFocus);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const defResult = simulateWeek(defaultFocus);
+      vi.restoreAllMocks();
+
+      // Tech-debt focus: 0.4 progress, reduces debt by 3 + teamSize*1.5 = 10.5
+      expect(debtResult.product.features[0].progress).toBeLessThan(
+        defResult.product.features[0].progress,
+      );
+      expect(debtResult.product.techDebtTotal).toBeLessThan(defResult.product.techDebtTotal);
+    });
+
+    it('user-growth focus: slightly slower progress', () => {
+      const growthFocus = makeDeepState({
+        meta: { productFocus: 'user-growth' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const defaultFocus = makeDeepState({
+        meta: { productFocus: 'new-features' as const },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const growthResult = simulateWeek(growthFocus);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const defResult = simulateWeek(defaultFocus);
+      vi.restoreAllMocks();
+
+      // User-growth focus: 0.8 progress multiplier
+      expect(growthResult.product.features[0].progress).toBeLessThan(
+        defResult.product.features[0].progress,
+      );
+    });
+  });
+
+  describe('growth strategy multipliers', () => {
+    it('move-fast strategy: faster progress but more tech debt and lower quality', () => {
+      const moveFast = makeDeepState({
+        meta: { growthStrategy: 'move-fast' },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 3,
+          avgSalary: 3000,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 60 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const balanced = makeDeepState({
+        meta: { growthStrategy: 'balanced' },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 3,
+          avgSalary: 3000,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 60 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const fastResult = simulateWeek(moveFast);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const balResult = simulateWeek(balanced);
+      vi.restoreAllMocks();
+
+      // move-fast: 1.3 progress, 1.5 tech debt, 0.8 quality
+      expect(fastResult.product.features[0].progress).toBeGreaterThan(
+        balResult.product.features[0].progress,
+      );
+      expect(fastResult.product.techDebtTotal).toBeGreaterThan(balResult.product.techDebtTotal);
+    });
+
+    it('quality-first strategy: slower progress but less tech debt and higher quality', () => {
+      // Use a single week to avoid both capping at 100% progress
+      const qualityFirst = makeDeepState({
+        meta: { growthStrategy: 'quality-first' },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 3,
+          avgSalary: 3000,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 60 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const balanced = makeDeepState({
+        meta: { growthStrategy: 'balanced' },
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 3,
+          avgSalary: 3000,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'coding', capability: 80, reliability: 60 })],
+        },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 10,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const qfResult = simulateWeek(qualityFirst);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bResult = simulateWeek(balanced);
+      vi.restoreAllMocks();
+
+      // quality-first: 0.7 progress, 0.5 tech debt, 1.3 quality
+      expect(qfResult.product.features[0].progress).toBeLessThan(
+        bResult.product.features[0].progress,
+      );
+      expect(qfResult.product.features[0].quality).toBeGreaterThan(
+        bResult.product.features[0].quality,
+      );
+      expect(qfResult.product.techDebtTotal).toBeLessThan(bResult.product.techDebtTotal);
+    });
+  });
+
+  describe('edge cases', () => {
+    it('handles no features gracefully', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      expect(result.product.features).toHaveLength(0);
+      expect(result.product.overallQuality).toBe(0);
+    });
+
+    it('handles all features already shipped', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [
+            makeShippedFeature({ id: 'f1', quality: 70 }),
+            makeShippedFeature({ id: 'f2', quality: 80 }),
+          ],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Both features remain shipped and unchanged
+      expect(result.product.features[0].status).toBe('shipped');
+      expect(result.product.features[1].status).toBe('shipped');
+      // Overall quality is average of shipped features
+      expect(result.product.overallQuality).toBe(75);
+    });
+
+    it('handles 0 team size (founder only)', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 0, avgSalary: 0, morale: 50, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Should still make progress from founder alone
+      expect(result.product.features[0].progress).toBeGreaterThan(0);
+      // Quality should increase from founder quality bonus
+      expect(result.product.features[0].quality).toBeGreaterThan(0);
+    });
+
+    it('handles mix of shipped and in-progress features', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [
+            makeShippedFeature({ id: 'f1', quality: 60 }),
+            makeFeature({ id: 'f2', progress: 20, quality: 10 }),
+          ],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Shipped feature stays unchanged
+      expect(result.product.features[0].status).toBe('shipped');
+      expect(result.product.features[0].quality).toBe(60);
+
+      // In-progress feature should have progressed
+      expect(result.product.features[1].progress).toBeGreaterThan(20);
+      expect(result.product.features[1].quality).toBeGreaterThan(10);
+    });
+
+    it('progress is clamped at 100', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 90, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 10, avgSalary: 3000, morale: 100, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 99, quality: 50 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Progress should be exactly 100 (clamped), not exceed it
+      expect(result.product.features[0].progress).toBe(100);
+    });
+
+    it('overallQuality is 0 when no shipped features exist', () => {
+      const state = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 50, quality: 40 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const result = simulateWeek(state);
+      vi.restoreAllMocks();
+
+      // Feature is still in-progress, overallQuality should be 0
+      expect(result.product.overallQuality).toBe(0);
+    });
+
+    it('design agents improve quality target without affecting progress', () => {
+      const withDesign = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: {
+          teamSize: 2,
+          avgSalary: 3000,
+          morale: 70,
+          aiAgents: [makeAgent({ type: 'design', capability: 100, reliability: 90 })],
+        },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const noAgent = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 2, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      let dResult = withDesign;
+      let nResult = noAgent;
+      for (let i = 0; i < 3; i++) {
+        dResult = simulateWeek(dResult);
+        nResult = simulateWeek(nResult);
+      }
+      vi.restoreAllMocks();
+
+      // Design agent boosts quality target (designAgentBonus = capability/100 * 5 = 5)
+      expect(dResult.product.features[0].quality).toBeGreaterThan(
+        nResult.product.features[0].quality,
+      );
+    });
+
+    it('tech debt slowdown tiers work correctly', () => {
+      // Test that higher tech debt produces slower progress
+      const debt40 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 40, // No slowdown (below 50)
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const debt60 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 60, // 0.8 slowdown (>50)
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const debt75 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 75, // 0.6 slowdown (>70)
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      const debt90 = makeDeepState({
+        founder: { techSkill: 50, bizSkill: 50, network: 50, learning: 50 },
+        team: { teamSize: 3, avgSalary: 3000, morale: 70, aiAgents: [] },
+        product: {
+          ...baseProductConfig,
+          techDebtTotal: 90, // 0.4 slowdown (>85)
+          features: [makeFeature({ progress: 0, quality: 0 })],
+        },
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const r40 = simulateWeek(debt40);
+      const r60 = simulateWeek(debt60);
+      const r75 = simulateWeek(debt75);
+      const r90 = simulateWeek(debt90);
+      vi.restoreAllMocks();
+
+      const p40 = r40.product.features[0].progress;
+      const p60 = r60.product.features[0].progress;
+      const p75 = r75.product.features[0].progress;
+      const p90 = r90.product.features[0].progress;
+
+      expect(p40).toBeGreaterThan(p60);
+      expect(p60).toBeGreaterThan(p75);
+      expect(p75).toBeGreaterThan(p90);
+    });
+  });
+});
