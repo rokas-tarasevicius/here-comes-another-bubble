@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-yellow-400';
+    case 'S': return 'text-amber-600';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -20,7 +20,7 @@ function gradeColor(grade: string): string {
 
 function gradeBorderColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'border-yellow-400';
+    case 'S': return 'border-amber-600';
     case 'A': return 'border-[--color-retro-green]';
     case 'B': return 'border-[--color-retro-blue]';
     case 'C': return 'border-[--color-retro-border-dark]';
@@ -96,7 +96,7 @@ function ScoreBar({
       <div className="w-20 text-right text-sm font-medium text-[--color-retro-text-muted]">
         {categoryLabel(category)}
       </div>
-      <div className="retro-progress relative flex-1 !h-6">
+      <div className="retro-progress retro-progress-lg relative flex-1">
         <div
           className={categoryBarClass(category)}
           style={{ width: animate ? `${pct}%` : '0%', transition: 'width 1s ease-out' }}
@@ -186,15 +186,15 @@ export function GameOverScreen() {
 
         {/* Company summary */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[--color-retro-text-muted]">
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Company </span>
             <span className="font-semibold text-[--color-retro-text]">{gameState.company.name}</span>
           </div>
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Weeks </span>
             <span className="font-semibold text-[--color-retro-text]">{gameState.meta.week}</span>
           </div>
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Valuation </span>
             <span className="font-semibold text-[--color-retro-green]">
               {formatCurrency(gameState.company.valuation)}

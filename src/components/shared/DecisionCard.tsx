@@ -87,12 +87,12 @@ function combineEffects(effects: StateEffect[]): StateEffect[] {
 
 function effectBadgeClass(effect: StateEffect): string {
   if (effect.operation === 'add') {
-    return effect.value >= 0 ? 'retro-badge retro-badge-green' : 'retro-badge retro-badge-red';
+    return effect.value >= 0 ? 'retro-badge retro-badge-sm retro-badge-green' : 'retro-badge retro-badge-sm retro-badge-red';
   }
   if (effect.operation === 'multiply') {
-    return effect.value >= 1 ? 'retro-badge retro-badge-green' : 'retro-badge retro-badge-red';
+    return effect.value >= 1 ? 'retro-badge retro-badge-sm retro-badge-green' : 'retro-badge retro-badge-sm retro-badge-red';
   }
-  return 'retro-badge retro-badge-blue';
+  return 'retro-badge retro-badge-sm retro-badge-blue';
 }
 
 // ─── Deadline urgency helpers ────────────────────────────────────────────
@@ -157,10 +157,10 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
   }
 
   return (
-    <div className="retro-card-raised" style={{ padding: '20px' }}>
-      {/* Header row: deadline badge */}
-      <div className="mb-3 flex items-start justify-between gap-3">
-        <p className="text-sm leading-relaxed font-bold text-[--color-retro-text]">
+    <div className="retro-card">
+      {/* Prompt + deadline */}
+      <div className="flex items-start justify-between gap-4 mb-4">
+        <p className="text-sm leading-relaxed text-[--color-retro-text]">
           {decision.prompt}
         </p>
         <span className={`shrink-0 ${URGENCY_BADGE[urgency]}`}>
@@ -181,57 +181,41 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
             <button
               key={option.id}
               onClick={() => handleSelect(option)}
-              className={`retro-card group relative text-left transition-all ${
+              className={`group relative px-3 py-2.5 text-left cursor-pointer rounded-lg border transition-all ${
                 isSelected
-                  ? 'border-[--color-retro-blue] ring-2 ring-[--color-retro-blue-light] bg-[--color-retro-blue-pale]'
-                  : 'hover:border-[--color-retro-border-dark] hover:bg-[--color-retro-bg-alt]'
+                  ? 'border-[--color-retro-blue]/30 bg-[--color-retro-blue-pale]/40'
+                  : 'border-transparent hover:border-[--color-retro-border]'
               }`}
+              style={isSelected ? {
+                boxShadow: 'inset 0 1px 3px rgba(51,102,153,0.12), 0 0 0 1px rgba(51,102,153,0.08)',
+              } : {
+                boxShadow: 'none',
+              }}
             >
-              {/* Selected check mark */}
-              {isSelected && (
-                <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full"
-                  style={{ background: '#336699' }}>
-                  <svg
-                    className="h-3 w-3 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={3}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-              )}
-
-              {/* Label + tone badge */}
-              <div className="mb-1 flex items-center gap-2 pr-6">
-                <span className="text-sm font-bold text-[--color-retro-text]">
+              {/* Label + tone */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-[--color-retro-text]">
                   {option.label}
                 </span>
                 {option.tone && (
-                  <span className={TONE_BADGE[option.tone] ?? 'retro-badge retro-badge-gray'}>
+                  <span className={`${TONE_BADGE[option.tone] ?? 'retro-badge retro-badge-gray'} retro-badge-sm`}>
                     {option.tone}
                   </span>
                 )}
               </div>
 
               {/* Description */}
-              <p className="mb-2 text-xs leading-relaxed text-[--color-retro-text-muted]">
+              <p className="mt-0.5 text-xs leading-relaxed text-[--color-retro-text-muted]">
                 {option.description}
               </p>
 
               {/* Effect previews */}
               {option.effects.length > 0 && (
-                <div className="flex flex-wrap gap-x-2 gap-y-1">
+                <div className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1">
                   {combineEffects(option.effects).map((eff) => (
                     <span
                       key={`${eff.path}-${eff.operation}`}
                       className={`${effectBadgeClass(eff)} font-[--font-retro-mono]`}
-                      style={{ fontSize: '10px' }}
                     >
                       {formatEffectValue(eff)}
                     </span>

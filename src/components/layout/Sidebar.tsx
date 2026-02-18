@@ -1,3 +1,4 @@
+import { useState, useCallback } from 'react';
 import { useGameStore } from '../../store/index.ts';
 
 interface NavItem {
@@ -21,6 +22,13 @@ export function Sidebar() {
   const gameState = useGameStore((s) => s.gameState);
 
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
+  const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
+
+  const handleSave = useCallback(() => {
+    saveGame();
+    setSaveState('saved');
+    setTimeout(() => setSaveState('idle'), 1500);
+  }, [saveGame]);
 
   // Only count decisions due this week that haven't been responded to yet
   const pendingCount = gameState
@@ -44,16 +52,21 @@ export function Sidebar() {
                   onClick={() => setScreen(item.id)}
                   aria-current={isActive ? 'page' : undefined}
                   title={item.label}
-                  className={`flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  className={`flex w-full items-center gap-2 rounded-xl px-2 lg:px-3 py-2 text-left text-sm font-medium transition-all ${
                     isActive
-                      ? 'bg-white/15 text-[--color-retro-orange]'
-                      : 'text-white/80 hover:bg-white/10 hover:text-white'
+                      ? 'text-white'
+                      : 'text-white/90 hover:text-white'
                   }`}
+                  style={isActive ? {
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.25), inset 0 0 1px rgba(0,0,0,0.10), 0 1px 0 rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                  } : {}}
                 >
                   <span className="text-base">{item.icon}</span>
                   <span className="hidden lg:inline">{item.label}</span>
                   {item.id === 'decisions' && pendingCount > 0 && (
-                    <span className="retro-badge retro-badge-orange ml-auto text-[10px] hidden lg:inline-flex">
+                    <span className="retro-badge retro-badge-sm retro-badge-orange ml-auto hidden lg:inline-flex">
                       {pendingCount}
                     </span>
                   )}
@@ -65,19 +78,23 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section: Save & Menu */}
-      <div className="border-t border-white/10 px-1 lg:px-2 py-4 space-y-1 bg-black/10">
+      <div className="px-1 lg:px-2 py-4 space-y-1" style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.12)' }}>
         <button
-          onClick={() => saveGame()}
+          onClick={handleSave}
           title="Save Game"
-          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className={`flex w-full items-center gap-2 rounded-xl px-2 lg:px-3 py-2 text-left text-sm font-medium transition-all ${
+            saveState === 'saved'
+              ? 'bg-green-500/20 text-green-300'
+              : 'text-white/80 hover:bg-white/8 hover:text-white'
+          }`}
         >
-          <span className="text-base">{'\u{1F4BE}'}</span>
-          <span className="hidden lg:inline">Save Game</span>
+          <span className="text-base">{saveState === 'saved' ? '\u2713' : '\u{1F4BE}'}</span>
+          <span className="hidden lg:inline">{saveState === 'saved' ? 'Saved!' : 'Save Game'}</span>
         </button>
         <button
           onClick={() => setScreen('title')}
           title="Main Menu"
-          className="flex w-full items-center gap-2 rounded-lg px-2 lg:px-3 py-2 text-left text-sm font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          className="flex w-full items-center gap-2 rounded-xl px-2 lg:px-3 py-2 text-left text-sm font-medium text-white/80 transition-all hover:bg-white/8 hover:text-white"
         >
           <span className="text-base">{'\u{1F3E0}'}</span>
           <span className="hidden lg:inline">Main Menu</span>

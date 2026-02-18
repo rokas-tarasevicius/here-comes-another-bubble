@@ -7,7 +7,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-yellow-400';
+    case 'S': return 'text-amber-600';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -129,7 +129,7 @@ export function LeaderboardScreen() {
             </p>
           </div>
         ) : (
-          <div className="retro-card-raised !p-0 overflow-hidden">
+          <div className="retro-card-raised retro-card-flush overflow-hidden">
             {/* Table */}
             <table className="retro-table">
               <thead>

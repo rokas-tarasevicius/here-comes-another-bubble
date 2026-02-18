@@ -178,7 +178,7 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                 style={{
                   background: isCompleted
                     ? 'linear-gradient(to right, #339933, #55bb55)'
-                    : '#cccccc',
+                    : '#d0ccc5',
                 }}
               />
             )}
@@ -190,13 +190,13 @@ function StepIndicator({ current, total }: { current: number; total: number }) {
                     ? 'linear-gradient(to bottom, #5588bb, #336699)'
                     : isCompleted
                       ? 'linear-gradient(to bottom, #55bb55, #339933)'
-                      : 'linear-gradient(to bottom, #ffffff, #e0e0e0)',
+                      : 'linear-gradient(to bottom, #ffffff, #e6e2db)',
                   border: isActive
                     ? '2px solid #2a5580'
                     : isCompleted
                       ? '2px solid #2a802a'
-                      : '1px solid #b0b0b0',
-                  color: isActive || isCompleted ? '#ffffff' : '#999999',
+                      : '1px solid #c4c0ba',
+                  color: isActive || isCompleted ? '#ffffff' : '#9a9590',
                   boxShadow: isActive
                     ? '0 2px 6px rgba(51,102,153,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
                     : '0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5)',
@@ -515,7 +515,7 @@ function StepSettings({
                     style={{
                       background: isSelected
                         ? `radial-gradient(circle at 30% 30%, ${difficultyDotColors[opt.color]}88, ${difficultyDotColors[opt.color]})`
-                        : '#cccccc',
+                        : '#d0ccc5',
                       boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
                     }}
                   />
@@ -559,7 +559,7 @@ function StepSettings({
                     style={{
                       background: isSelected
                         ? 'radial-gradient(circle at 30% 30%, #8855bb, #663399)'
-                        : '#cccccc',
+                        : '#d0ccc5',
                       boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
                     }}
                   />
@@ -782,7 +782,7 @@ export function NewGameScreen() {
 
       {/* Bottom navigation */}
       <div className="retro-header border-t border-retro-border px-6 py-4"
-        style={{ borderBottom: 'none', borderTop: '1px solid #b0b0b0' }}
+        style={{ borderBottom: 'none', borderTop: '1px solid #c4c0ba' }}
       >
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           {/* Back */}

@@ -71,7 +71,12 @@ export function Header() {
     <header className="retro-header flex flex-wrap items-center justify-between gap-2 px-3 md:px-6 py-2 md:py-3">
       {/* Left: Company name + stage badge */}
       <div className="flex items-center gap-2 md:gap-3 min-w-0">
-        <h1 className="text-sm md:text-lg font-[--font-retro-heading] font-bold text-[--color-retro-text] truncate">{company.name}</h1>
+        <h1
+          className="text-sm md:text-lg font-[--font-retro-heading] font-bold text-[--color-retro-text] truncate"
+          style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}
+        >
+          {company.name}
+        </h1>
         <span
           className={`text-xs shrink-0 ${stageBadgeClass}`}
         >
@@ -86,7 +91,10 @@ export function Header() {
 
       {/* Right: Cash + pending warning + Next Week button */}
       <div className="flex items-center gap-2 md:gap-4">
-        <span className="font-[--font-retro-mono] text-xs md:text-sm font-bold text-[--color-retro-green-dark]">
+        <span
+          className="font-[--font-retro-mono] text-xs md:text-sm font-bold text-[--color-retro-green-dark] rounded-lg px-2 py-1"
+          style={{ background: 'rgba(43,122,43,0.06)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)' }}
+        >
           {formatCash(finances.cash)}
         </span>
 

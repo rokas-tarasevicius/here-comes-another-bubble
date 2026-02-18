@@ -128,12 +128,12 @@ export function MarketTrends({
         ) : (
           <div className="space-y-2">
             {marketEvents.map((event) => (
-              <div key={event.id} className="border-l-2 border-[--color-retro-blue] pl-3">
-                <div className="flex items-center gap-2">
-                  <span className="retro-badge retro-badge-gray" style={{ fontSize: '10px' }}>Week {event.week}</span>
+              <div key={event.id} className="border-l-[3px] border-[--color-retro-blue] pl-3 rounded-r-lg" style={{ background: 'rgba(51,102,153,0.03)' }}>
+                <div className="flex items-center gap-2 py-1">
+                  <span className="retro-badge retro-badge-sm retro-badge-gray">Week {event.week}</span>
                   <span className="text-sm font-semibold text-[--color-retro-text]">{event.title}</span>
                 </div>
-                <p className="text-xs text-[--color-retro-text-muted]">{event.description}</p>
+                <p className="text-xs text-[--color-retro-text-muted] pb-1.5">{event.description}</p>
               </div>
             ))}
           </div>

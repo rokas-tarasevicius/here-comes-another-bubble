@@ -6,28 +6,16 @@ export interface WeeklySummaryProps {
   gameState: GameState;
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  market: '\uD83D\uDCC8',
-  team: '\uD83D\uDC65',
-  product: '\uD83D\uDEE0\uFE0F',
-  funding: '\uD83D\uDCB0',
-  competitor: '\u2694\uFE0F',
-  regulation: '\uD83C\uDFDB\uFE0F',
-  culture: '\uD83C\uDFAD',
-  personal: '\uD83D\uDC64',
-  random: '\uD83C\uDFB2',
-};
-
 const CATEGORY_BADGE: Record<string, string> = {
-  market: 'retro-badge retro-badge-blue',
-  team: 'retro-badge retro-badge-green',
-  product: 'retro-badge retro-badge-purple',
-  funding: 'retro-badge retro-badge-green',
-  competitor: 'retro-badge retro-badge-red',
-  regulation: 'retro-badge retro-badge-gray',
-  culture: 'retro-badge retro-badge-orange',
-  personal: 'retro-badge retro-badge-gray',
-  random: 'retro-badge retro-badge-gray',
+  market: 'retro-badge retro-badge-sm retro-badge-blue',
+  team: 'retro-badge retro-badge-sm retro-badge-green',
+  product: 'retro-badge retro-badge-sm retro-badge-purple',
+  funding: 'retro-badge retro-badge-sm retro-badge-green',
+  competitor: 'retro-badge retro-badge-sm retro-badge-red',
+  regulation: 'retro-badge retro-badge-sm retro-badge-gray',
+  culture: 'retro-badge retro-badge-sm retro-badge-orange',
+  personal: 'retro-badge retro-badge-sm retro-badge-gray',
+  random: 'retro-badge retro-badge-sm retro-badge-gray',
 };
 
 /**
@@ -107,21 +95,21 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
 
       {/* Recent Events */}
       {lastWeekEvents.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-[--color-retro-text-muted]">
+        <div className="flex flex-col gap-0">
+          <span className="text-xs font-bold uppercase tracking-wider text-[--color-retro-text-muted] mb-2">
             Events
           </span>
-          {lastWeekEvents.slice(0, 5).map((event) => (
-            <div key={event.id} className="flex items-start gap-2">
-              <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-gray'} style={{ flexShrink: 0, fontSize: '10px' }}>
-                {CATEGORY_ICONS[event.category] ?? '\u2022'} {event.category}
-              </span>
-              <div className="flex flex-col">
-                <span className="text-sm text-[--color-retro-text]">{event.title}</span>
-                <span className="text-xs text-[--color-retro-text-light] line-clamp-2">
-                  {event.description}
+          {lastWeekEvents.slice(0, 5).map((event, idx) => (
+            <div key={event.id} className={`flex flex-col gap-0.5 py-2 ${idx > 0 ? 'border-t border-[--color-retro-border]' : ''}`}>
+              <div className="flex items-center gap-2">
+                <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-sm retro-badge-gray'}>
+                  {event.category}
                 </span>
+                <span className="text-sm font-medium text-[--color-retro-text]">{event.title}</span>
               </div>
+              <span className="text-xs text-[--color-retro-text-light] line-clamp-2">
+                {event.description}
+              </span>
             </div>
           ))}
           {lastWeekEvents.length > 5 && (

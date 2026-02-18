@@ -97,15 +97,13 @@ export function WeekRecap() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+      className="retro-modal-overlay"
       onClick={dismissWeekRecap}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="retro-card-raised w-full max-w-md mx-4"
-        style={{ padding: '24px' }}
+        className="retro-modal w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -172,7 +170,7 @@ export function WeekRecap() {
         </button>
 
         <p className="text-center text-xs text-[--color-retro-text-light] mt-2">
-          Press <kbd className="retro-badge retro-badge-gray mx-0.5" style={{ fontSize: '10px' }}>Enter</kbd> or <kbd className="retro-badge retro-badge-gray mx-0.5" style={{ fontSize: '10px' }}>Esc</kbd> to dismiss
+          Press <kbd className="retro-badge retro-badge-sm retro-badge-gray mx-0.5">Enter</kbd> or <kbd className="retro-badge retro-badge-sm retro-badge-gray mx-0.5">Esc</kbd> to dismiss
         </p>
       </div>
     </div>

@@ -19,7 +19,7 @@ export function AppShell({ children }: AppShellProps) {
         <Sidebar />
 
         {/* Center — main content area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6" style={{ boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.04)' }}>
           {children}
         </main>
 

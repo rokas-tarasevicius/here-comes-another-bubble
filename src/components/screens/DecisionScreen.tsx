@@ -90,7 +90,7 @@ export function DecisionScreen() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
+    <div className="mx-auto max-w-4xl space-y-8">
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
@@ -161,7 +161,7 @@ export function DecisionScreen() {
         </div>
 
         {decisionsThisTurn.length > 0 ? (
-          <div className="retro-card divide-y divide-[--color-retro-border] !p-0">
+          <div className="retro-card retro-card-flush divide-y divide-[--color-retro-border]">
             {decisionsThisTurn.map((decision, index) => {
               const badgeClass =
                 TYPE_BADGE_CLASSES[decision.type] ?? 'retro-badge retro-badge-gray';
@@ -184,7 +184,7 @@ export function DecisionScreen() {
                   </div>
                   <button
                     onClick={() => removeDecision(index)}
-                    className="btn-glossy btn-red shrink-0 !px-2.5 !py-1 text-xs"
+                    className="btn-glossy btn-glossy-sm btn-red shrink-0 text-xs"
                   >
                     Remove
                   </button>

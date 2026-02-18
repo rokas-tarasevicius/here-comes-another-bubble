@@ -17,23 +17,26 @@ import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
 
+const GAMEPLAY_SCREENS = [
+  { id: 'overview', Component: OverviewScreen },
+  { id: 'company', Component: CompanyScreen },
+  { id: 'finance', Component: FinanceScreen },
+  { id: 'market', Component: MarketScreen },
+  { id: 'decisions', Component: DecisionScreen },
+] as const;
+
 function GameplayScreen() {
   const currentScreen = useGameStore((s) => s.currentScreen);
 
-  switch (currentScreen) {
-    case 'overview':
-      return <OverviewScreen />;
-    case 'company':
-      return <CompanyScreen />;
-    case 'finance':
-      return <FinanceScreen />;
-    case 'market':
-      return <MarketScreen />;
-    case 'decisions':
-      return <DecisionScreen />;
-    default:
-      return <OverviewScreen />;
-  }
+  return (
+    <>
+      {GAMEPLAY_SCREENS.map(({ id, Component }) => (
+        <div key={id} style={{ display: currentScreen === id ? 'contents' : 'none' }}>
+          <Component />
+        </div>
+      ))}
+    </>
+  );
 }
 
 // ─── App root ──────────────────────────────────────────────────────────

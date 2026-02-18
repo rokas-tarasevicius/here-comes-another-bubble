@@ -47,10 +47,10 @@ export function MarketScreen() {
   }
 
   return (
-    <div className="space-y-6 p-6 min-w-0">
+    <div className="space-y-6 min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Market Intelligence</h1>
+        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Market Intelligence</h1>
         <p className="text-sm text-[--color-retro-text-light]">Week {meta.week} market analysis</p>
       </div>
 
@@ -96,7 +96,7 @@ export function MarketScreen() {
                     {segmentData.competitionIntensity}/100
                   </span>
                 </div>
-                <div className="retro-progress !h-2">
+                <div className="retro-progress retro-progress-sm">
                   <div
                     className={intensityBarClass(segmentData.competitionIntensity)}
                     style={{ width: `${segmentData.competitionIntensity}%` }}
@@ -114,7 +114,7 @@ export function MarketScreen() {
                     {segmentData.regulatoryRisk}/100
                   </span>
                 </div>
-                <div className="retro-progress !h-2">
+                <div className="retro-progress retro-progress-sm">
                   <div
                     className={intensityBarClass(segmentData.regulatoryRisk)}
                     style={{ width: `${segmentData.regulatoryRisk}%` }}
