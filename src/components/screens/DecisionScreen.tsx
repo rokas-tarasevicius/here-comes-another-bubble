@@ -90,7 +90,7 @@ export function DecisionScreen() {
   );
 
   return (
-    <div className="max-w-4xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8">
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
