@@ -958,7 +958,7 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     cooldownWeeks: 12,
     weight: 4,
     condition: (state: GameState) =>
-      (state.finances.pricingModel === 'free' || state.product.customers > 50) &&
+      state.product.customers > 50 &&
       state.meta.week >= 8,
     descriptions: {
       default:

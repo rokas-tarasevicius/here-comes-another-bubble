@@ -275,13 +275,15 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
     let newState = { ...gameState };
     const newLogEntries: EventLogEntry[] = [];
+    const currentPrice = gameState.finances.pricePerUnit;
+    const customers = gameState.product.customers;
 
     // Switching costs when changing pricing MODEL
-    if (currentModel !== model && gameState.product.customers > 0) {
-      let customerLoss = 0.15;
-      let reputationLoss = -5;
+    if (currentModel !== model && customers > 0) {
+      const customerLoss = 0.15;
+      const reputationLoss = -5;
 
-      const lostCustomers = Math.round(gameState.product.customers * customerLoss);
+      const lostCustomers = Math.round(customers * customerLoss);
       newLogEntries.push({
         id: `pricing-${Date.now()}`,
         week,
@@ -302,6 +304,36 @@ export const useGameStore = create<GameStore>()((set, get) => ({
           reputation: Math.max(0, newState.company.reputation + reputationLoss),
         },
       };
+    }
+
+    // Price increase churn: customers leave when you raise prices
+    // Severity scales with how much you raised and the segment's price sensitivity
+    if (price > currentPrice && customers > 0 && currentPrice > 0) {
+      const priceIncreaseRatio = price / currentPrice; // e.g. 2.0 = doubled price
+      const sensitivity = gameState.market.segmentData.priceSensitivity;
+      // Churn fraction: e.g. doubling price at 0.5 sensitivity = 25% churn
+      // Extreme hikes (10x+) cap at losing most customers
+      const churnFraction = Math.min(0.9, (priceIncreaseRatio - 1) * sensitivity * 0.5);
+      const lostFromPriceHike = Math.round(newState.product.customers * churnFraction);
+
+      if (lostFromPriceHike > 0) {
+        newLogEntries.push({
+          id: `price-hike-${Date.now()}`,
+          week,
+          eventId: 'price-hike-churn',
+          title: 'Customers Left After Price Increase',
+          description: `Raising price from $${currentPrice} to $${price} caused ${lostFromPriceHike} customers to leave.`,
+          category: 'product',
+        });
+
+        newState = {
+          ...newState,
+          product: {
+            ...newState.product,
+            customers: Math.max(0, newState.product.customers - lostFromPriceHike),
+          },
+        };
+      }
     }
 
     set({
@@ -484,9 +516,13 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     try {
       const payload: SavePayload = JSON.parse(raw);
 
-      // Migrate saved 'freemium' pricing to 'subscription'
-      if ((payload.gameState.finances.pricingModel as string) === 'freemium') {
+      // Migrate saved legacy pricing models to subscription
+      const legacyPricing = payload.gameState.finances.pricingModel as string;
+      if (legacyPricing === 'freemium' || legacyPricing === 'free' || legacyPricing === 'enterprise' || legacyPricing === 'one-time') {
         payload.gameState.finances.pricingModel = 'subscription';
+        if (payload.gameState.finances.pricePerUnit === 0) {
+          payload.gameState.finances.pricePerUnit = payload.gameState.market?.segmentData?.defaultPrice ?? 25;
+        }
       }
 
       set({

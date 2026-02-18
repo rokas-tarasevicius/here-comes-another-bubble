@@ -54,7 +54,7 @@ describe('newGame', () => {
   it('clears any previous decisions', () => {
     // Pre-populate a decision
     useGameStore.setState({
-      decisionsThisTurn: [{ type: 'set-pricing', model: 'free', pricePerUnit: 0 }],
+      decisionsThisTurn: [{ type: 'set-pricing', model: 'subscription', pricePerUnit: 25 }],
     });
 
     startGame();
@@ -123,7 +123,7 @@ describe('addDecision', () => {
     useGameStore.getState().addDecision({
       type: 'set-pricing',
       model: 'subscription',
-      pricePerUnit: 0,
+      pricePerUnit: 25,
     });
     useGameStore.getState().addDecision({
       type: 'start-feature',
@@ -144,7 +144,7 @@ describe('removeDecision', () => {
     useGameStore.getState().addDecision({
       type: 'set-pricing',
       model: 'subscription',
-      pricePerUnit: 0,
+      pricePerUnit: 25,
     });
     useGameStore.getState().addDecision({
       type: 'start-feature',

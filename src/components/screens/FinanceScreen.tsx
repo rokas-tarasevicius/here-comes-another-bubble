@@ -52,11 +52,8 @@ export function FinanceScreen() {
 
   // Pricing model display
   const pricingLabels: Record<string, string> = {
-    free: 'Free',
     subscription: 'Subscription',
     'usage-based': 'Usage-Based',
-    enterprise: 'Enterprise',
-    'one-time': 'One-Time',
   };
 
   return (

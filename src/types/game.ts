@@ -37,7 +37,6 @@ export type FeatureStatus =
   | 'deprecated';
 
 export type PricingModel =
-  | 'free'
   | 'subscription'
   | 'usage-based'
   | 'enterprise'
@@ -232,6 +231,14 @@ export interface MarketSegmentData {
   competitionIntensity: number; // 0-100
   regulatoryRisk: number;      // 0-100
   customerDemand: string[];    // feature names customers want
+  // Segment-specific customer economics
+  typicalCustomerCount: number;   // rough scale — consumer=10K+, enterprise=50-200
+  revenuePerCustomer: number;     // $/week per customer at default price
+  priceSensitivity: number;       // 0-1, how much customers react to price changes (consumer=high, enterprise=low)
+  defaultPricing: PricingModel;   // natural pricing model for this segment
+  defaultPrice: number;           // suggested starting price per unit
+  customerGrowthRate: number;     // base weekly growth multiplier (consumer grows faster)
+  baseChurnRate: number;          // natural churn for this segment
 }
 
 export interface Competitor {

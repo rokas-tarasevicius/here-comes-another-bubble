@@ -37,11 +37,8 @@ const NEXT_FUNDING_STAGE: Partial<Record<CompanyStage, string>> = {
 };
 
 const PRICING_MODELS: { value: PricingModel; label: string }[] = [
-  { value: 'free', label: 'Free' },
   { value: 'subscription', label: 'Subscription' },
   { value: 'usage-based', label: 'Usage-Based' },
-  { value: 'enterprise', label: 'Enterprise' },
-  { value: 'one-time', label: 'One-Time' },
 ];
 
 /**
@@ -73,8 +70,11 @@ export function FundraisingPanel({
 
   function handleChangePricing() {
     const price = parseFloat(priceInput);
-    if (isNaN(price) || price < 0) return;
-    onChangePricing(selectedModel, price);
+    if (isNaN(price) || price < 1) return;
+    // Cap at 10x segment default — beyond that is just silly
+    const maxPrice = (pricePerUnit > 0 ? pricePerUnit : 100) * 10;
+    const clampedPrice = Math.min(price, maxPrice);
+    onChangePricing(selectedModel, Math.round(clampedPrice));
   }
 
   return (
@@ -205,7 +205,7 @@ export function FundraisingPanel({
           <label className="block text-xs font-bold text-[--color-retro-text-muted]">Price per Unit ($)</label>
           <input
             type="number"
-            min="0"
+            min="1"
             step="1"
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}

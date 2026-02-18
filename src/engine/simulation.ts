@@ -265,42 +265,25 @@ function simulateRevenue(state: GameState): GameState {
   const pricePerUnit = state.finances.pricePerUnit;
   let revenue = 0;
 
-  switch (state.finances.pricingModel) {
-    case 'free':
-      // Even free products can generate some ad/data revenue
-      revenue = customers * 0.05 * qualityModifier;
-      break;
+  // Price sensitivity: if price deviates from segment default, adjust revenue
+  const segmentDefault = state.market.segmentData.defaultPrice;
+  const priceSensitivity = state.market.segmentData.priceSensitivity;
+  const priceRatio = segmentDefault > 0 ? pricePerUnit / segmentDefault : 1;
+  // Prices above default lose some customers' willingness to pay
+  // Prices below default don't fully compensate (leaving money on table)
+  const priceEfficiency = priceRatio <= 1
+    ? 1 - (1 - priceRatio) * priceSensitivity * 0.3  // slight discount inefficiency
+    : 1 - (priceRatio - 1) * priceSensitivity;        // premium resistance
 
+  switch (state.finances.pricingModel) {
     case 'subscription':
-      revenue = customers * pricePerUnit * qualityModifier * bugPenalty;
+      revenue = customers * pricePerUnit * qualityModifier * bugPenalty * Math.max(0.1, priceEfficiency);
       break;
 
     case 'usage-based': {
-      // Task 6: Tie revenue more closely to product quality
-      const activityMultiplier = qualityModifier; // quality/100 instead of random
-      const weeklyNoise = 1 + (Math.random() - 0.5) * 0.15; // reduced noise
-      revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise;
-      break;
-    }
-
-    case 'enterprise': {
-      const enterpriseMultiplier = 20;
-      let enterpriseRevenue = customers * pricePerUnit * enterpriseMultiplier * qualityModifier * bugPenalty;
-      // Task 6: Enterprise requires team size >= 5 for full revenue
-      const totalTeam = state.team.teamSize + state.team.aiAgents.length;
-      if (totalTeam < 5) {
-        enterpriseRevenue *= 0.5; // Cap at 50% if understaffed
-      }
-      revenue = enterpriseRevenue;
-      break;
-    }
-
-    case 'one-time': {
-      const prevCustomers = state.weekHistory.length > 0
-        ? state.weekHistory[state.weekHistory.length - 1].customers
-        : 0;
-      const newCustomers = Math.max(0, customers - prevCustomers);
-      revenue = newCustomers * pricePerUnit * qualityModifier * bugPenalty;
+      const activityMultiplier = qualityModifier;
+      const weeklyNoise = 1 + (Math.random() - 0.5) * 0.15;
+      revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise * Math.max(0.1, priceEfficiency);
       break;
     }
   }
@@ -743,11 +726,14 @@ function simulateCustomers(state: GameState): GameState {
     ? Math.sqrt(state.finances.marketingSpend / 1000) * 2 * channelMarketingMultiplier + marketingAgentBonus
     : marketingAgentBonus;
 
-  const pricingGrowthBonus = state.finances.pricingModel === 'free' ? 2.0
-    : state.finances.pricingModel === 'subscription' ? 0.8
-    : state.finances.pricingModel === 'enterprise' ? 0.4
+  // Segment-specific growth: consumer segments grow faster, enterprise slower
+  const segmentGrowthBase = state.market.segmentData.customerGrowthRate;
+  // Price sensitivity affects growth — higher prices slow acquisition in price-sensitive segments
+  const priceGrowthPenalty = state.finances.pricePerUnit > state.market.segmentData.defaultPrice
+    ? 1 - (state.finances.pricePerUnit / state.market.segmentData.defaultPrice - 1) * state.market.segmentData.priceSensitivity * 0.5
+    : 1 + (1 - state.finances.pricePerUnit / Math.max(1, state.market.segmentData.defaultPrice)) * state.market.segmentData.priceSensitivity * 0.3;
+  const pricingGrowthBonus = state.finances.pricingModel === 'subscription' ? 0.8
     : state.finances.pricingModel === 'usage-based' ? 1.2
-    : state.finances.pricingModel === 'one-time' ? 1.0
     : 1.0;
 
   // Task 4: Competitor market share pressure
@@ -778,15 +764,14 @@ function simulateCustomers(state: GameState): GameState {
     return sum;
   }, 0);
 
-  // Pricing-specific churn adjustments
-  const pricingChurnMap: Record<string, number> = {
-    'free': 0.08,
-    'subscription': 0.03,
-    'enterprise': 0.01,
-    'usage-based': 0.05,
-    'one-time': 0.04,
-  };
-  const pricingBaseChurn = pricingChurnMap[state.finances.pricingModel] ?? 0.04;
+  // Segment-specific base churn + pricing adjustment
+  const segmentBaseChurn = state.market.segmentData.baseChurnRate;
+  const pricingChurnAdjust = state.finances.pricingModel === 'subscription' ? -0.01 : 0.01;
+  // Overpricing increases churn in price-sensitive segments
+  const priceChurnPenalty = state.finances.pricePerUnit > state.market.segmentData.defaultPrice
+    ? (state.finances.pricePerUnit / state.market.segmentData.defaultPrice - 1) * state.market.segmentData.priceSensitivity * 0.05
+    : 0;
+  const pricingBaseChurn = segmentBaseChurn + pricingChurnAdjust + priceChurnPenalty;
 
   const effectiveChurn = clamp(
     (pricingBaseChurn + qualityBonus + bugPenalty + competitorPull - supportBonus - channelChurnReduction) * diffMods.churnMultiplier,
@@ -816,7 +801,7 @@ function simulateCustomers(state: GameState): GameState {
     // Full growth engine: PMF, market, reputation, marketing, word-of-mouth, etc.
     growth = (pmfGrowth + marketGrowth + reputationGrowth + marketingEffect + founderBizGrowth + baseMinGrowth) *
       customerGrowthMultiplier * bubbleCustomerModifier * wordOfMouthMultiplier * pricingGrowthBonus * competitorPressure *
-      userGrowthBonus * channelGrowthMultiplier + channelExtraCustomers;
+      userGrowthBonus * channelGrowthMultiplier * segmentGrowthBase * Math.max(0.2, priceGrowthPenalty) + channelExtraCustomers;
 
     // First-ship bonus: initial users discover you (decays as you grow)
     if (currentCustomers < 50) {

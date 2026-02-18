@@ -81,8 +81,8 @@ describe('advanceWeek', () => {
         cash: 10, // Very low cash, will go below 0 after burn (garage burn ~$85/wk)
         weeklyRevenue: 0,
         weeklyBurn: 0,
-        pricingModel: 'free',
-        pricePerUnit: 0,
+        pricingModel: 'subscription',
+        pricePerUnit: 25,
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
@@ -876,14 +876,14 @@ describe('burn, revenue, and valuation ratio preservation from events', () => {
     expect(next.company.valuation).toBeGreaterThan(0);
   });
 
-  it('revenue stays at 0 when pricing model is free and no customers', () => {
+  it('revenue stays at 0 when no customers', () => {
     const state = makeTestStateDeep({
       finances: {
         cash: 50_000,
         weeklyRevenue: 0,
         weeklyBurn: 100,
-        pricingModel: 'free',
-        pricePerUnit: 0,
+        pricingModel: 'subscription',
+        pricePerUnit: 25,
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
@@ -1039,8 +1039,8 @@ describe('hire and fire team decisions', () => {
         cash: 100_000,
         weeklyRevenue: 0,
         weeklyBurn: 100,
-        pricingModel: 'free',
-        pricePerUnit: 0,
+        pricingModel: 'subscription',
+        pricePerUnit: 25,
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
@@ -1066,8 +1066,8 @@ describe('hire and fire team decisions', () => {
         cash: 100,
         weeklyRevenue: 0,
         weeklyBurn: 50,
-        pricingModel: 'free',
-        pricePerUnit: 0,
+        pricingModel: 'subscription',
+        pricePerUnit: 25,
         fundingHistory: [],
         founderEquity: 1.0,
         monthlyExpenses: 0,
@@ -1292,7 +1292,7 @@ describe('pricing model switching', () => {
     });
 
     const next = advanceWeek(state, [
-      { type: 'set-pricing', model: 'enterprise', pricePerUnit: 100 },
+      { type: 'set-pricing', model: 'usage-based', pricePerUnit: 100 },
     ]);
 
     // Should be blocked -- model stays subscription
@@ -1338,11 +1338,11 @@ describe('pricing model switching', () => {
     });
 
     const next = advanceWeek(state, [
-      { type: 'set-pricing', model: 'enterprise', pricePerUnit: 100 },
+      { type: 'set-pricing', model: 'usage-based', pricePerUnit: 100 },
     ]);
 
     // Enough weeks have passed (10 - 1 = 9 >= 8), should be allowed
-    expect(next.finances.pricingModel).toBe('enterprise');
+    expect(next.finances.pricingModel).toBe('usage-based');
   });
 });
 
@@ -1369,6 +1369,13 @@ describe('game over and win conditions', () => {
           competitionIntensity: 50,
           regulatoryRisk: 80,
           customerDemand: ['diagnostics', 'monitoring'],
+          typicalCustomerCount: 5000,
+          revenuePerCustomer: 20,
+          priceSensitivity: 0.5,
+          defaultPricing: 'subscription' as const,
+          defaultPrice: 25,
+          customerGrowthRate: 1.08,
+          baseChurnRate: 0.04,
         },
         competitors: [],
         bubbleIndex: 60,
