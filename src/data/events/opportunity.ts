@@ -1260,4 +1260,549 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     ],
     decisionDeadlineWeeks: 2,
   },
+
+  // ─── 22. Paul Graham Essay Mention ──────────────────────────────────────
+  {
+    id: 'opportunity-pg-essay',
+    title: 'Paul Graham Mentions You',
+    category: 'funding',
+    minWeek: 8,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.company.reputation > 20 && state.product.customers > 15,
+    descriptions: {
+      default:
+        'Paul Graham just published a 12,000-word essay titled "The Future of AI Startups" and your company is mentioned in paragraph 47. Your inbox just exploded.',
+      realistic:
+        'Paul Graham\'s latest essay references your product as an example of "what gets built when smart people focus on real problems." Your website traffic has spiked 500% and three VCs have already emailed you.',
+      satirical:
+        'Paul Graham wrote an essay. It\'s called "Do Things That Don\'t Scale (But Make Sure To Mention That You Did)" and somehow, between paragraphs about Lisp and ancient Rome, he name-dropped your startup. Every VC who pretends to have read PG essays (all of them) is now in your DMs. Your SEO just peaked.',
+      mixed:
+        'Paul Graham mentioned your startup in his latest essay. The good news: instant credibility. The bad news: he also described your market as "a bubble that will inevitably pop." The worse news: he\'s usually right.',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: 10 },
+      { path: 'market.investorSentiment', operation: 'add', value: 8 },
+    ],
+    decisionOptions: [
+      {
+        id: 'ride-the-wave',
+        label: 'Ride the hype wave',
+        description: 'Launch a fundraising round immediately while every VC is reading PG\'s essay.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 100_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.95 },
+          { path: 'market.investorSentiment', operation: 'add', value: 10 },
+          { path: 'founder.network', operation: 'add', value: 10 },
+        ],
+      },
+      {
+        id: 'tweet-thanks',
+        label: 'Quote-tweet with a humble brag',
+        description: '"Honored to be mentioned by @paulg. We\'re just getting started." (You spent 45 minutes writing this.)',
+        effects: [
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+          { path: 'product.customers', operation: 'add', value: 10 },
+        ],
+      },
+      {
+        id: 'stay-quiet',
+        label: 'Stay focused and ship',
+        description: 'PG literally wrote that you should focus on building, not self-promotion. Maybe take the advice.',
+        effects: [
+          { path: 'product.overallQuality', operation: 'add', value: 3 },
+          { path: 'founder.learning', operation: 'add', value: 3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 23. Elon Musk Tweets About You ─────────────────────────────────────
+  {
+    id: 'opportunity-elon-tweet',
+    title: 'Elon Tweets About You',
+    category: 'market',
+    minWeek: 10,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.product.customers > 30 && state.company.reputation > 15,
+    descriptions: {
+      default:
+        'Elon Musk just tweeted about your product at 3 AM. It simply says "interesting." Your servers are melting.',
+      realistic:
+        'Elon Musk tweeted a screenshot of your product with a single word: "interesting." Within 30 minutes you\'ve gained 50,000 website visitors. Your servers are struggling. Your support inbox has 2,000 unread messages. Half are potential customers, half are telling you to "build on X."',
+      satirical:
+        'Elon tweeted "interesting" about your product at 3:47 AM between a meme and a reply to a random account with 12 followers. The tweet has 4 million impressions. Your site crashed. Crypto bros are somehow convinced your startup is pivoting to blockchain. Someone already made a meme coin named after your company.',
+      mixed:
+        'Elon Musk noticed your product. This is either the best thing that ever happened to you or the worst — there is no in-between. Your servers are down, your mentions are radioactive, and your mom just texted "I saw you on the news!"',
+    },
+    immediateEffects: [
+      { path: 'product.customers', operation: 'add', value: 40 },
+      { path: 'company.reputation', operation: 'add', value: 5 },
+    ],
+    decisionOptions: [
+      {
+        id: 'scale-servers',
+        label: 'Scale servers and capitalize',
+        description: 'Throw money at infrastructure to handle the traffic. Convert visitors to users.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -25_000 },
+          { path: 'product.customers', operation: 'add', value: 60 },
+          { path: 'market.investorSentiment', operation: 'add', value: 10 },
+        ],
+      },
+      {
+        id: 'reply-to-elon',
+        label: 'Reply to the tweet',
+        description: 'Engage directly. Could go viral or get ratio\'d into oblivion.',
+        effects: [
+          { path: 'product.customers', operation: 'add', value: 20 },
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: -3 },
+        ],
+      },
+      {
+        id: 'ignore-chaos',
+        label: 'Do nothing and wait for it to blow over',
+        description: 'The Elon news cycle is 48 hours max. Let the chaos pass.',
+        effects: [
+          { path: 'product.churnRate', operation: 'add', value: 0.03 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 24. Marc Andreessen Wants to Invest ─────────────────────────────────
+  {
+    id: 'opportunity-a16z-interest',
+    title: 'a16z Wants a Meeting',
+    category: 'funding',
+    minWeek: 12,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.company.valuation > 500_000 &&
+      (state.company.stage === 'seed' || state.company.stage === 'series-a' || state.company.stage === 'series-b'),
+    descriptions: {
+      default:
+        'A partner at Andreessen Horowitz reached out. They want to "learn more about your vision." Translation: they want to invest, but they want you to think it was your idea.',
+      realistic:
+        'An a16z partner sent a LinkedIn message asking for a meeting. They\'ve been tracking your space and are "impressed by your traction." This could mean a term sheet within weeks — or a polite pass after three months of diligence.',
+      satirical:
+        'Marc Andreessen himself has DMed you. His message is a link to his blog post about "why software is still eating the world" and a single sentence: "You get it." You are now contractually obligated to add "AI" to your company name. His partner will follow up with a term sheet written in Nietzsche quotes.',
+      mixed:
+        'a16z wants to talk. On one hand, they\'re the most connected VC firm in Silicon Valley. On the other, their investment thesis seems to be "fund everything and see what sticks." Your CFO is excited about the money. Your CTO is worried they\'ll insist you pivot to crypto. Again.',
+    },
+    immediateEffects: [
+      { path: 'founder.reputation', operation: 'add', value: 5 },
+    ],
+    decisionOptions: [
+      {
+        id: 'take-the-meeting',
+        label: 'Take the meeting',
+        description: 'Fly to Sand Hill Road. Worst case, free coffee and a networking opportunity.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -3_000 },
+          { path: 'founder.network', operation: 'add', value: 10 },
+          { path: 'market.investorSentiment', operation: 'add', value: 12 },
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'accept-term-sheet',
+        label: 'Skip the dance, ask for a term sheet',
+        description: 'Bold move. Send your deck and ask if they\'re serious. Could accelerate or kill the deal.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 500_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.88 },
+          { path: 'company.reputation', operation: 'add', value: 10 },
+          { path: 'market.investorSentiment', operation: 'add', value: 15 },
+        ],
+      },
+      {
+        id: 'decline-politely',
+        label: 'Decline — you don\'t need VC',
+        description: 'The rarest move in Silicon Valley. Respect +100, but you\'re on your own.',
+        effects: [
+          { path: 'founder.reputation', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 25. Sam Altman Keynote ──────────────────────────────────────────────
+  {
+    id: 'opportunity-sam-altman-keynote',
+    title: 'Sam Altman Announces Your Category',
+    category: 'market',
+    minWeek: 6,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 2,
+    condition: (state: GameState) =>
+      state.market.bubbleIndex > 40 && state.meta.week >= 6,
+    descriptions: {
+      default:
+        'At OpenAI\'s DevDay, Sam Altman just announced that the next frontier of AI is... exactly what your startup does. Your category is now "validated." Your competitors just got funded.',
+      realistic:
+        'Sam Altman\'s keynote at OpenAI DevDay focused heavily on your product category. He called it "the most important application of AI in the next decade." Your inbox is filling with VC emails. Unfortunately, OpenAI also soft-launched a competing product.',
+      satirical:
+        'Sam Altman just announced that OpenAI is building everything your startup does, but better, and free, and it\'ll be ready "in a few weeks" (which in OpenAI time means somewhere between 3 months and heat death of the universe). He also said your category is "incredibly exciting" which is Silicon Valley for "we\'re going to destroy you but it\'s nothing personal."',
+      mixed:
+        'Sam Altman validated your entire market in a keynote. Congrats — you\'re now competing with OpenAI! Your VCs are somehow both thrilled (market validation!) and terrified (you\'re competing with OpenAI). The fundraising just got easier and harder simultaneously.',
+    },
+    immediateEffects: [
+      { path: 'market.bubbleIndex', operation: 'add', value: 5 },
+      { path: 'market.investorSentiment', operation: 'add', value: 10 },
+    ],
+    decisionOptions: [
+      {
+        id: 'differentiate-hard',
+        label: 'Differentiate aggressively',
+        description: 'Pivot your messaging to emphasize what OpenAI can\'t do. Niche down.',
+        effects: [
+          { path: 'product.pmfScore', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+          { path: 'finances.cash', operation: 'add', value: -10_000 },
+        ],
+      },
+      {
+        id: 'ride-the-hype',
+        label: 'Ride the validation wave',
+        description: '"As mentioned in Sam Altman\'s keynote..." goes in every email you send for the next month.',
+        effects: [
+          { path: 'product.customers', operation: 'add', value: 20 },
+          { path: 'market.investorSentiment', operation: 'add', value: 8 },
+          { path: 'finances.marketingSpend', operation: 'multiply', value: 1.5 },
+        ],
+      },
+      {
+        id: 'panic-pivot',
+        label: 'Panic and pivot',
+        description: 'If OpenAI is coming for you, maybe pivot to something they haven\'t announced yet. (They\'ll announce it next week.)',
+        effects: [
+          { path: 'product.overallQuality', operation: 'add', value: -5 },
+          { path: 'product.pmfScore', operation: 'add', value: -8 },
+          { path: 'team.morale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 26. Zuckerberg Open-Sources Your Moat ───────────────────────────────
+  {
+    id: 'opportunity-zuck-open-source',
+    title: 'Zuckerberg Open-Sources Your Moat',
+    category: 'market',
+    minWeek: 12,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.product.features.length >= 2 && state.product.overallQuality > 30,
+    descriptions: {
+      default:
+        'Mark Zuckerberg just open-sourced a model that does 90% of what your product does. He announced it while doing jiu-jitsu. Your entire competitive moat just evaporated.',
+      realistic:
+        'Meta just released an open-source model that replicates your core functionality. It\'s free, it\'s good, and every developer on Twitter is building clones of your product as weekend projects. Your differentiation needs to come from somewhere else now.',
+      satirical:
+        'Zuckerberg just open-sourced your entire business model. He announced it in an Instagram Reel where he\'s grilling brisket in his backyard while casually saying "yeah we made this, it\'s free now." Your CTO is crying. Your investors are calling. Someone on Hacker News already titled their Show HN "[Your Product] but free and self-hosted."',
+      mixed:
+        'Meta just made your core technology free for everyone. Zuck dropped it like a mixtape — no warning, no mercy. The open-source community is building alternatives before you\'ve finished reading the blog post. Your moat just became a puddle.',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: -5 },
+      { path: 'product.customers', operation: 'multiply', value: 0.9 },
+    ],
+    decisionOptions: [
+      {
+        id: 'go-enterprise',
+        label: 'Pivot to enterprise',
+        description: 'Open-source is for hobbyists. Enterprises need support, SLAs, and someone to blame.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -20_000 },
+          { path: 'product.overallQuality', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+          { path: 'product.churnRate', operation: 'multiply', value: 0.8 },
+        ],
+      },
+      {
+        id: 'build-on-top',
+        label: 'Build on top of Meta\'s model',
+        description: 'If you can\'t beat them, use their free stuff. Reduce your own infra costs and add a better UX.',
+        effects: [
+          { path: 'finances.weeklyBurn', operation: 'multiply', value: 0.7 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 8 },
+          { path: 'product.overallQuality', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'double-down-proprietary',
+        label: 'Double down on proprietary tech',
+        description: 'Invest heavily in R&D. Build something they can\'t replicate.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -40_000 },
+          { path: 'product.overallQuality', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 27. Jeff Bezos Day-One Moment ───────────────────────────────────────
+  {
+    id: 'opportunity-bezos-interest',
+    title: 'Bezos Expeditions Shows Interest',
+    category: 'funding',
+    minWeek: 16,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.company.valuation > 1_000_000 &&
+      state.finances.weeklyRevenue > 5_000,
+    descriptions: {
+      default:
+        'Jeff Bezos\' personal investment fund wants to discuss your company. His people want to know your "Day One metrics." You\'re not entirely sure what that means but you\'re nodding vigorously.',
+      realistic:
+        'Bezos Expeditions, Jeff Bezos\' personal venture fund, has reached out through an intermediary. They\'re interested in your growth trajectory and unit economics. A term sheet could follow — but Bezos investments come with high expectations.',
+      satirical:
+        'Jeff Bezos wants to invest in your startup. His only condition is that you adopt his 14 Leadership Principles, replace all chairs with door-desks, and write a 6-page memo explaining why your product matters. Also, every meeting must start with 15 minutes of silent reading. Also, no PowerPoint. Also, somehow this will involve space.',
+      mixed:
+        'Bezos Expeditions is interested. The money would be transformative. But Jeff\'s investment philosophy is "your margin is my opportunity," which is slightly terrifying when he\'s talking about YOUR margins.',
+    },
+    immediateEffects: [
+      { path: 'founder.reputation', operation: 'add', value: 8 },
+    ],
+    decisionOptions: [
+      {
+        id: 'take-bezos-money',
+        label: 'Accept the investment',
+        description: 'Take the Bezos check. Massive credibility boost. Pray he doesn\'t build a competitor.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 300_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.92 },
+          { path: 'company.reputation', operation: 'add', value: 15 },
+          { path: 'market.investorSentiment', operation: 'add', value: 15 },
+          { path: 'founder.network', operation: 'add', value: 15 },
+        ],
+      },
+      {
+        id: 'negotiate-terms',
+        label: 'Counter with better terms',
+        description: 'Bold move — negotiate with the richest person on Earth. Respect.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 200_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.95 },
+          { path: 'company.reputation', operation: 'add', value: 10 },
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'decline-bezos',
+        label: 'Politely decline',
+        description: 'You\'ve seen what happens when Bezos "partners" with small companies. No thanks.',
+        effects: [
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+          { path: 'company.culture', operation: 'add', value: 3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 28. Chamath Goes on a Podcast About You ─────────────────────────────
+  {
+    id: 'opportunity-chamath-podcast',
+    title: 'Chamath Talks About You on a Podcast',
+    category: 'market',
+    minWeek: 10,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.company.reputation > 25 && state.product.customers > 20,
+    descriptions: {
+      default:
+        'Chamath Palihapitiya just spent 15 minutes on the All-In Podcast talking about your startup. He called it "the next generational company." Your DMs are on fire.',
+      realistic:
+        'On the latest All-In Podcast episode, Chamath highlighted your startup during the "bestie picks" segment. He praised your revenue growth and predicted you\'d be a unicorn within two years. VCs who ghosted you last month are suddenly "circling back."',
+      satirical:
+        'Chamath just called your startup "the most important company nobody\'s heard of" on the All-In Pod. Sacks agreed, Friedberg said "interesting," and Jason said he invested first (he didn\'t). Your LinkedIn has gained 5,000 followers, 4,999 of whom are "AI Thought Leaders" and crypto bros.',
+      mixed:
+        'The All-In Pod talked about you for 15 minutes. Chamath loves you. The comments section is split between "this is the future" and "this is a grift." Both camps are driving traffic to your site. Net positive?',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: 8 },
+      { path: 'market.investorSentiment', operation: 'add', value: 5 },
+      { path: 'product.customers', operation: 'add', value: 15 },
+    ],
+    decisionOptions: [
+      {
+        id: 'go-on-podcast',
+        label: 'Ask to be a guest on the show',
+        description: 'Ride the momentum. Pitch your vision to millions of listeners.',
+        effects: [
+          { path: 'founder.reputation', operation: 'add', value: 10 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+          { path: 'product.customers', operation: 'add', value: 25 },
+          { path: 'market.investorSentiment', operation: 'add', value: 8 },
+        ],
+      },
+      {
+        id: 'fundraise-now',
+        label: 'Launch a fundraising round',
+        description: 'Strike while the iron is hot. Every VC listens to the All-In Pod.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 200_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.93 },
+          { path: 'market.investorSentiment', operation: 'add', value: 10 },
+        ],
+      },
+      {
+        id: 'heads-down',
+        label: 'Ignore the noise and ship',
+        description: 'Podcasts are for talkers. You\'re a builder. Back to work.',
+        effects: [
+          { path: 'product.overallQuality', operation: 'add', value: 3 },
+          { path: 'founder.learning', operation: 'add', value: 2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 29. Satya Nadella Name-Drops You ────────────────────────────────────
+  {
+    id: 'opportunity-satya-namedrop',
+    title: 'Satya Nadella Mentions You at Build',
+    category: 'market',
+    minWeek: 14,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 1,
+    condition: (state: GameState) =>
+      state.company.valuation > 2_000_000 && state.product.overallQuality > 40,
+    descriptions: {
+      default:
+        'Satya Nadella just showed your product in a Microsoft Build demo. "This is the kind of innovation our ecosystem enables." You\'re now an Azure partner whether you wanted to be or not.',
+      realistic:
+        'During Microsoft Build\'s keynote, Satya Nadella showcased your product as an example of Azure AI innovation. Microsoft\'s partnership team is already reaching out. The exposure is incredible but the platform dependency is real.',
+      satirical:
+        'Satya Nadella put your product on a 40-foot screen at Build. He mispronounced your company name three times. You are now receiving emails from every Microsoft partner manager in existence. Clippy has opinions about your UX. Your product now has to work with Teams, which is technically impossible.',
+      mixed:
+        'You\'re now a Microsoft showcase partner. The credibility is immense. The integration requirements are insane. Their partnership manager has already sent a 47-page "co-selling alignment document." Your CTO just whispered "what have we done."',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: 12 },
+      { path: 'product.customers', operation: 'add', value: 30 },
+    ],
+    decisionOptions: [
+      {
+        id: 'go-all-in-azure',
+        label: 'Go all-in on the Microsoft partnership',
+        description: 'Become an Azure-native product. Enterprise customers galore. Freedom gone.',
+        effects: [
+          { path: 'product.customers', operation: 'add', value: 50 },
+          { path: 'finances.cash', operation: 'add', value: 50_000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: -5 },
+        ],
+      },
+      {
+        id: 'stay-multi-cloud',
+        label: 'Take the exposure, stay multi-cloud',
+        description: 'Enjoy the name-drop but don\'t lock yourself in. Smart but harder to execute.',
+        effects: [
+          { path: 'product.customers', operation: 'add', value: 20 },
+          { path: 'finances.cash', operation: 'add', value: -10_000 },
+          { path: 'product.overallQuality', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'politely-distance',
+        label: 'Distance yourself quietly',
+        description: 'Being a "Microsoft partner" scares away the cool developer crowd. Stay indie.',
+        effects: [
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: -3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 30. Garry Tan Retweets Your Launch ─────────────────────────────────
+  {
+    id: 'opportunity-garry-tan-retweet',
+    title: 'YC President Retweets You',
+    category: 'funding',
+    minWeek: 6,
+    maxOccurrences: 1,
+    cooldownWeeks: 0,
+    weight: 2,
+    condition: (state: GameState) =>
+      state.company.stage !== 'growth' && state.company.stage !== 'public' && state.meta.week >= 6,
+    descriptions: {
+      default:
+        'Garry Tan, president of Y Combinator, just retweeted your product launch with "This is what the future looks like." Your notifications are unusable.',
+      realistic:
+        'Garry Tan shared your product on social media with a strong endorsement. The YC alumni network is watching. Several batch founders have reached out to compare notes. The signal boost is real.',
+      satirical:
+        'Garry Tan retweeted you and now every YC founder is in your mentions with "congrats! would love to chat about synergies." You have 47 new calendar invites, 12 pitch deck requests, and someone just Venmo\'d you $1 with the memo "first check."',
+      mixed:
+        'The YC president publicly endorsed your product. The good news: instant credibility with the entire startup ecosystem. The bad news: the entire startup ecosystem now knows exactly what you\'re building and how to copy it.',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: 5 },
+      { path: 'product.customers', operation: 'add', value: 10 },
+    ],
+    decisionOptions: [
+      {
+        id: 'dm-garry',
+        label: 'DM Garry about YC',
+        description: 'Shoot your shot. Maybe this leads to an interview.',
+        effects: [
+          { path: 'founder.network', operation: 'add', value: 8 },
+          { path: 'market.investorSentiment', operation: 'add', value: 8 },
+          { path: 'founder.reputation', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'leverage-for-fundraising',
+        label: 'Use the signal for fundraising',
+        description: 'Screenshot the retweet and put it in your pitch deck. VCs love social proof.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 75_000 },
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.96 },
+          { path: 'market.investorSentiment', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'just-ship',
+        label: 'Say thanks and get back to work',
+        description: 'Tweets don\'t build products. Back to the code.',
+        effects: [
+          { path: 'product.overallQuality', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
 ];
