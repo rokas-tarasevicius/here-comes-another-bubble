@@ -24,7 +24,7 @@ export function AppShell({ children }: AppShellProps) {
         </main>
 
         {/* Right panel — event feed (hidden below lg) */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex">
           <EventFeed />
         </div>
       </div>

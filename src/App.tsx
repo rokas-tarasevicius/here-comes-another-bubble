@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import './index.css';
 import { useGameStore } from './store/index.ts';
 import { AppShell } from './components/layout/AppShell.tsx';
@@ -27,14 +27,20 @@ const GAMEPLAY_SCREENS = [
 
 function GameplayScreen() {
   const currentScreen = useGameStore((s) => s.currentScreen);
+  const visited = useRef(new Set<string>([currentScreen]));
+  visited.current.add(currentScreen);
 
   return (
     <>
-      {GAMEPLAY_SCREENS.map(({ id, Component }) => (
-        <div key={id} style={{ display: currentScreen === id ? 'contents' : 'none' }}>
-          <Component />
-        </div>
-      ))}
+      {GAMEPLAY_SCREENS.map(({ id, Component }) => {
+        if (!visited.current.has(id)) return null;
+        const active = currentScreen === id;
+        return (
+          <div key={id} hidden={!active}>
+            <Component />
+          </div>
+        );
+      })}
     </>
   );
 }

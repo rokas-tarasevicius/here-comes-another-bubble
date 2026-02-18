@@ -73,8 +73,8 @@ export function EventFeed() {
                     <span className={badgeStyle}>
                       {categoryLabel}
                     </span>
-                    <span className="ml-auto text-xs font-[--font-retro-mono] text-[--color-retro-text-light]">
-                      W{event.week}
+                    <span className="ml-auto text-xs font-retro-mono text-[--color-retro-text-light]">
+                      Week {event.week}
                     </span>
                   </div>
                   <p className="text-sm font-medium text-[--color-retro-text] truncate" title={event.title}>
