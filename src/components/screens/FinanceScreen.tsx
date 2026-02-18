@@ -1,8 +1,6 @@
 import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
-import { KPICard } from '../shared/KPICard.tsx';
 import { CashFlowChart } from '../shared/CashFlowChart.tsx';
-import { RunwayCountdown } from '../shared/RunwayCountdown.tsx';
 import { FundraisingPanel } from '../shared/FundraisingPanel.tsx';
 
 /**
@@ -24,23 +22,6 @@ export function FinanceScreen() {
 
   const { finances, product, team, weekHistory, company } = gameState;
 
-  // Revenue trend from recent history
-  const recentRevenue = weekHistory.slice(-8).map((w) => w.revenue);
-  const revenueTrend: 'up' | 'down' | 'flat' =
-    recentRevenue.length >= 2
-      ? recentRevenue[recentRevenue.length - 1] > recentRevenue[recentRevenue.length - 2]
-        ? 'up'
-        : recentRevenue[recentRevenue.length - 1] < recentRevenue[recentRevenue.length - 2]
-          ? 'down'
-          : 'flat'
-      : 'flat';
-
-  // Cash trend
-  const recentCash = weekHistory.slice(-8).map((w) => w.cash);
-
-  // Burn trend
-  const recentBurn = weekHistory.slice(-8).map((w) => w.burn);
-
   // P&L calculations
   const totalSalaries = team.teamSize * team.avgSalary;
   const totalAICosts = team.aiAgents.reduce((sum, a) => sum + a.costPerWeek, 0);
@@ -60,38 +41,8 @@ export function FinanceScreen() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Finances</h1>
+        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Finances</h1>
         <p className="text-sm text-[--color-retro-text-light]">Week {gameState.meta.week} financial overview</p>
-      </div>
-
-      {/* Top Row: Key Metrics */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KPICard
-          title="Cash"
-          value={formatCurrency(finances.cash)}
-          color="emerald"
-          sparklineData={recentCash}
-        />
-        <KPICard
-          title="Weekly Revenue"
-          value={formatCurrency(finances.weeklyRevenue)}
-          trend={revenueTrend}
-          color="blue"
-          sparklineData={recentRevenue}
-          subtitle={`${pricingLabels[finances.pricingModel] ?? finances.pricingModel} model`}
-        />
-        <KPICard
-          title="Weekly Burn"
-          value={formatCurrency(finances.weeklyBurn)}
-          color="red"
-          sparklineData={recentBurn}
-          subtitle={`${formatCurrency(finances.monthlyExpenses)}/mo expenses`}
-        />
-        <RunwayCountdown
-          cash={finances.cash}
-          weeklyBurn={finances.weeklyBurn}
-          weeklyRevenue={finances.weeklyRevenue}
-        />
       </div>
 
       {/* Cash Flow Chart */}
@@ -107,92 +58,72 @@ export function FinanceScreen() {
 
           {/* Revenue Breakdown */}
           <div className="mb-4">
-            <h4 className="mb-2 text-xs font-semibold uppercase text-[--color-retro-green]">Revenue</h4>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[--color-retro-text-muted]">
+            <span className="retro-label mb-2 block">Revenue</span>
+            <div className="space-y-1.5">
+              <div className="retro-stat-row">
+                <span className="text-xs text-[--color-retro-text-muted]">
                   {pricingLabels[finances.pricingModel] ?? finances.pricingModel}{' '}
                   ({product.customers.toLocaleString()} customers)
                 </span>
-                <span className="font-[--font-retro-mono] text-[--color-retro-green]">
+                <span className="retro-value text-[--color-retro-green]">
                   {formatCurrency(finances.weeklyRevenue)}
                 </span>
               </div>
               {finances.pricePerUnit > 0 && (
-                <p className="text-xs text-[--color-retro-text-light]">
-                  {formatCurrency(finances.pricePerUnit)}/unit
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="retro-stat-tag">
+                    <span className="retro-stat-tag-label">Unit price</span>
+                    <span className="retro-stat-tag-value">{formatCurrency(finances.pricePerUnit)}</span>
+                  </span>
+                </div>
               )}
-            </div>
-            <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
-              <span className="text-[--color-retro-text]">Total Revenue</span>
-              <span className="font-[--font-retro-mono] text-[--color-retro-green]">
-                {formatCurrency(finances.weeklyRevenue)}
-              </span>
             </div>
           </div>
 
           {/* Expense Breakdown */}
           <div className="mb-4">
-            <h4 className="mb-2 text-xs font-semibold uppercase text-[--color-retro-red]">Expenses</h4>
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[--color-retro-text-muted]">
-                  Salaries ({team.teamSize} team members)
-                </span>
-                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                  {formatCurrency(totalSalaries)}
-                </span>
+            <span className="retro-label mb-2 block">Expenses</span>
+            <div className="space-y-1.5">
+              <div className="retro-stat-row">
+                <span className="text-xs text-[--color-retro-text-muted]">Salaries ({team.teamSize} members)</span>
+                <span className="retro-value text-[--color-retro-red]">{formatCurrency(totalSalaries)}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[--color-retro-text-muted]">
-                  AI Agents ({team.aiAgents.length} agents)
-                </span>
-                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                  {formatCurrency(totalAICosts)}
-                </span>
+              <div className="retro-stat-row">
+                <span className="text-xs text-[--color-retro-text-muted]">AI Agents ({team.aiAgents.length})</span>
+                <span className="retro-value text-[--color-retro-red]">{formatCurrency(totalAICosts)}</span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-[--color-retro-text-muted]">
-                  Overhead ({isGarageStage ? 'garage' : 'office'} + infra)
-                </span>
-                <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                  {formatCurrency(overheadEstimate)}
-                </span>
+              <div className="retro-stat-row">
+                <span className="text-xs text-[--color-retro-text-muted]">Overhead ({isGarageStage ? 'garage' : 'office'} + infra)</span>
+                <span className="retro-value text-[--color-retro-red]">{formatCurrency(overheadEstimate)}</span>
               </div>
               {finances.marketingSpend > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-[--color-retro-text-muted]">Marketing</span>
-                  <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                    {formatCurrency(finances.marketingSpend)}
-                  </span>
+                <div className="retro-stat-row">
+                  <span className="text-xs text-[--color-retro-text-muted]">Marketing</span>
+                  <span className="retro-value text-[--color-retro-red]">{formatCurrency(finances.marketingSpend)}</span>
                 </div>
               )}
-            </div>
-            <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
-              <span className="text-[--color-retro-text]">Total Expenses</span>
-              <span className="font-[--font-retro-mono] text-[--color-retro-red]">
-                {formatCurrency(totalExpenses)}
-              </span>
+              <div className="border-t border-black/4 pt-1.5 retro-stat-row">
+                <span className="text-xs font-bold text-[--color-retro-text]">Total</span>
+                <span className="retro-value text-[--color-retro-red]">{formatCurrency(totalExpenses)}</span>
+              </div>
             </div>
           </div>
 
           {/* Net Income */}
-          <div className="retro-inset">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-[--color-retro-text]">Net Income</span>
+          <div className="border-t border-black/4 pt-3">
+            <div className="retro-stat-row">
+              <span className="retro-label">
+                {netIncome >= 0 ? 'Net Profit' : 'Net Loss'}
+              </span>
               <span
-                className={`text-lg font-bold font-[--font-retro-mono] ${
-                  netIncome >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'
+                className={`retro-value ${
+                  netIncome >= 0 ? 'text-[--color-retro-green-dark]' : 'text-[--color-retro-red]'
                 }`}
               >
                 {netIncome >= 0 ? '+' : ''}
                 {formatCurrency(netIncome)}
               </span>
             </div>
-            <p className="mt-1 text-xs text-[--color-retro-text-light]">
-              {netIncome >= 0 ? 'You are operating profitably this week' : 'You are burning cash this week'}
-            </p>
           </div>
         </div>
 
@@ -205,6 +136,7 @@ export function FinanceScreen() {
           pricePerUnit={finances.pricePerUnit}
           lastPricingChangeWeek={finances.lastPricingChangeWeek}
           currentWeek={gameState.meta.week}
+          fundingSoughtThisWeek={gameState.meta.fundingSoughtThisWeek}
           onSeekFunding={(targetStage) => seekFunding(targetStage)}
           onChangePricing={(model, price) => setPricing(model, price)}
         />

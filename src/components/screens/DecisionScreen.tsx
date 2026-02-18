@@ -94,7 +94,7 @@ export function DecisionScreen() {
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+          <h2 className="text-lg font-bold text-[--color-retro-text]">
             Pending Decisions
             {unrespondedDecisions.length > 0 && (
               <span className="ml-2 retro-badge retro-badge-orange">
@@ -134,7 +134,7 @@ export function DecisionScreen() {
                 />
               </svg>
             </div>
-            <p className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+            <p className="text-lg font-bold text-[--color-retro-text]">
               All caught up!
             </p>
             <p className="mt-2 text-sm text-[--color-retro-text-muted]">
@@ -147,7 +147,7 @@ export function DecisionScreen() {
       {/* ── Queued Actions ─────────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+          <h2 className="text-lg font-bold text-[--color-retro-text]">
             Queued Actions
             {decisionsThisTurn.length > 0 && (
               <span className="ml-2 retro-badge retro-badge-blue">

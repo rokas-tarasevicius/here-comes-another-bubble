@@ -102,7 +102,7 @@ function ScoreBar({
           style={{ width: animate ? `${pct}%` : '0%', transition: 'width 1s ease-out' }}
         />
       </div>
-      <div className="w-16 text-right font-[--font-retro-mono] text-sm text-[--color-retro-text]">
+      <div className="w-16 text-right font-retro-mono text-sm text-[--color-retro-text]">
         {value}/{max}
       </div>
     </div>
@@ -178,7 +178,7 @@ export function GameOverScreen() {
       <div className="relative z-10 w-full max-w-2xl space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="mb-2 text-4xl font-extrabold font-[--font-retro-heading] tracking-tight text-[--color-retro-text] sm:text-5xl">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[--color-retro-text] sm:text-5xl">
             {isWin ? 'You Won!' : 'Game Over'}
           </h1>
           <p className={`text-lg ${isWin ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>{reason}</p>
@@ -252,7 +252,7 @@ export function GameOverScreen() {
           {score.difficultyMultiplier !== 1.0 && (
             <div className="mt-4 border-t border-[--color-retro-border] pt-3 text-right text-sm text-[--color-retro-text-light]">
               Difficulty multiplier:{' '}
-              <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
+              <span className="font-retro-mono font-semibold text-[--color-retro-text]">
                 x{score.difficultyMultiplier}
               </span>
             </div>

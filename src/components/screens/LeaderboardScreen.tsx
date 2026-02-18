@@ -45,7 +45,7 @@ function RankBadge({ rank }: { rank: number }) {
     );
   }
   return (
-    <div className="flex h-7 w-7 items-center justify-center text-sm font-[--font-retro-mono] text-[--color-retro-text-light]">
+    <div className="flex h-7 w-7 items-center justify-center text-sm font-retro-mono text-[--color-retro-text-light]">
       {rank}
     </div>
   );
@@ -106,7 +106,7 @@ export function LeaderboardScreen() {
         {/* Header */}
         <div className="text-center">
           <div className="mx-auto mb-4 h-px w-24" style={{ background: 'linear-gradient(to right, transparent, var(--color-retro-orange), transparent)' }} />
-          <h1 className="mb-2 text-4xl font-extrabold font-[--font-retro-heading] tracking-tight text-[--color-retro-text] sm:text-5xl">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[--color-retro-text] sm:text-5xl">
             Leaderboard
           </h1>
           <p className="text-sm text-[--color-retro-text-light]">
@@ -155,7 +155,7 @@ export function LeaderboardScreen() {
                       <td className="font-medium text-[--color-retro-text]">
                         {entry.companyName}
                       </td>
-                      <td className="text-right font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
+                      <td className="text-right font-retro-mono font-semibold text-[--color-retro-text]">
                         {entry.score}
                       </td>
                       <td className={`text-center text-lg font-black ${gradeColor(entry.grade)}`}>

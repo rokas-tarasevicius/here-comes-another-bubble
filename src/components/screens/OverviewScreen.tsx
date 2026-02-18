@@ -1,6 +1,5 @@
 import { useGameStore } from '../../store/index.ts';
 import type { CompanyStage } from '../../types/game.ts';
-import { KPICard } from '../shared/KPICard.tsx';
 import { WeeklySummary } from '../shared/WeeklySummary.tsx';
 import { formatCurrency, formatNumber, formatPercent } from '../../utils/format.ts';
 
@@ -32,44 +31,6 @@ const STAGE_BADGE_CLASSES: Record<CompanyStage, string> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-function computeRunway(cash: number, burn: number): string {
-  if (burn <= 0) return 'Infinite';
-  const weeks = Math.floor(cash / burn);
-  if (weeks > 520) return '10+ yrs';
-  if (weeks > 52) {
-    const yrs = Math.floor(weeks / 52);
-    const remainingWks = weeks % 52;
-    if (remainingWks === 0) return `${yrs} yrs`;
-    return `${yrs} yrs ${remainingWks} wks`;
-  }
-  return `${weeks} wks`;
-}
-
-function getTrend(
-  data: number[],
-  count: number = 3,
-): 'up' | 'down' | 'flat' {
-  if (data.length < 2) return 'flat';
-  const recent = data.slice(-count);
-  const first = recent[0];
-  const last = recent[recent.length - 1];
-  const delta = last - first;
-  const threshold = Math.abs(first) * 0.02; // 2% threshold
-  if (delta > threshold) return 'up';
-  if (delta < -threshold) return 'down';
-  return 'flat';
-}
-
-function trendPercent(data: number[]): string {
-  if (data.length < 2) return '';
-  const prev = data[data.length - 2];
-  const curr = data[data.length - 1];
-  if (prev === 0) return curr > 0 ? '+100%' : '0%';
-  const pct = ((curr - prev) / Math.abs(prev)) * 100;
-  const sign = pct >= 0 ? '+' : '';
-  return `${sign}${pct.toFixed(1)}%`;
-}
-
 function bubbleColor(index: number): string {
   if (index < 30) return 'text-[--color-retro-green]';
   if (index < 60) return 'text-[--color-retro-orange]';
@@ -95,71 +56,13 @@ export function OverviewScreen() {
 
   const { finances, product, team, company, market, weekHistory } = gameState;
 
-  // ── Sparkline data from history ──
-  const cashHistory = weekHistory.map((w) => w.cash);
-  const revenueHistory = weekHistory.map((w) => w.revenue);
-  const teamHistory = weekHistory.map((w) => w.teamSize);
-  const customerHistory = weekHistory.map((w) => w.customers);
-
   // ── Derived values ──
-  const runway = computeRunway(finances.cash, finances.weeklyBurn);
   const humanCount = team.teamSize;
   const aiCount = team.aiAgents.length;
   const totalTeam = humanCount + aiCount;
-  const revenueTrend = getTrend(revenueHistory);
-  const revenueTrendColor = revenueTrend === 'up' ? 'emerald' : revenueTrend === 'down' ? 'red' : 'amber';
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto">
-      {/* ── Top Row: 4 KPI Cards ────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Cash */}
-        <KPICard
-          title="Cash"
-          value={formatCurrency(finances.cash)}
-          subtitle={`Burn: ${formatCurrency(finances.weeklyBurn)}/wk \u00B7 Runway: ${runway}`}
-          trend={getTrend(cashHistory)}
-          trendValue={trendPercent(cashHistory)}
-          color="emerald"
-          sparklineData={cashHistory}
-        />
-
-        {/* Revenue */}
-        <KPICard
-          title="Revenue"
-          value={formatCurrency(finances.weeklyRevenue)}
-          subtitle={finances.pricePerUnit > 0
-            ? `${finances.pricingModel} \u00B7 ${formatCurrency(finances.pricePerUnit)}/unit`
-            : finances.pricingModel}
-          trend={revenueTrend}
-          trendValue={trendPercent(revenueHistory)}
-          color={revenueTrendColor}
-          sparklineData={revenueHistory}
-        />
-
-        {/* Team */}
-        <KPICard
-          title="Team"
-          value={formatNumber(totalTeam)}
-          subtitle={`${humanCount} human${humanCount !== 1 ? 's' : ''} + ${aiCount} AI`}
-          trend={getTrend(teamHistory)}
-          trendValue={trendPercent(teamHistory)}
-          color="blue"
-          sparklineData={teamHistory}
-        />
-
-        {/* Users */}
-        <KPICard
-          title="Users"
-          value={formatNumber(product.customers)}
-          subtitle={`PMF: ${formatPercent(product.pmfScore)} \u00B7 ${formatPercent(product.churnRate * 100)} churn`}
-          trend={getTrend(customerHistory)}
-          trendValue={trendPercent(customerHistory)}
-          color={product.customers > 0 ? 'emerald' : 'amber'}
-          sparklineData={customerHistory}
-        />
-      </div>
-
       {/* ── Middle Section: Two columns ─────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Left Column */}
@@ -170,60 +73,44 @@ export function OverviewScreen() {
 
             {/* Hero: Stage + Valuation */}
             <div className="grid grid-cols-2 gap-x-6">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Stage</span>
+              <div className="flex flex-col gap-1.5">
+                <span className="retro-label">Stage</span>
                 <span
                   className={STAGE_BADGE_CLASSES[company.stage] ?? 'retro-badge retro-badge-gray'}
                 >
                   {STAGE_LABELS[company.stage] ?? company.stage}
                 </span>
               </div>
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Valuation</span>
-                <span className="text-xl font-bold font-[--font-retro-mono] text-[--color-retro-text]">
+              <div className="flex flex-col gap-1.5">
+                <span className="retro-label">Valuation</span>
+                <span className="retro-value-lg text-[--color-retro-text]">
                   {formatCurrency(company.valuation)}
                 </span>
               </div>
             </div>
 
             {/* Secondary stats */}
-            <div className="retro-inset grid grid-cols-2 gap-x-6 gap-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[--color-retro-text-light]">Founder Equity</span>
-                <span className="text-sm font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
-                  {formatPercent(finances.founderEquity * 100)}
-                </span>
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[--color-retro-text-light]">Bubble Index</span>
-                  <span className={`text-sm font-[--font-retro-mono] font-semibold ${bubbleColor(market.bubbleIndex)}`}>
-                    {market.bubbleIndex}
-                  </span>
-                </div>
-                <div className="retro-progress retro-progress-sm">
-                  <div
-                    className={bubbleProgressBarClass(market.bubbleIndex)}
-                    style={{ width: `${Math.min(market.bubbleIndex, 100)}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Tertiary stats */}
-            <div className="flex items-center justify-between gap-4 border-t border-[--color-retro-border] pt-3 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[--color-retro-text-light]">Reputation</span>
-                <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text-muted]">{company.reputation}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[--color-retro-text-light]">Investor Mood</span>
-                <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text-muted]">{market.investorSentiment}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[--color-retro-text-light]">Morale</span>
-                <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text-muted]">{Math.round(team.morale)}</span>
-              </div>
+            <div className="retro-stat-footer">
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Equity</span>
+                <span className="retro-stat-tag-value">{formatPercent(finances.founderEquity * 100)}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Bubble</span>
+                <span className={`retro-stat-tag-value ${bubbleColor(market.bubbleIndex)}`}>{market.bubbleIndex}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Rep</span>
+                <span className="retro-stat-tag-value">{company.reputation}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Investors</span>
+                <span className="retro-stat-tag-value">{market.investorSentiment}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Morale</span>
+                <span className="retro-stat-tag-value">{Math.round(team.morale)}</span>
+              </span>
             </div>
           </div>
 
@@ -231,43 +118,33 @@ export function OverviewScreen() {
           <div className="retro-card flex flex-col gap-4">
             <h3 className="retro-section-heading">Company Summary</h3>
 
-            {/* Key stats in inset panel */}
-            <div className="retro-inset grid grid-cols-2 gap-x-6 gap-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[--color-retro-text-light]">Team</span>
-                <span className="text-sm font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
-                  {totalTeam} <span className="font-normal text-[--color-retro-text-muted]">({humanCount}+{aiCount} AI)</span>
+            {/* Key stats */}
+            <div className="retro-stat-footer">
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Team</span>
+                <span className="retro-stat-tag-value">
+                  {totalTeam} <span className="font-normal text-[--color-retro-text-muted] text-[10px]">({humanCount}+{aiCount} AI)</span>
                 </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[--color-retro-text-light]">Morale</span>
-                <span className={`text-sm font-[--font-retro-mono] font-semibold ${
-                  team.morale >= 60 ? 'text-[--color-retro-green]' : team.morale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
-                }`}>
-                  {Math.round(team.morale)}/100
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[--color-retro-text-light]">Quality</span>
-                <span className={`text-sm font-[--font-retro-mono] font-semibold ${
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Quality</span>
+                <span className={`retro-stat-tag-value ${
                   product.overallQuality >= 60 ? 'text-[--color-retro-green]' : product.overallQuality >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
                 }`}>
                   {Math.round(product.overallQuality)}/100
                 </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-[--color-retro-text-light]">Features</span>
-                <span className="text-sm font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Features</span>
+                <span className="retro-stat-tag-value">
                   {product.features.filter((f) => f.status === 'shipped').length}/{product.features.length}
                 </span>
-              </div>
-            </div>
-
-            {/* Growth Strategy */}
-            <div className="flex items-center justify-between border-t border-[--color-retro-border] pt-3">
-              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Growth Strategy</span>
-              <span className="retro-badge retro-badge-blue">
-                {gameState.meta.growthStrategy?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'None'}
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Strategy</span>
+                <span className="retro-stat-tag-value">
+                  {gameState.meta.growthStrategy?.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) || 'None'}
+                </span>
               </span>
             </div>
           </div>
@@ -283,14 +160,10 @@ export function OverviewScreen() {
           <h3 className="retro-section-heading">Current Sprint</h3>
           <div className="space-y-2">
             {product.features.filter(f => f.status === 'in-progress').map(f => (
-              <div key={f.id} className="flex items-center justify-between gap-4">
+              <div key={f.id} className="retro-inset p-3 flex items-center justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-[--color-retro-text] truncate">{f.name}</span>
-                    <span className="text-xs text-[--color-retro-text-muted] shrink-0">
-                      Q: {Math.round(f.quality)}
-                    </span>
-                  </div>
+                  <span className="text-sm font-bold text-[--color-retro-text] truncate block">{f.name}</span>
+                  <span className="retro-label mt-0.5">Quality: {Math.round(f.quality)}</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <div className="retro-progress retro-progress-xs w-32">
@@ -299,7 +172,7 @@ export function OverviewScreen() {
                       style={{ width: `${f.progress}%` }}
                     />
                   </div>
-                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted] w-10 text-right">
+                  <span className="retro-value text-xs w-10 text-right">
                     {Math.round(f.progress)}%
                   </span>
                 </div>
@@ -323,11 +196,11 @@ export function OverviewScreen() {
               <thead>
                 <tr>
                   <th>Week</th>
-                  <th className="text-right">Cash</th>
-                  <th className="text-right">Revenue</th>
-                  <th className="text-right">Users</th>
-                  <th className="text-right">Team</th>
-                  <th className="text-right">PMF</th>
+                  <th>Cash</th>
+                  <th>Revenue</th>
+                  <th>Users</th>
+                  <th>Team</th>
+                  <th>PMF</th>
                 </tr>
               </thead>
               <tbody>
@@ -336,22 +209,22 @@ export function OverviewScreen() {
                   .reverse()
                   .map((w) => (
                     <tr key={w.week}>
-                      <td className="font-[--font-retro-mono] text-[--color-retro-text-muted]">
-                        W{w.week}
+                      <td className="font-retro-mono text-[--color-retro-text-muted]">
+                        Week {w.week}
                       </td>
-                      <td className="font-[--font-retro-mono] text-[--color-retro-green] text-right">
+                      <td className="font-retro-mono text-[--color-retro-green]">
                         {formatCurrency(w.cash)}
                       </td>
-                      <td className="font-[--font-retro-mono] text-[--color-retro-green] text-right">
+                      <td className="font-retro-mono text-[--color-retro-green]">
                         {formatCurrency(w.revenue)}
                       </td>
-                      <td className="font-[--font-retro-mono] text-[--color-retro-text-muted] text-right">
+                      <td className="font-retro-mono text-[--color-retro-text-muted]">
                         {formatNumber(w.customers)}
                       </td>
-                      <td className="font-[--font-retro-mono] text-[--color-retro-blue] text-right">
+                      <td className="font-retro-mono text-[--color-retro-blue]">
                         {w.teamSize}
                       </td>
-                      <td className={`font-[--font-retro-mono] text-right ${
+                      <td className={`font-retro-mono ${
                         w.pmfScore < 30
                           ? 'text-[--color-retro-red]'
                           : w.pmfScore < 60

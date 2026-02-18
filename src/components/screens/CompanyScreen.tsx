@@ -45,7 +45,6 @@ export function CompanyScreen() {
   const [featureName, setFeatureName] = useState('');
   const [offerSalaries, setOfferSalaries] = useState<Record<string, string>>({});
   const [confirmFire, setConfirmFire] = useState<string | null>(null);
-  const [editingBudget, setEditingBudget] = useState<string | null>(null);
 
   if (!gameState) return null;
 
@@ -62,7 +61,7 @@ export function CompanyScreen() {
     <div className="space-y-6 max-w-5xl mx-auto min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Company</h1>
+        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Company</h1>
         <p className="text-sm text-[--color-retro-text-light]">Manage your team, strategy, and user acquisition</p>
       </div>
 
@@ -74,38 +73,38 @@ export function CompanyScreen() {
 
           {/* Hero metrics */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Humans</span>
-              <span className="text-2xl font-bold font-[--font-retro-mono] text-[--color-retro-text]">{team.teamSize}</span>
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">Humans</span>
+              <span className="retro-value-lg text-[--color-retro-text]">{team.teamSize}</span>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">AI Agents</span>
-              <span className="text-2xl font-bold font-[--font-retro-mono] text-[--color-retro-text]">{team.aiAgents.length}</span>
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">AI Agents</span>
+              <span className="retro-value-lg text-[--color-retro-text]">{team.aiAgents.length}</span>
             </div>
           </div>
 
           {/* Supporting metrics */}
-          <div className="retro-inset grid grid-cols-2 gap-x-6 gap-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Morale</span>
-              <span className={`text-sm font-[--font-retro-mono] font-semibold ${
+          <div className="retro-stat-footer">
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Morale</span>
+              <span className={`retro-stat-tag-value ${
                 team.morale >= 60 ? 'text-[--color-retro-green]' : team.morale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{Math.round(team.morale)}/100</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Culture</span>
-              <span className={`text-sm font-[--font-retro-mono] font-semibold ${
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Culture</span>
+              <span className={`retro-stat-tag-value ${
                 company.culture >= 60 ? 'text-[--color-retro-green]' : company.culture >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{company.culture}/100</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Avg Salary</span>
-              <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">{formatCurrency(team.avgSalary)}/wk</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Payroll</span>
-              <span className="text-sm font-[--font-retro-mono] text-[--color-retro-red]">{formatCurrency(team.teamSize * team.avgSalary)}/wk</span>
-            </div>
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Avg Salary</span>
+              <span className="retro-stat-tag-value">{formatCurrency(team.avgSalary)}/wk</span>
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Payroll</span>
+              <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(team.teamSize * team.avgSalary)}/wk</span>
+            </span>
           </div>
         </div>
 
@@ -115,53 +114,67 @@ export function CompanyScreen() {
 
           {/* Hero metrics */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Quality</span>
-              <span className={`text-2xl font-bold font-[--font-retro-mono] ${
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">Quality</span>
+              <span className={`retro-value-lg ${
                 product.overallQuality >= 60 ? 'text-[--color-retro-green]' : product.overallQuality >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{product.overallQuality}<span className="text-sm font-normal text-[--color-retro-text-muted]">/100</span></span>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Tech Debt</span>
-              <span className={`text-2xl font-bold font-[--font-retro-mono] ${
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">Tech Debt</span>
+              <span className={`retro-value-lg ${
                 product.techDebtTotal <= 30 ? 'text-[--color-retro-green]' : product.techDebtTotal <= 60 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{Math.round(product.techDebtTotal)}<span className="text-sm font-normal text-[--color-retro-text-muted]">/100</span></span>
             </div>
           </div>
 
           {/* Supporting metrics */}
-          <div className="retro-inset grid grid-cols-2 gap-x-6 gap-y-3 mb-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Bugs</span>
-              <span className={`text-sm font-[--font-retro-mono] font-semibold ${
+          <div className="retro-stat-footer mb-3">
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Bugs</span>
+              <span className={`retro-stat-tag-value ${
                 product.bugs <= 3 ? 'text-[--color-retro-green]' : product.bugs <= 8 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{product.bugs}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">PMF Score</span>
-              <span className={`text-sm font-[--font-retro-mono] font-semibold ${
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">PMF</span>
+              <span className={`retro-stat-tag-value ${
                 product.pmfScore >= 60 ? 'text-[--color-retro-green]' : product.pmfScore >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{product.pmfScore}/100</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Features</span>
-              <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Features</span>
+              <span className="retro-stat-tag-value">
                 {product.features.filter(f => f.status === 'shipped').length} shipped / {product.features.filter(f => f.status === 'in-progress').length} wip
               </span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-[--color-retro-text-light]">Customers</span>
-              <span className="text-sm font-[--font-retro-mono] text-[--color-retro-text]">{product.customers.toLocaleString()}</span>
-            </div>
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Customers</span>
+              <span className="retro-stat-tag-value">{product.customers.toLocaleString()}</span>
+            </span>
           </div>
 
           {/* Founder skills */}
-          <div className="flex items-center gap-4 text-xs font-[--font-retro-mono] text-[--color-retro-text-muted] border-t border-[--color-retro-border] pt-3">
-            <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider shrink-0">Founder</span>
-            <span>Tech: {founder.techSkill}</span>
-            <span>Biz: {founder.bizSkill}</span>
-            <span>Net: {founder.network}</span>
-            <span>Rep: {founder.reputation}</span>
+          <div className="retro-stat-footer">
+            <span className="retro-label shrink-0">Founder</span>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Tech</span>
+                <span className="retro-stat-tag-value">{founder.techSkill}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Biz</span>
+                <span className="retro-stat-tag-value">{founder.bizSkill}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Net</span>
+                <span className="retro-stat-tag-value">{founder.network}</span>
+              </span>
+              <span className="retro-stat-tag">
+                <span className="retro-stat-tag-label">Rep</span>
+                <span className="retro-stat-tag-value">{founder.reputation}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -171,13 +184,13 @@ export function CompanyScreen() {
         <h3 className="retro-section-heading">Start a Feature</h3>
         <div className="flex items-end gap-4">
           <div className="flex-1">
-            <label className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">Feature Name</label>
+            <label className="retro-label">Feature Name</label>
             <input
               type="text"
               placeholder="e.g. AI Code Completion"
               value={featureName}
               onChange={(e) => setFeatureName(e.target.value)}
-              className="retro-input mt-1 w-full"
+              className="retro-input mt-1.5 w-full"
             />
           </div>
           <button
@@ -195,8 +208,8 @@ export function CompanyScreen() {
         </div>
         {gameState.market.segmentData.customerDemand.length > 0 && (
           <div className="mt-3">
-            <span className="text-xs text-[--color-retro-text-light]">Market wants:</span>
-            <div className="mt-1 flex flex-wrap gap-2">
+            <span className="retro-label">Market wants</span>
+            <div className="mt-2 flex flex-wrap gap-2">
               {gameState.market.segmentData.customerDemand.map(demand => {
                 const alreadyExists = product.features.some(f => f.name.toLowerCase() === demand.toLowerCase());
                 return (
@@ -206,11 +219,12 @@ export function CompanyScreen() {
                     onClick={() => {
                       startFeature(demand, `Market-demanded feature: ${demand}`, 90);
                     }}
-                    className={`text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
+                    className={`btn-glossy btn-glossy-sm rounded-full transition-all ${
                       alreadyExists
-                        ? 'border-[--color-retro-border] text-[--color-retro-text-muted] opacity-40 cursor-not-allowed line-through'
-                        : 'border-[--color-retro-blue]/30 text-[--color-retro-blue] hover:bg-[--color-retro-blue-pale]/40'
+                        ? 'btn-silver opacity-40 cursor-not-allowed line-through'
+                        : 'btn-silver hover:shadow-md'
                     }`}
+                    style={{ fontSize: '11px', padding: '4px 12px' }}
                   >
                     {demand}
                   </button>
@@ -221,16 +235,16 @@ export function CompanyScreen() {
         )}
         {product.features.filter(f => f.status === 'in-progress').length > 0 && (
           <div className="mt-3 border-t border-[--color-retro-border] pt-3">
-            <span className="text-xs text-[--color-retro-text-light] uppercase tracking-wider">In Progress</span>
-            <div className="mt-1 space-y-1">
+            <span className="retro-label">In Progress</span>
+            <div className="mt-2 space-y-1.5">
               {product.features.filter(f => f.status === 'in-progress').map(f => (
                 <div key={f.id} className="flex items-center justify-between text-sm">
-                  <span className="text-[--color-retro-text]">{f.name}</span>
+                  <span className="font-medium text-[--color-retro-text]">{f.name}</span>
                   <div className="flex items-center gap-2">
                     <div className="retro-progress retro-progress-sm w-24">
                       <div className="retro-progress-bar retro-progress-bar-blue" style={{ width: `${f.progress}%` }} />
                     </div>
-                    <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted] w-10 text-right">{Math.round(f.progress)}%</span>
+                    <span className="retro-value text-xs w-10 text-right">{Math.round(f.progress)}%</span>
                   </div>
                 </div>
               ))}
@@ -245,26 +259,37 @@ export function CompanyScreen() {
         {(!team.members || team.members.length === 0) ? (
           <p className="text-sm text-[--color-retro-text-muted]">No team members yet. Hire from the candidate pool below or use quick hire.</p>
         ) : (
-          <div className="divide-y divide-[--color-retro-border] max-h-72 overflow-y-auto retro-scrollbar">
+          <div className="space-y-2 max-h-80 overflow-y-auto retro-scrollbar">
             {team.members.map(member => (
-              <div key={member.id} className="flex items-center justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold text-[--color-retro-text]">{member.name}</span>
-                  <span className="retro-badge retro-badge-sm retro-badge-blue">{member.role}</span>
-                  {member.traits.map(t => (
-                    <span key={t} className="retro-badge retro-badge-sm retro-badge-purple">{t}</span>
-                  ))}
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="flex items-center gap-3 text-xs text-[--color-retro-text-muted]">
-                    <span>Skill <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">{member.skill}</span></span>
-                    <span className="text-[--color-retro-border-dark]">·</span>
-                    <span className="font-[--font-retro-mono]">{formatCurrency(member.salary)}/wk</span>
-                    <span className="text-[--color-retro-border-dark]">·</span>
-                    <span>Morale <span className={`font-[--font-retro-mono] font-semibold ${
-                      member.morale >= 60 ? 'text-[--color-retro-green]' : member.morale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
-                    }`}>{member.morale}</span></span>
+              <div key={member.id} className="retro-inset p-3">
+                <div className="flex items-center justify-between gap-3">
+                  {/* Left: Identity */}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-sm font-bold text-[--color-retro-text]">{member.name}</span>
+                      <span className="retro-badge retro-badge-sm retro-badge-blue">{member.role}</span>
+                      {member.traits.map(t => (
+                        <span key={t} className="retro-badge retro-badge-sm retro-badge-purple">{t}</span>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Skill</span>
+                        <span className="retro-stat-tag-value">{member.skill}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Salary</span>
+                        <span className="retro-stat-tag-value">{formatCurrency(member.salary)}/wk</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Morale</span>
+                        <span className={`retro-stat-tag-value ${
+                          member.morale >= 60 ? 'text-[--color-retro-green]' : member.morale >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+                        }`}>{member.morale}</span>
+                      </span>
+                    </div>
                   </div>
+                  {/* Right: Action */}
                   <button
                     onClick={() => {
                       if (confirmFire === member.id) {
@@ -291,7 +316,7 @@ export function CompanyScreen() {
         {(!team.candidates || team.candidates.length === 0) ? (
           <p className="text-sm text-[--color-retro-text-muted]">No candidates available. New candidates appear every 4 weeks.</p>
         ) : (
-          <div className="divide-y divide-[--color-retro-border]">
+          <div className="space-y-3">
             {team.candidates.map(candidate => {
               const hasPendingOffer = team.pendingOffers?.some(o => o.candidateId === candidate.id);
               const offerInput = offerSalaries[candidate.id] ?? String(candidate.expectedSalary);
@@ -302,43 +327,61 @@ export function CompanyScreen() {
               if (salaryRatio < 0.8) acceptProb = Math.max(10, Math.round(acceptProb * 0.5));
 
               return (
-                <div key={candidate.id} className="py-3 first:pt-0 last:pb-0">
-                  {/* Row 1: Name, badges, inline metadata */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-semibold text-[--color-retro-text]">{candidate.name}</span>
-                      <span className="retro-badge retro-badge-sm retro-badge-blue">{candidate.role}</span>
-                      {candidate.traits.map(t => (
-                        <span key={t} className="retro-badge retro-badge-sm retro-badge-purple">{t}</span>
-                      ))}
+                <div key={candidate.id} className="retro-candidate-card">
+                  {/* Top: Identity (left) + Stats (right) */}
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-bold text-[--color-retro-text]">{candidate.name}</span>
+                        <span className="retro-badge retro-badge-sm retro-badge-blue">{candidate.role}</span>
+                        {candidate.traits.map(t => (
+                          <span key={t} className="retro-badge retro-badge-sm retro-badge-purple">{t}</span>
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 shrink-0 text-xs text-[--color-retro-text-muted]">
-                      <span>Skill <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">{candidate.skill}</span></span>
-                      <span className="text-[--color-retro-border-dark]">·</span>
-                      <span>Expects <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">{formatCurrency(candidate.expectedSalary)}</span>/wk</span>
-                      <span className="text-[--color-retro-border-dark]">·</span>
-                      <span>Leaves <span className="font-[--font-retro-mono] text-[--color-retro-text-light]">W{candidate.availableUntilWeek}</span></span>
+                    <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Skill</span>
+                        <span className="retro-stat-tag-value">{candidate.skill}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Expects</span>
+                        <span className="retro-stat-tag-value">{formatCurrency(candidate.expectedSalary)}/wk</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Leaves</span>
+                        <span className="retro-stat-tag-value">W{candidate.availableUntilWeek}</span>
+                      </span>
                     </div>
                   </div>
 
-                  {/* Row 2: Offer controls */}
+                  {/* Bottom: Offer controls */}
                   {hasPendingOffer ? (
-                    <div className="mt-2 text-xs text-[--color-retro-orange] font-medium">Offer pending — resolves next week</div>
+                    <div className="mt-2.5 border-t border-black/4 pt-2.5">
+                      <span className="retro-badge retro-badge-sm retro-badge-orange">Offer pending — resolves next week</span>
+                    </div>
                   ) : (
-                    <div className="mt-2 flex items-center gap-3">
-                      <span className="text-xs text-[--color-retro-text-light] shrink-0">Offer</span>
-                      <input
-                        type="number"
-                        min={1000}
-                        step={500}
-                        value={offerInput}
-                        onChange={(e) => setOfferSalaries(prev => ({ ...prev, [candidate.id]: e.target.value }))}
-                        className="retro-input w-28 text-sm"
-                      />
-                      <span className={`text-xs font-[--font-retro-mono] font-semibold shrink-0 ${
-                        acceptProb >= 60 ? 'text-[--color-retro-green]' : acceptProb >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
-                      }`}>
-                        {acceptProb}% chance
+                    <div className="flex items-center gap-2.5 mt-2.5 border-t border-black/4 pt-2.5">
+                      <span className="retro-label shrink-0">Offer</span>
+                      <span className="inline-flex items-center shrink-0">
+                        <span className="font-retro-mono text-sm font-medium text-[--color-retro-text]">$</span>
+                        <input
+                          type="number"
+                          min={1000}
+                          step={500}
+                          value={offerInput}
+                          onChange={(e) => setOfferSalaries(prev => ({ ...prev, [candidate.id]: e.target.value }))}
+                          className="font-retro-mono text-sm font-medium text-[--color-retro-text] bg-transparent border-none outline-none w-16 p-0 appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        />
+                      </span>
+                      <span className="flex-1" />
+                      <span
+                        className="retro-stat-tag shrink-0"
+                      >
+                        <span className="retro-stat-tag-label">Chance</span>
+                        <span className={`retro-stat-tag-value ${
+                          acceptProb >= 60 ? 'text-[--color-retro-green]' : acceptProb >= 30 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+                        }`}>{acceptProb}%</span>
                       </span>
                       <button
                         onClick={() => makeOffer(candidate.id, offerAmount)}
@@ -364,49 +407,31 @@ export function CompanyScreen() {
         return (
           <div className="retro-card">
             <h3 className="retro-section-heading">Marketing Budget</h3>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setMarketingBudget(Math.max(0, spend - step))}
                 disabled={spend <= 0}
-                className="btn-glossy btn-silver w-8 h-8 p-0! text-lg disabled:opacity-30 disabled:cursor-not-allowed"
+                className="btn-glossy btn-silver w-8 h-8 p-0! text-lg disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
               >
                 −
               </button>
-              {editingBudget !== null ? (
+              <span className="inline-flex items-center justify-center min-w-[60px]">
+                <span className="font-retro-mono text-lg font-medium text-[--color-retro-text]">$</span>
                 <input
                   type="number"
-                  autoFocus
                   min={0}
-                  value={editingBudget}
-                  onChange={(e) => setEditingBudget(e.target.value)}
-                  onBlur={() => {
-                    const val = parseInt(editingBudget);
+                  value={spend}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
                     if (!isNaN(val) && val >= 0) setMarketingBudget(val);
-                    setEditingBudget(null);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const val = parseInt(editingBudget);
-                      if (!isNaN(val) && val >= 0) setMarketingBudget(val);
-                      setEditingBudget(null);
-                    } else if (e.key === 'Escape') {
-                      setEditingBudget(null);
-                    }
-                  }}
-                  className="retro-input w-36 text-center text-xl font-bold font-[--font-retro-mono]"
+                  style={{ width: `${Math.max(1, String(spend).length)}ch` }}
+                  className="font-retro-mono text-lg font-medium text-[--color-retro-text] bg-transparent border-none outline-none p-0 text-left appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                 />
-              ) : (
-                <button
-                  onClick={() => setEditingBudget(String(spend))}
-                  className="text-2xl font-bold font-[--font-retro-mono] text-[--color-retro-text] min-w-[120px] text-center cursor-text hover:bg-[--color-retro-bg-alt] rounded px-2 py-0.5 transition-colors"
-                  title="Click to edit"
-                >
-                  {formatCurrency(spend)}
-                </button>
-              )}
+              </span>
               <button
                 onClick={() => setMarketingBudget(spend + step)}
-                className="btn-glossy btn-silver w-8 h-8 p-0! text-lg"
+                className="btn-glossy btn-silver w-8 h-8 p-0! text-lg shrink-0"
               >
                 +
               </button>
@@ -444,12 +469,12 @@ export function CompanyScreen() {
                 <button
                   key={s.id}
                   onClick={() => setGrowthStrategy(s.id)}
-                  className={`w-full text-left rounded-lg px-3 py-2 border transition-all cursor-pointer ${
-                    isActive
-                      ? 'border-retro-blue/30 bg-retro-blue-pale/50'
-                      : 'border-transparent hover:border-[--color-retro-border]'
-                  }`}
-                  style={isActive ? { boxShadow: 'inset 0 1px 3px rgba(51,102,153,0.15), 0 0 0 1px rgba(51,102,153,0.08)' } : {}}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''}`}
+                  style={isActive ? {
+                    background: 'linear-gradient(to bottom, #edf3fa, #e4edf7)',
+                    borderColor: 'rgba(51,102,153,0.20)',
+                    boxShadow: 'inset 0 1px 3px rgba(51,102,153,0.12), 0 0 0 1px rgba(51,102,153,0.06)',
+                  } : undefined}
                 >
                   <span className={`text-sm font-semibold ${
                     isActive ? 'text-retro-blue' : 'text-[--color-retro-text]'
@@ -471,12 +496,12 @@ export function CompanyScreen() {
                 <button
                   key={f.id}
                   onClick={() => setProductFocus(f.id)}
-                  className={`w-full text-left rounded-lg px-3 py-2 border transition-all cursor-pointer ${
-                    isActive
-                      ? 'border-retro-purple/30 bg-retro-purple-pale/50'
-                      : 'border-transparent hover:border-[--color-retro-border]'
-                  }`}
-                  style={isActive ? { boxShadow: 'inset 0 1px 3px rgba(102,51,153,0.15), 0 0 0 1px rgba(102,51,153,0.08)' } : {}}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''}`}
+                  style={isActive ? {
+                    background: 'linear-gradient(to bottom, #f2ebf8, #ebe3f2)',
+                    borderColor: 'rgba(102,51,153,0.20)',
+                    boxShadow: 'inset 0 1px 3px rgba(102,51,153,0.12), 0 0 0 1px rgba(102,51,153,0.06)',
+                  } : undefined}
                 >
                   <span className={`text-sm font-semibold ${
                     isActive ? 'text-retro-purple' : 'text-[--color-retro-text]'
@@ -494,19 +519,18 @@ export function CompanyScreen() {
           <div className="space-y-2">
             {ACQUISITION_CHANNELS.map(ch => {
               const available = channelAvailable(ch.id);
+              const isActive = (meta.acquisitionChannel ?? 'organic') === ch.id;
               return (
                 <button
                   key={ch.id}
                   onClick={() => available && setAcquisitionChannel(ch.id)}
                   disabled={!available}
-                  className={`w-full text-left rounded-lg px-3 py-2 border transition-all ${
-                    (meta.acquisitionChannel ?? 'organic') === ch.id
-                      ? 'border-retro-green/30 bg-retro-green-pale/50 cursor-pointer'
-                      : !available
-                        ? 'border-transparent opacity-40 cursor-not-allowed'
-                        : 'border-transparent hover:border-[--color-retro-border] cursor-pointer'
-                  }`}
-                  style={(meta.acquisitionChannel ?? 'organic') === ch.id ? { boxShadow: 'inset 0 1px 3px rgba(43,122,43,0.15), 0 0 0 1px rgba(43,122,43,0.08)' } : {}}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''} ${!available ? 'opacity-40' : ''}`}
+                  style={isActive ? {
+                    background: 'linear-gradient(to bottom, #eaf6ea, #e2f0e2)',
+                    borderColor: 'rgba(43,122,43,0.20)',
+                    boxShadow: 'inset 0 1px 3px rgba(43,122,43,0.12), 0 0 0 1px rgba(43,122,43,0.06)',
+                  } : undefined}
                 >
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${
@@ -515,9 +539,9 @@ export function CompanyScreen() {
                     {ch.requires && !available && (
                       <span className="retro-badge retro-badge-sm retro-badge-red">Requires {ch.requires}</span>
                     )}
-                    {ch.id === 'content-seo' && meta.acquisitionChannel === 'content-seo' && (meta.contentSeoWeeks ?? 0) > 0 && (
-                      <span className="retro-badge retro-badge-sm retro-badge-green">
-                        +{Math.min(20, (meta.contentSeoWeeks) * 2)}% bonus
+                    {ch.id === 'content-seo' && (meta.contentSeoWeeks ?? 0) > 0 && (
+                      <span className={`retro-badge retro-badge-sm ${isActive ? 'retro-badge-green' : 'retro-badge-gray opacity-60'}`}>
+                        +{Math.min(20, (meta.contentSeoWeeks ?? 0) * 2)}% bonus
                       </span>
                     )}
                   </div>
