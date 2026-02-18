@@ -53,6 +53,7 @@ export function BackgroundMusic() {
   const [volume, setVolume] = useState(loadSavedVolume);
   const [isMuted, setIsMuted] = useState(false);
   const [showSlider, setShowSlider] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const hasStartedRef = useRef(false);
   const preMuteVolume = useRef(volume);
   const hideTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -152,6 +153,17 @@ export function BackgroundMusic() {
   }
 
   useEffect(() => {
+    if (!isDragging) return;
+    const stop = () => setIsDragging(false);
+    window.addEventListener('mouseup', stop);
+    window.addEventListener('touchend', stop);
+    return () => {
+      window.removeEventListener('mouseup', stop);
+      window.removeEventListener('touchend', stop);
+    };
+  }, [isDragging]);
+
+  useEffect(() => {
     return () => clearTimeout(hideTimer.current);
   }, []);
 
@@ -175,12 +187,12 @@ export function BackgroundMusic() {
         <div
           className="overflow-hidden transition-all duration-200 ease-out"
           style={{
-            width: showSlider ? '148px' : '0px',
+            width: showSlider ? '184px' : '0px',
             opacity: showSlider ? 1 : 0,
           }}
         >
           <div
-            className="mr-1 flex items-center gap-2 rounded-full px-3 py-2"
+            className="mr-1 flex items-center gap-2.5 rounded-full px-3 py-2"
             style={{
               background: 'linear-gradient(to bottom, #ffffff, #f5f3f0)',
               boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
@@ -200,8 +212,11 @@ export function BackgroundMusic() {
             <div className="relative flex-1" style={{ height: '20px' }}>
               {/* Track */}
               <div
-                className="absolute top-1/2 left-0 right-0 h-1.5 -translate-y-1/2 rounded-full"
+                className="absolute left-0 right-0 rounded-full"
                 style={{
+                  height: '6px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
                   background: 'linear-gradient(to bottom, #d8d4cf, #e2dedb)',
                   boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.6)',
                 }}
@@ -213,24 +228,30 @@ export function BackgroundMusic() {
                     width: `${isMuted ? 0 : volume}%`,
                     background: 'linear-gradient(to bottom, #5e91c4, #3a6a9e)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
-                    transition: 'width 0.1s ease-out',
+                    transition: isDragging ? 'none' : 'width 0.1s ease-out',
                   }}
                 />
               </div>
               {/* Thumb */}
               <div
-                className="pointer-events-none absolute top-1/2 -translate-y-1/2"
+                className="pointer-events-none absolute"
                 style={{
                   left: `${isMuted ? 0 : volume}%`,
-                  transform: `translate(-50%, -50%)`,
-                  transition: 'left 0.1s ease-out',
+                  top: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  transition: isDragging ? 'none' : 'left 0.1s ease-out',
                 }}
               >
                 <div
-                  className="h-3.5 w-3.5 rounded-full"
                   style={{
+                    width: isDragging ? '18px' : '14px',
+                    height: isDragging ? '18px' : '14px',
+                    borderRadius: '50%',
                     background: 'linear-gradient(to bottom, #ffffff, #e8e5e0)',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                    boxShadow: isDragging
+                      ? '0 2px 6px rgba(51,102,153,0.35), 0 0 0 2.5px rgba(58,106,158,0.4), inset 0 1px 0 rgba(255,255,255,0.9)'
+                      : '0 1px 4px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                    transition: 'width 0.15s ease, height 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
                   }}
                 />
               </div>
@@ -241,6 +262,10 @@ export function BackgroundMusic() {
                 max="100"
                 value={isMuted ? 0 : volume}
                 onChange={(e) => applyVolume(Number(e.target.value))}
+                onMouseDown={() => setIsDragging(true)}
+                onMouseUp={() => setIsDragging(false)}
+                onTouchStart={() => setIsDragging(true)}
+                onTouchEnd={() => setIsDragging(false)}
                 className="absolute inset-0 w-full cursor-pointer opacity-0"
                 title={`Volume: ${isMuted ? 0 : volume}%`}
               />
