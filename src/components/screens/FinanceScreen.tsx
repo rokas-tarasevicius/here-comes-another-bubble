@@ -11,7 +11,6 @@ import { FundraisingPanel } from '../shared/FundraisingPanel.tsx';
  */
 export function FinanceScreen() {
   const gameState = useGameStore((s) => s.gameState);
-  const addDecision = useGameStore((s) => s.addDecision);
   const seekFunding = useGameStore((s) => s.seekFunding);
   const setPricing = useGameStore((s) => s.setPricing);
 

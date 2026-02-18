@@ -55,7 +55,10 @@ describe('calculateRunway', () => {
   it('calculates finite runway when burning cash', () => {
     const state = makeTestState({
       team: {
-        teamSize: 2,
+        members: [
+          { id: 'm1', name: 'A', role: 'engineer', skill: 50, salary: 5000, morale: 80, weekHired: 1, traits: [], boosts: {} },
+          { id: 'm2', name: 'B', role: 'engineer', skill: 50, salary: 5000, morale: 80, weekHired: 1, traits: [], boosts: {} },
+        ], candidates: [], pendingOffers: [], teamSize: 2,
         avgSalary: 5000,
         morale: 80,
         aiAgents: [],
@@ -106,7 +109,9 @@ describe('calculateWeeklyBurn', () => {
     const agent = makeAIAgent({ costPerWeek: 800 });
     const state = makeTestState({
       team: {
-        teamSize: 1,
+        members: [
+          { id: 'm1', name: 'A', role: 'engineer', skill: 50, salary: 4000, morale: 80, weekHired: 1, traits: [], boosts: {} },
+        ], candidates: [], pendingOffers: [], teamSize: 1,
         avgSalary: 4000,
         morale: 80,
         aiAgents: [agent],
@@ -121,7 +126,7 @@ describe('calculateWeeklyBurn', () => {
   it('returns only fixed costs when team is empty', () => {
     const state = makeTestState({
       team: {
-        teamSize: 0,
+        members: [], candidates: [], pendingOffers: [], teamSize: 0,
         avgSalary: 0,
         morale: 100,
         aiAgents: [],
@@ -137,7 +142,7 @@ describe('calculateAvgMorale', () => {
   it('returns team morale directly', () => {
     const state = makeTestState({
       team: {
-        teamSize: 0,
+        members: [], candidates: [], pendingOffers: [], teamSize: 0,
         avgSalary: 0,
         morale: 100,
         aiAgents: [],
@@ -150,7 +155,7 @@ describe('calculateAvgMorale', () => {
   it('returns the morale value from team state', () => {
     const state = makeTestState({
       team: {
-        teamSize: 3,
+        members: [], candidates: [], pendingOffers: [], teamSize: 3,
         avgSalary: 3000,
         morale: 60,
         aiAgents: [],
@@ -166,7 +171,7 @@ describe('calculateTeamVelocity', () => {
     const agent = makeAIAgent({ capability: 90, reliability: 80 });
     const state = makeTestState({
       team: {
-        teamSize: 1,
+        members: [], candidates: [], pendingOffers: [], teamSize: 1,
         avgSalary: 3000,
         morale: 100,
         aiAgents: [agent],

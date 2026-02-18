@@ -10,7 +10,6 @@ import type {
   PricingModel,
   EventLogEntry,
   TeamMember,
-  Candidate,
 } from '../types/index.ts';
 import type { PlayerDecision } from '../types/decisions.ts';
 import type { Feature } from '../types/index.ts';

@@ -6,7 +6,7 @@ import type {
   Tone,
   TeamMember,
 } from '../types/index.ts';
-import { randomName, TRAIT_POOL } from '../data/names.ts';
+import { randomName } from '../data/names.ts';
 import { FOUNDER_CONFIGS } from '../data/founders.ts';
 import { MARKET_SEGMENTS } from '../data/markets.ts';
 import { COMPETITORS_BY_SEGMENT } from '../data/competitors.ts';

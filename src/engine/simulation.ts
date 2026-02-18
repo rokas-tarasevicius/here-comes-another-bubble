@@ -761,7 +761,6 @@ function simulateCustomers(state: GameState): GameState {
   }
 
   // Task 7: Dynamic churn calculation
-  const baseChurn = state.product.churnRate;
   const qualityBonus = -(state.product.overallQuality - 50) / 500;
   const bugPenalty = state.product.bugs * 0.005;
 
@@ -938,18 +937,6 @@ function generateAutoDecisions(state: GameState): GameState {
   const week = state.meta.week;
 
   // Task 8: Salary scaling by company stage
-  const stageSalaryMultiplier: Record<string, number> = {
-    'garage': 1.0,
-    'pre-seed': 1.0,
-    'seed': 1.2,
-    'series-a': 1.5,
-    'series-b': 1.8,
-    'series-c': 1.8,
-    'growth': 1.8,
-    'public': 1.8,
-  };
-  const salaryScale = stageSalaryMultiplier[state.company.stage] ?? 1.0;
-
   // --- EARLY GAME: What to build first (week 1 only) ---
   if (week === 1 && state.product.features.length === 0) {
     const demands = state.market.segmentData.customerDemand;
