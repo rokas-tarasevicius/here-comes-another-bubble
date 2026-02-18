@@ -106,7 +106,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
   return (
     <div className="retro-card" style={{ padding: 0 }}>
       <h3 className="retro-section-heading" style={{ margin: '16px 16px 12px' }}>
-        Competitors<InfoTip text="Other startups in your market. They compete for customers and funding. Weaker competitors can die. High-share competitors increase pressure on your growth." />
+        <span className="retro-label-tip">Competitors<InfoTip text="Other startups in your market. They compete for customers and funding. Weaker competitors can die. High-share competitors increase pressure on your growth." /></span>
       </h3>
 
       {rows.length === 0 ? (

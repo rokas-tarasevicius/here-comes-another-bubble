@@ -74,7 +74,7 @@ export function FinanceScreen() {
         {/* P&L Section */}
         <div className="retro-card">
           <h3 className="retro-section-heading">
-            Weekly P&L<InfoTip text="Profit & Loss statement for this week. Revenue minus expenses = net income. Negative net income drains your cash reserves and shortens runway." />
+            <span className="retro-label-tip">Weekly P&L<InfoTip text="Profit & Loss statement for this week. Revenue minus expenses = net income. Negative net income drains your cash reserves and shortens runway." /></span>
           </h3>
 
           {/* Revenue Breakdown */}

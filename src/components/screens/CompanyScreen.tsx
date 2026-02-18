@@ -214,7 +214,7 @@ export function CompanyScreen() {
         const step = Math.max(100, Math.round(pctStep / magnitude) * magnitude);
         return (
           <div className="retro-card">
-            <h3 className="retro-section-heading">Marketing Budget<InfoTip text="Weekly spend on user acquisition. More budget = more customers, but with diminishing returns. Effectiveness depends on your acquisition channel and product quality." /></h3>
+            <h3 className="retro-section-heading"><span className="retro-label-tip">Marketing Budget<InfoTip text="Weekly spend on user acquisition. More budget = more customers, but with diminishing returns. Effectiveness depends on your acquisition channel and product quality." /></span></h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setMarketingBudget(Math.max(0, spend - step))}
@@ -269,7 +269,7 @@ export function CompanyScreen() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Growth Strategy */}
         <div className="retro-card">
-          <h3 className="retro-section-heading">Growth Strategy<InfoTip text="Sets your company's priorities. Affects development speed, burn rate, quality, and tech debt accumulation. Each has trade-offs." /></h3>
+          <h3 className="retro-section-heading"><span className="retro-label-tip">Growth Strategy<InfoTip text="Sets your company's priorities. Affects development speed, burn rate, quality, and tech debt accumulation. Each has trade-offs." /></span></h3>
           <div className="space-y-2">
             {GROWTH_STRATEGIES.map(s => {
               const isActive = meta.growthStrategy === s.id;
@@ -296,7 +296,7 @@ export function CompanyScreen() {
 
         {/* Product Focus */}
         <div className="retro-card">
-          <h3 className="retro-section-heading">Product Focus<InfoTip text="Where your team spends their dev effort each week. New Features grow your product. Quality and Bug Fixing improve stability. Tech Debt reduces accumulated shortcuts. User Growth prioritises scale." /></h3>
+          <h3 className="retro-section-heading"><span className="retro-label-tip">Product Focus<InfoTip text="Where your team spends their dev effort each week. New Features grow your product. Quality and Bug Fixing improve stability. Tech Debt reduces accumulated shortcuts. User Growth prioritises scale." /></span></h3>
           <div className="space-y-2">
             {PRODUCT_FOCUSES.map(f => {
               const isActive = (meta.productFocus ?? 'new-features') === f.id;
@@ -323,7 +323,7 @@ export function CompanyScreen() {
 
         {/* Acquisition Channel */}
         <div className="retro-card">
-          <h3 className="retro-section-heading">User Acquisition<InfoTip text="How you attract new users. Each channel has different cost and effectiveness. Content & SEO compounds over time. Viral/PLG and Sales require high PMF or team size." /></h3>
+          <h3 className="retro-section-heading"><span className="retro-label-tip">User Acquisition<InfoTip text="How you attract new users. Each channel has different cost and effectiveness. Content & SEO compounds over time. Viral/PLG and Sales require high PMF or team size." /></span></h3>
           <div className="space-y-2">
             {ACQUISITION_CHANNELS.map(ch => {
               const available = channelAvailable(ch.id);

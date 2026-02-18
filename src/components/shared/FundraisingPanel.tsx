@@ -88,7 +88,7 @@ export function FundraisingPanel({
     <div className="space-y-4">
       {/* Fundraising */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">Fundraising<InfoTip text="Raise capital from investors to extend your runway. Each round dilutes your equity. Investor interest depends on your valuation, reputation, and market conditions. You can only seek funding once per week." /></h3>
+        <h3 className="retro-section-heading"><span className="retro-label-tip">Fundraising<InfoTip text="Raise capital from investors to extend your runway. Each round dilutes your equity. Investor interest depends on your valuation, reputation, and market conditions. You can only seek funding once per week." /></span></h3>
 
         {/* Equity progress bar */}
         <div className="mb-3">
@@ -120,31 +120,19 @@ export function FundraisingPanel({
               <span className="retro-stat-tag-value">{fundingHistory.length}</span>
             </span>
           )}
-        </div>
-
-        {/* Investor Sentiment & Raise Chance */}
-        <div className="retro-inset p-3 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="retro-label">Investor Sentiment<InfoTip text="How enthusiastic investors are (0–100). Driven by bubble index, market trends, and hype cycles. Higher sentiment = easier fundraising and better valuations." /></span>
-            <span className={`retro-value font-retro-mono text-sm font-semibold ${
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Sentiment<InfoTip text="How enthusiastic investors are (0–100). Driven by bubble index, market trends, and hype cycles. Higher sentiment = easier fundraising and better valuations." /></span>
+            <span className={`retro-stat-tag-value ${
               investorSentiment >= 60 ? 'text-[--color-retro-green]' : investorSentiment >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
-            }`}>{Math.round(investorSentiment)}/100</span>
-          </div>
-          <div className="retro-progress retro-progress-sm mb-3">
-            <div
-              className={`retro-progress-bar ${
-                investorSentiment >= 60 ? 'retro-progress-bar-green' : investorSentiment >= 35 ? 'retro-progress-bar-orange' : 'retro-progress-bar-red'
-              }`}
-              style={{ width: `${investorSentiment}%` }}
-            />
-          </div>
+            }`}>{Math.round(investorSentiment)}</span>
+          </span>
           {nextStage && stage !== 'dead' && stage !== 'public' && (
-            <div className="flex items-center justify-between">
-              <span className="retro-label">Raise Probability<InfoTip text="Your estimated chance of closing a round. Based on investor sentiment (20%), revenue (15%), PMF (15%), founder biz skill (15%), reputation (15%), team size (10%), and network (10%)." /></span>
-              <span className={`retro-value font-retro-mono text-sm font-semibold ${
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Raise %<InfoTip text="Your estimated chance of closing a round. Based on investor sentiment (20%), revenue (15%), PMF (15%), founder biz skill (15%), reputation (15%), team size (10%), and network (10%)." /></span>
+              <span className={`retro-stat-tag-value ${
                 raiseChance >= 60 ? 'text-[--color-retro-green]' : raiseChance >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{Math.round(raiseChance)}%</span>
-            </div>
+            </span>
           )}
         </div>
 
@@ -203,7 +191,7 @@ export function FundraisingPanel({
 
       {/* Pricing */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">Pricing<InfoTip text="Set your revenue model and unit price. Subscription = fixed per customer/week. Usage-Based = variable. Higher price = more revenue per customer but slower growth. 8-week cooldown between model switches." /></h3>
+        <h3 className="retro-section-heading"><span className="retro-label-tip">Pricing<InfoTip text="Set your revenue model and unit price. Subscription = fixed per customer/week. Usage-Based = variable. Higher price = more revenue per customer but slower growth. 8-week cooldown between model switches." /></span></h3>
 
         <div className="flex items-center gap-2 flex-wrap mb-4">
           <span className="retro-stat-tag">

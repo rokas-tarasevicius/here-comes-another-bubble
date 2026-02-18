@@ -650,6 +650,10 @@ button.retro-card:focus-visible {
   padding-bottom: 2px;
 }
 
+.retro-label-tip {
+  padding-bottom: 2px;
+}
+
 .retro-value {
   font-family: var(--font-retro-mono);
   font-size: 13px;

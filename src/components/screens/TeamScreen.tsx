@@ -119,7 +119,7 @@ export function TeamScreen() {
 
       {/* Candidate Pool */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">Candidate Pool<InfoTip text="Available hires. Each candidate leaves after a certain week — act fast. Higher offers increase acceptance chance. Team size affects payroll and your burn rate." /> ({team.candidates?.length ?? 0} available)</h3>
+        <h3 className="retro-section-heading"><span className="retro-label-tip">Candidate Pool<InfoTip text="Available hires. Each candidate leaves after a certain week — act fast. Higher offers increase acceptance chance. Team size affects payroll and your burn rate." /></span> ({team.candidates?.length ?? 0} available)</h3>
         {(!team.candidates || team.candidates.length === 0) ? (
           <p className="text-sm text-[--color-retro-text-muted]">No candidates available. New candidates appear every 4 weeks.</p>
         ) : (
