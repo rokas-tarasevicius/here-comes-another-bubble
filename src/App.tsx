@@ -88,7 +88,17 @@ function App() {
       if (e.key === 'n' || e.key === 'N') {
         if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon && !isSimulating && !showWeekRecap) {
           e.preventDefault();
-          originalEndWeek();
+          const { decisionsThisTurn } = useGameStore.getState();
+          const unresolved = gameState.pendingDecisions.filter(
+            (d) => d.deadline <= gameState.meta.week && !decisionsThisTurn.some(
+              (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+            )
+          );
+          if (unresolved.length > 0) {
+            setScreen('decisions');
+          } else {
+            originalEndWeek();
+          }
         }
       }
 
