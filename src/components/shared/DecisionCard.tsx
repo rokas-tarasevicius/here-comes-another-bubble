@@ -181,16 +181,7 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
             <button
               key={option.id}
               onClick={() => handleSelect(option)}
-              className={`group relative px-3 py-2.5 text-left cursor-pointer rounded-lg border transition-all ${
-                isSelected
-                  ? 'border-[--color-retro-blue]/30 bg-[--color-retro-blue-pale]/40'
-                  : 'border-transparent hover:border-[--color-retro-border]'
-              }`}
-              style={isSelected ? {
-                boxShadow: 'inset 0 1px 3px rgba(51,102,153,0.12), 0 0 0 1px rgba(51,102,153,0.08)',
-              } : {
-                boxShadow: 'none',
-              }}
+              className={`retro-decision-option ${isSelected ? 'retro-decision-option--selected' : ''}`}
             >
               {/* Label + tone */}
               <div className="flex items-center gap-2">
@@ -215,7 +206,7 @@ export function DecisionCard({ decision, currentWeek }: DecisionCardProps) {
                   {combineEffects(option.effects).map((eff) => (
                     <span
                       key={`${eff.path}-${eff.operation}`}
-                      className={`${effectBadgeClass(eff)} font-[--font-retro-mono]`}
+                      className={`${effectBadgeClass(eff)} font-retro-mono`}
                     >
                       {formatEffectValue(eff)}
                     </span>

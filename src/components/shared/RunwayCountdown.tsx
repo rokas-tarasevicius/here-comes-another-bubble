@@ -32,29 +32,35 @@ export function RunwayCountdown({ cash, weeklyBurn, weeklyRevenue = 0 }: RunwayC
   }
 
   return (
-    <div className={`retro-card border-l-4 ${borderColor} text-center`}>
-      <span className="text-xs font-bold uppercase tracking-wider text-[--color-retro-text-muted]">
+    <div className={`retro-card border-l-[5px] ${borderColor} flex flex-col gap-2`}>
+      <span className="retro-label">
         Runway
       </span>
 
       {isProfitable ? (
         <>
-          <div className={`mt-2 text-3xl font-bold font-[--font-retro-mono] ${colorClass}`}>
+          <span className={`retro-value-lg font-retro-mono ${colorClass}`}
+            style={{ textShadow: '0 1px 1px rgba(0,0,0,0.06)' }}
+          >
             Profitable!
-          </div>
-          <p className="mt-1 text-xs text-[--color-retro-text-light]">
+          </span>
+          <span className="text-xs text-[--color-retro-text-light]">
             Revenue exceeds burn rate
-          </p>
+          </span>
         </>
       ) : (
         <>
-          <div className={`mt-2 text-3xl font-bold font-[--font-retro-mono] ${colorClass}`}>
-            {runwayWeeks === Infinity ? '--' : runwayWeeks}{' '}
-            <span className="text-lg font-semibold">weeks</span>
+          <div className="flex items-end gap-1">
+            <span className={`retro-value-lg font-retro-mono ${colorClass}`}
+              style={{ textShadow: '0 1px 1px rgba(0,0,0,0.06)' }}
+            >
+              {runwayWeeks === Infinity ? '\u221E' : runwayWeeks}
+            </span>
+            <span className="text-sm font-medium text-[--color-retro-text-muted] mb-0.5">weeks</span>
           </div>
-          <p className="mt-1 text-xs text-[--color-retro-text-light]">
+          <span className="text-xs text-[--color-retro-text-light]">
             until you run out of money
-          </p>
+          </span>
         </>
       )}
     </div>

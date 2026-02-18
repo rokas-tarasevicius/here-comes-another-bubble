@@ -67,14 +67,14 @@ export function KPICard({
       className={`retro-card border-l-[5px] ${borderColor} flex flex-col gap-2`}
     >
       {/* Title */}
-      <span className="text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>
+      <span className="retro-label">
         {title}
       </span>
 
       {/* Main value + trend row */}
       <div className="flex items-end justify-between gap-2">
         <span
-          className={`text-2xl font-bold font-[--font-retro-mono] ${valueColor}`}
+          className={`retro-value-lg font-retro-mono ${valueColor}`}
           style={{ textShadow: '0 1px 1px rgba(0,0,0,0.06)' }}
         >
           {value}
@@ -98,7 +98,6 @@ export function KPICard({
             data={sparklineData}
             color={sparkHex}
             height={36}
-            width={160}
           />
         </div>
       )}

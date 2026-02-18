@@ -1,29 +1,28 @@
-import { LineChart, Line } from 'recharts';
+import { LineChart, Line, ResponsiveContainer } from 'recharts';
 
 export interface SparklineChartProps {
   data: number[];
-  color?: string;   // hex color string, e.g. "#336699"
-  height?: number;  // default 40
-  width?: number;   // default 120
+  color?: string;
+  height?: number;
 }
 
 /**
  * Tiny inline line chart with no axes, grid, or labels.
  * Renders a smooth monotone curve for sparkline-style display.
+ * Fills the full width of its parent container.
  */
 export function SparklineChart({
   data,
   color = '#336699',
   height = 40,
-  width = 120,
 }: SparklineChartProps) {
   if (data.length < 2) return null;
 
   const chartData = data.map((value, index) => ({ index, value }));
 
   return (
-    <div style={{ width, height }}>
-      <LineChart data={chartData} width={width} height={height}>
+    <ResponsiveContainer width="100%" height={height}>
+      <LineChart data={chartData}>
         <Line
           type="monotone"
           dataKey="value"
@@ -33,6 +32,6 @@ export function SparklineChart({
           isAnimationActive={false}
         />
       </LineChart>
-    </div>
+    </ResponsiveContainer>
   );
 }

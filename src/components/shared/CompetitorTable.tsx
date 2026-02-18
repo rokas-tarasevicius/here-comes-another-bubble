@@ -161,7 +161,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                     </td>
 
                     {/* Funding */}
-                    <td className="font-[--font-retro-mono] text-[--color-retro-text]">
+                    <td className="font-retro-mono text-[--color-retro-text]">
                       {formatCurrency(row.funding)}
                     </td>
 

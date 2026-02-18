@@ -23,6 +23,7 @@ const CATEGORY_BADGE: Record<string, string> = {
  */
 export function WeeklySummary({ gameState }: WeeklySummaryProps) {
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
+  const setScreen = useGameStore((s) => s.setScreen);
   const { meta, eventLog, pendingDecisions, weekHistory, finances, product } = gameState;
   const currentWeek = meta.week;
 
@@ -56,85 +57,86 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
     )
   ).length;
 
+  const formatDelta = (val: number | null, formatter: (n: number) => string, fallback: string) => {
+    if (val === null) return fallback;
+    return `${val >= 0 ? '+' : ''}${formatter(val)}`;
+  };
+
+  const deltaColor = (val: number | null) =>
+    val !== null && val >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]';
+
   return (
-    <div className="retro-card flex flex-col gap-3">
+    <div className="retro-card flex flex-col gap-4">
       <h3 className="retro-section-heading">
         Week {lastWeek} Recap
       </h3>
 
-      {/* Metric Changes */}
-      <div className="retro-inset flex flex-col gap-1.5">
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-[--color-retro-text-muted]">Cash</span>
-          <span className={`font-[--font-retro-mono] font-semibold ${cashDelta !== null && cashDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
-            {cashDelta !== null
-              ? `${cashDelta >= 0 ? '+' : ''}${formatCurrency(cashDelta)}`
-              : formatCurrency(finances.cash)}
+      {/* Performance — stat tags */}
+      <div className="retro-stat-footer">
+        <span className="retro-stat-tag">
+          <span className="retro-stat-tag-label">Cash</span>
+          <span className={`retro-stat-tag-value ${deltaColor(cashDelta)}`}>
+            {formatDelta(cashDelta, formatCurrency, formatCurrency(finances.cash))}
           </span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-[--color-retro-text-muted]">Revenue</span>
-          <span className={`font-[--font-retro-mono] font-semibold ${revenueDelta !== null && revenueDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
-            {revenueDelta !== null
-              ? `${revenueDelta >= 0 ? '+' : ''}${formatCurrency(revenueDelta)}`
-              : formatCurrency(finances.weeklyRevenue)}
+        </span>
+        <span className="retro-stat-tag">
+          <span className="retro-stat-tag-label">Revenue</span>
+          <span className={`retro-stat-tag-value ${deltaColor(revenueDelta)}`}>
+            {formatDelta(revenueDelta, formatCurrency, formatCurrency(finances.weeklyRevenue))}
           </span>
-        </div>
-        <div className="flex items-center justify-between text-sm">
-          <span className="text-[--color-retro-text-muted]">Users</span>
-          <span className={`font-[--font-retro-mono] font-semibold ${customerDelta !== null && customerDelta >= 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>
-            {customerDelta !== null
-              ? `${customerDelta >= 0 ? '+' : ''}${formatNumber(customerDelta)}`
-              : formatNumber(product.customers)}
+        </span>
+        <span className="retro-stat-tag">
+          <span className="retro-stat-tag-label">Users</span>
+          <span className={`retro-stat-tag-value ${deltaColor(customerDelta)}`}>
+            {formatDelta(customerDelta, formatNumber, formatNumber(product.customers))}
           </span>
-        </div>
+        </span>
       </div>
 
-      {/* Divider */}
-      <div className="retro-hr" />
-
       {/* Recent Events */}
-      {lastWeekEvents.length > 0 ? (
-        <div className="flex flex-col gap-0">
-          <span className="text-xs font-bold uppercase tracking-wider text-[--color-retro-text-muted] mb-2">
-            Events
+      {lastWeekEvents.length > 0 && (
+        <div>
+          <span className="retro-label mb-2 block">
+            Events ({lastWeekEvents.length})
           </span>
-          {lastWeekEvents.slice(0, 5).map((event, idx) => (
-            <div key={event.id} className={`flex flex-col gap-0.5 py-2 ${idx > 0 ? 'border-t border-[--color-retro-border]' : ''}`}>
-              <div className="flex items-center gap-2">
-                <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-sm retro-badge-gray'}>
-                  {event.category}
-                </span>
-                <span className="text-sm font-medium text-[--color-retro-text]">{event.title}</span>
+          <div className="space-y-2">
+            {lastWeekEvents.slice(0, 5).map((event) => (
+              <div
+                key={event.id}
+                className="rounded-lg px-3 py-2.5 border border-black/6"
+                style={{
+                  background: 'linear-gradient(to bottom, #ffffff, #fcfbf9)',
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.9)',
+                }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-sm retro-badge-gray'}>
+                    {event.category}
+                  </span>
+                  <span className="text-sm font-semibold text-[--color-retro-text]">{event.title}</span>
+                </div>
+                <p className="text-xs text-[--color-retro-text-muted] line-clamp-2 leading-relaxed">
+                  {event.description}
+                </p>
               </div>
-              <span className="text-xs text-[--color-retro-text-light] line-clamp-2">
-                {event.description}
+            ))}
+            {lastWeekEvents.length > 5 && (
+              <span className="retro-label block text-center">
+                +{lastWeekEvents.length - 5} more
               </span>
-            </div>
-          ))}
-          {lastWeekEvents.length > 5 && (
-            <span className="text-xs text-[--color-retro-text-light]">
-              +{lastWeekEvents.length - 5} more events
-            </span>
-          )}
+            )}
+          </div>
         </div>
-      ) : (
-        <p className="text-sm text-[--color-retro-text-muted]">No events last week.</p>
       )}
 
       {/* Pending decisions */}
       {pendingCount > 0 && (
-        <>
-          <div className="retro-hr" />
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[--color-retro-orange] font-bold">
-              {pendingCount} pending decision{pendingCount > 1 ? 's' : ''}
-            </span>
-            <span className="text-xs text-[--color-retro-text-light]">
-              Resolve before advancing
-            </span>
-          </div>
-        </>
+        <button
+          onClick={() => setScreen('decisions')}
+          className="btn-glossy btn-orange w-full"
+        >
+          {pendingCount} pending decision{pendingCount > 1 ? 's' : ''} — Resolve →
+        </button>
       )}
     </div>
   );

@@ -107,7 +107,7 @@ export function WeekRecap() {
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <h2 className="text-xl font-bold font-[--font-retro-heading] text-[--color-retro-text] mb-4 text-center">
+        <h2 className="text-xl font-bold text-[--color-retro-text] mb-4 text-center">
           Week {meta.week - 1} Recap
         </h2>
 
@@ -121,12 +121,12 @@ export function WeekRecap() {
               <div key={row.label} className="flex items-center justify-between text-sm">
                 <span className="text-[--color-retro-text-muted]">{row.label}</span>
                 <div className="flex items-center gap-3">
-                  <span className="font-[--font-retro-mono] text-[--color-retro-text]">
+                  <span className="font-retro-mono text-[--color-retro-text]">
                     {formatValue(row.current, row.format)}
                   </span>
                   {hasChange && delta !== 0 && (
                     <span
-                      className={`font-[--font-retro-mono] text-xs font-semibold ${
+                      className={`font-retro-mono text-xs font-semibold ${
                         delta > 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'
                       }`}
                     >

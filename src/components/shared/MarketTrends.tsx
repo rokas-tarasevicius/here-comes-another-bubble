@@ -33,9 +33,9 @@ function MeterBar({ label, value, description, color }: {
 
   return (
     <div className="retro-card">
-      <div className="mb-1 flex items-center justify-between">
-        <span className="text-sm font-semibold text-[--color-retro-text]">{label}</span>
-        <span className={`text-sm font-[--font-retro-mono] font-bold ${textColors[color]}`}>
+      <div className="retro-stat-row mb-1.5">
+        <span className="retro-label">{label}</span>
+        <span className={`retro-value ${textColors[color]}`}>
           {Math.round(clamped)}/100
         </span>
       </div>

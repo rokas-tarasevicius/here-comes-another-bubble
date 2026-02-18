@@ -125,7 +125,7 @@ export function FeatureBoard() {
                 <span className={col.badgeClass}>
                   {col.label}
                 </span>
-                <span className="rounded-full bg-[--color-retro-card] border border-[--color-retro-border] px-1.5 py-0.5 text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
+                <span className="rounded-full bg-[--color-retro-card] border border-[--color-retro-border] px-1.5 py-0.5 text-xs font-retro-mono text-[--color-retro-text-muted]">
                   {colFeatures.length}
                 </span>
               </div>
@@ -155,7 +155,7 @@ export function FeatureBoard() {
                       <div className="mb-2">
                         <div className="mb-0.5 flex items-center justify-between">
                           <span className="text-xs text-[--color-retro-text-muted]">Progress</span>
-                          <span className="text-xs font-[--font-retro-mono] text-[--color-retro-text-muted]">
+                          <span className="text-xs font-retro-mono text-[--color-retro-text-muted]">
                             {feature.progress}%
                           </span>
                         </div>

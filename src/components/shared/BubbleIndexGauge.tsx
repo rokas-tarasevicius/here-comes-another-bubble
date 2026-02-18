@@ -93,7 +93,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
 
         {/* Value display */}
         <div className="mt-1 text-center">
-          <span className={`text-2xl font-bold font-[--font-retro-mono] ${zone.color}`}>
+          <span className={`text-2xl font-bold font-retro-mono ${zone.color}`}>
             {Math.round(clamped)}
           </span>
           <span className="text-sm text-[--color-retro-text-light]">/100</span>
