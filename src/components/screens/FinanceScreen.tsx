@@ -47,7 +47,7 @@ export function FinanceScreen() {
   const isGarageStage = company.stage === 'garage' || company.stage === 'pre-seed';
   const baseCost = isGarageStage ? 100 : 500;
   const overheadEstimate = baseCost + team.teamSize * 50;
-  const totalExpenses = totalSalaries + totalAICosts + overheadEstimate;
+  const totalExpenses = totalSalaries + totalAICosts + overheadEstimate + finances.marketingSpend;
   const netIncome = finances.weeklyRevenue - totalExpenses;
 
   // Pricing model display
@@ -160,6 +160,14 @@ export function FinanceScreen() {
                   {formatCurrency(overheadEstimate)}
                 </span>
               </div>
+              {finances.marketingSpend > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-[--color-retro-text-muted]">Marketing</span>
+                  <span className="font-[--font-retro-mono] text-[--color-retro-red]">
+                    {formatCurrency(finances.marketingSpend)}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="mt-2 border-t border-[--color-retro-border] pt-1 flex items-center justify-between text-sm font-semibold">
               <span className="text-[--color-retro-text]">Total Expenses</span>
