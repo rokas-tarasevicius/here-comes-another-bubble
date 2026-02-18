@@ -265,25 +265,24 @@ function simulateRevenue(state: GameState): GameState {
   const pricePerUnit = state.finances.pricePerUnit;
   let revenue = 0;
 
-  // Price sensitivity: if price deviates from segment default, adjust revenue
+  // Price sensitivity for usage-based pricing: customers use less at higher prices.
+  // Subscriptions are predictable — price impact is handled by churn/acquisition instead.
   const segmentDefault = state.market.segmentData.defaultPrice;
   const priceSensitivity = state.market.segmentData.priceSensitivity;
   const priceRatio = segmentDefault > 0 ? pricePerUnit / segmentDefault : 1;
-  // Prices above default lose some customers' willingness to pay
-  // Prices below default don't fully compensate (leaving money on table)
   const priceEfficiency = priceRatio <= 1
-    ? 1 - (1 - priceRatio) * priceSensitivity * 0.3  // slight discount inefficiency
-    : 1 - (priceRatio - 1) * priceSensitivity;        // premium resistance
+    ? 1 - (1 - priceRatio) * priceSensitivity * 0.3
+    : 1 / (1 + Math.log(priceRatio) * priceSensitivity);
 
   switch (state.finances.pricingModel) {
     case 'subscription':
-      revenue = customers * pricePerUnit * qualityModifier * bugPenalty * Math.max(0.1, priceEfficiency);
+      revenue = customers * pricePerUnit * qualityModifier * bugPenalty;
       break;
 
     case 'usage-based': {
       const activityMultiplier = qualityModifier;
       const weeklyNoise = 1 + (Math.random() - 0.5) * 0.15;
-      revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise * Math.max(0.1, priceEfficiency);
+      revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise * priceEfficiency;
       break;
     }
   }
@@ -730,7 +729,7 @@ function simulateCustomers(state: GameState): GameState {
   const segmentGrowthBase = state.market.segmentData.customerGrowthRate;
   // Price sensitivity affects growth — higher prices slow acquisition in price-sensitive segments
   const priceGrowthPenalty = state.finances.pricePerUnit > state.market.segmentData.defaultPrice
-    ? 1 - (state.finances.pricePerUnit / state.market.segmentData.defaultPrice - 1) * state.market.segmentData.priceSensitivity * 0.5
+    ? 1 / (1 + Math.log(state.finances.pricePerUnit / state.market.segmentData.defaultPrice) * state.market.segmentData.priceSensitivity * 0.5)
     : 1 + (1 - state.finances.pricePerUnit / Math.max(1, state.market.segmentData.defaultPrice)) * state.market.segmentData.priceSensitivity * 0.3;
   const pricingGrowthBonus = state.finances.pricingModel === 'subscription' ? 0.8
     : state.finances.pricingModel === 'usage-based' ? 1.2
@@ -769,7 +768,7 @@ function simulateCustomers(state: GameState): GameState {
   const pricingChurnAdjust = state.finances.pricingModel === 'subscription' ? -0.01 : 0.01;
   // Overpricing increases churn in price-sensitive segments
   const priceChurnPenalty = state.finances.pricePerUnit > state.market.segmentData.defaultPrice
-    ? (state.finances.pricePerUnit / state.market.segmentData.defaultPrice - 1) * state.market.segmentData.priceSensitivity * 0.05
+    ? Math.log(state.finances.pricePerUnit / state.market.segmentData.defaultPrice) * state.market.segmentData.priceSensitivity * 0.03
     : 0;
   const pricingBaseChurn = segmentBaseChurn + pricingChurnAdjust + priceChurnPenalty;
 
