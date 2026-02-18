@@ -220,7 +220,6 @@ export const CRISIS_EVENTS: GameEvent[] = [
         effects: [
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'founder.reputation', operation: 'add', value: 3 },
-          { path: 'product.customers', operation: 'add', value: 30 },
         ],
       },
       {
@@ -953,6 +952,327 @@ export const CRISIS_EVENTS: GameEvent[] = [
           { path: 'company.reputation', operation: 'add', value: 5 },
           { path: 'market.investorSentiment', operation: 'add', value: 10 },
           { path: 'team.morale', operation: 'add', value: 5 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 14. Price War ──────────────────────────────────────────────────
+  {
+    id: 'crisis-price-war',
+    title: 'Price War',
+    category: 'market',
+    minWeek: 10,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.product.customers > 20 &&
+      state.meta.week >= 10 &&
+      state.finances.pricingModel !== 'free',
+    descriptions: {
+      default:
+        'A well-funded competitor just undercut your pricing by 60%. They are burning VC money to steal your customers. Their unit economics are hilariously negative but that is their investors\' problem.',
+      realistic:
+        'A competitor backed by $200M in Series C funding just launched an identical product at 60% below your price point. Their CEO is openly bragging about "winning on price" in a podcast. Your sales team is fielding cancellation requests and your Slack is full of panic.',
+      satirical:
+        'A competitor is offering your exact product for negative dollars. They are literally paying people to use it. Their investor deck says "monetization is a Phase 3 concern" and Phase 2 is "achieve sentience." Your customers are switching because free money is, in fact, a compelling value proposition.',
+      mixed:
+        'A VC-backed competitor slashed prices by 60%, subsidizing every customer with investor cash. Their burn rate would make a NASA rocket blush, but your customers do not care about their unit economics — they care about their own budgets.',
+    },
+    immediateEffects: [
+      { path: 'product.customers', operation: 'add', value: -5 },
+      { path: 'company.reputation', operation: 'add', value: -3 },
+    ],
+    decisionOptions: [
+      {
+        id: 'match-price',
+        label: 'Match their price',
+        description:
+          'Slash your pricing to match. You will hemorrhage revenue but at least your customers stay. Your CFO may need therapy.',
+        effects: [
+          { path: 'finances.weeklyRevenue', operation: 'multiply', value: 0.6 },
+          { path: 'product.churnRate', operation: 'multiply', value: 0.7 },
+          { path: 'finances.cash', operation: 'add', value: -10000 },
+        ],
+      },
+      {
+        id: 'differentiate-quality',
+        label: 'Differentiate on quality',
+        description:
+          'Go premium. Position yourself as the "serious" option for customers who want reliability over bargain-bin pricing.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 0.9 },
+          { path: 'product.overallQuality', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'ignore-price-war',
+        label: 'Ignore it',
+        description:
+          'Surely your customers value your product enough to stay. Right? Right? The silence from your Slack sales channel suggests otherwise.',
+        effects: [
+          { path: 'product.churnRate', operation: 'add', value: 0.08 },
+          { path: 'product.customers', operation: 'multiply', value: 0.85 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 15. Customer Concentration Risk ────────────────────────────────
+  {
+    id: 'crisis-customer-concentration',
+    title: 'Customer Concentration Risk',
+    category: 'product',
+    minWeek: 8,
+    maxOccurrences: 2,
+    cooldownWeeks: 12,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.product.customers > 10 &&
+      state.product.customers < 100 &&
+      state.meta.week >= 8 &&
+      state.company.stage !== 'garage',
+    descriptions: {
+      default:
+        'Your biggest customer — the one paying 40% of your revenue — just sent a "we need to discuss our contract" email. That phrase has never preceded good news in the history of business.',
+      realistic:
+        'Your largest enterprise account, responsible for nearly half your MRR, has requested an "urgent contract review meeting." Their procurement team CC\'d legal. Your customer success manager is stress-eating granola bars and rehearsing objection handling in the mirror.',
+      satirical:
+        'The customer who single-handedly keeps your lights on just emailed "Can we hop on a quick call?" which, as any founder knows, is the corporate equivalent of "we need to talk" in a relationship. Your revenue concentration is about to become your revenue evaporation.',
+      mixed:
+        'Your whale customer — 40% of revenue — wants to "revisit the partnership." In startup-speak, that means they are either going to ask for a 50% discount or leave entirely. Either way, building your business on one customer is about to teach you an expensive lesson.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'give-discount',
+        label: 'Give them a loyalty discount',
+        description:
+          'Offer a 15% discount to keep them happy. Your revenue takes a hit, but losing them entirely would be catastrophic.',
+        effects: [
+          { path: 'finances.weeklyRevenue', operation: 'multiply', value: 0.85 },
+          { path: 'product.churnRate', operation: 'multiply', value: 0.8 },
+          { path: 'finances.cash', operation: 'add', value: -5000 },
+        ],
+      },
+      {
+        id: 'call-bluff',
+        label: 'Call their bluff',
+        description:
+          'Stand firm on pricing. They might respect the confidence, or they might walk. Coin flip, basically.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 0.7 },
+          { path: 'company.reputation', operation: 'add', value: -3 },
+        ],
+      },
+      {
+        id: 'diversify-immediately',
+        label: 'Diversify your customer base immediately',
+        description:
+          'Pour money into acquiring new customers so no single account holds you hostage again. Smart but expensive.',
+        effects: [
+          { path: 'finances.marketingSpend', operation: 'multiply', value: 2 },
+          { path: 'finances.cash', operation: 'add', value: -20000 },
+          { path: 'market.investorSentiment', operation: 'add', value: 5 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 16. Talent Bidding War ─────────────────────────────────────────
+  {
+    id: 'crisis-talent-bidding-war',
+    title: 'Talent Bidding War',
+    category: 'team',
+    minWeek: 8,
+    maxOccurrences: 0,
+    cooldownWeeks: 10,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.team.teamSize >= 3 &&
+      state.meta.week >= 8 &&
+      state.market.talentMarketHeat > 40,
+    descriptions: {
+      default:
+        'Your best engineer just got a competing offer at 2x their current salary. They like working here, but they also like eating at restaurants that do not have a dollar menu.',
+      realistic:
+        'A FAANG recruiter has been aggressively poaching your senior engineer with a total comp package that makes your entire annual budget look like a rounding error. The offer includes RSUs, a signing bonus, and something called a "wellness stipend" that costs more than your office lease.',
+      satirical:
+        'Your 10x engineer just received an offer from Google that includes a base salary, stock options, a personal chef, a therapy llama, and a parking spot that is closer to the building than your apartment is to anything. They are "not actively looking" but they are "passively looking really hard."',
+      mixed:
+        'Your best engineer got a competing offer at double their salary. They showed it to you with the energy of someone presenting evidence in a salary negotiation court. The rest of the team is now suspiciously quiet and updating their LinkedIn headlines to "open to opportunities."',
+    },
+    immediateEffects: [
+      { path: 'team.morale', operation: 'add', value: -5 },
+    ],
+    decisionOptions: [
+      {
+        id: 'match-salary',
+        label: 'Match the offer',
+        description:
+          'Match their salary. Of course, now everyone else wants a raise too. You just set a very expensive precedent.',
+        effects: [
+          { path: 'team.avgSalary', operation: 'multiply', value: 1.2 },
+          { path: 'finances.cash', operation: 'add', value: -15000 },
+          { path: 'team.morale', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'counter-with-equity',
+        label: 'Counter with equity',
+        description:
+          'Offer a generous equity package. It costs you ownership but not cash — assuming the company is ever worth anything.',
+        effects: [
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.97 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'let-them-go',
+        label: 'Let them go',
+        description:
+          'Wish them well and watch your best code walk out the door. The team will remember how you handle this.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: -10 },
+          { path: 'company.culture', operation: 'add', value: -5 },
+          { path: 'company.reputation', operation: 'add', value: -3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 17. Platform Rug Pull ──────────────────────────────────────────
+  {
+    id: 'crisis-platform-rug-pull',
+    title: 'Platform Rug Pull',
+    category: 'product',
+    minWeek: 12,
+    maxOccurrences: 2,
+    cooldownWeeks: 20,
+    weight: 2,
+    condition: (state: GameState) =>
+      state.meta.week >= 12 &&
+      state.product.features.length >= 2,
+    descriptions: {
+      default:
+        'The platform you built your product on just changed their API terms. Your entire integration is broken. They gave you 30 days notice, which in startup time is "yesterday."',
+      realistic:
+        'Your primary platform dependency just announced a new API version with breaking changes, a 30-day migration deadline, and pricing that tripled overnight. Their developer relations team posted a cheery blog titled "Exciting Changes Ahead!" which contains neither excitement nor adequate documentation.',
+      satirical:
+        'The platform you built your entire company on just deprecated their API and replaced it with something called "API v2 (Beta) (Experimental) (Do Not Use In Production)." The migration guide is a 404 page and their developer Discord has been renamed to "Coping Strategies."',
+      mixed:
+        'Your platform provider pulled the rug out with 30 days notice. Their CEO called it "evolving the ecosystem" on Twitter. Your CTO called it something unprintable in Slack. Your entire product integration needs to be rebuilt from scratch.',
+    },
+    immediateEffects: [
+      { path: 'product.overallQuality', operation: 'add', value: -10 },
+      { path: 'product.techDebtTotal', operation: 'add', value: 8 },
+      { path: 'company.reputation', operation: 'add', value: -5 },
+    ],
+    decisionOptions: [
+      {
+        id: 'rebuild-new-api',
+        label: 'Rebuild on their new API',
+        description:
+          'Bite the bullet and migrate. At least the new code will be fresh, even if your bank account is not.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -30000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 10 },
+          { path: 'product.overallQuality', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'build-own-infra',
+        label: 'Build your own infrastructure',
+        description:
+          'Never depend on anyone again. It will cost a fortune and take months, but you will own your destiny.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -50000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: -5 },
+          { path: 'product.overallQuality', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'find-alternative',
+        label: 'Find an alternative platform',
+        description:
+          'Switch to a competitor platform. Cheaper than building your own but you are just trading one dependency for another.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -15000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 5 },
+          { path: 'product.overallQuality', operation: 'add', value: -3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 18. Negative Glassdoor Reviews ─────────────────────────────────
+  {
+    id: 'crisis-glassdoor-reviews',
+    title: 'Negative Glassdoor Reviews',
+    category: 'culture',
+    minWeek: 10,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.meta.week >= 10 &&
+      (state.team.morale < 50 || state.company.culture < 40) &&
+      state.team.teamSize >= 2,
+    descriptions: {
+      default:
+        'Former (and possibly current) employees are torching you on Glassdoor. "Great mission, terrible management." "Free snacks don\'t compensate for crying in the bathroom." 2.1 stars.',
+      realistic:
+        'Six new Glassdoor reviews appeared overnight, averaging 1.8 stars. Common themes include "leadership says one thing and does another," "work-life balance is a myth here," and "the ping pong table does not make up for the 70-hour weeks." Two candidates just withdrew their applications citing the reviews.',
+      satirical:
+        'Your Glassdoor page reads like a therapy session transcript. Highlights include "The CEO says we are a family, and honestly that tracks because my actual family also makes me cry" and "Pros: free LaCroix. Cons: everything else." Someone titled their review "Stockholm Syndrome With Equity" and it has 47 helpful votes.',
+      mixed:
+        'Your Glassdoor rating has cratered to 2.1 stars. The most helpful review is titled "Great Product, Terrible Place to Build It" and contains a level of detail that suggests the author is still badge-swiping into your office every morning.',
+    },
+    immediateEffects: [
+      { path: 'company.reputation', operation: 'add', value: -5 },
+      { path: 'market.investorSentiment', operation: 'add', value: -3 },
+    ],
+    decisionOptions: [
+      {
+        id: 'address-issues',
+        label: 'Address the issues head-on',
+        description:
+          'Invest in real culture improvements — better management training, mental health support, and actual work-life boundaries. Novel concept.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -10000 },
+          { path: 'team.morale', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'fake-reviews',
+        label: 'Flood it with fake five-star reviews',
+        description:
+          'Pay a reputation management firm to bury the bad reviews with suspiciously enthusiastic ones. Ethically dubious. Possibly effective.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -2000 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+          { path: 'meta.regulatoryHeat', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'ignore-glassdoor',
+        label: 'Ignore it',
+        description:
+          'Glassdoor reviews are just noise from disgruntled ex-employees, right? Surely this will not compound into a recruiting crisis.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: -3 },
+          { path: 'company.reputation', operation: 'add', value: -3 },
         ],
       },
     ],

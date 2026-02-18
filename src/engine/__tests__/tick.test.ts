@@ -251,7 +251,6 @@ describe('PMF delta preservation', () => {
       ],
     });
 
-    const originalPmf = state.product.pmfScore;
     const next = advanceWeek(state, [
       {
         type: 'respond-to-event',

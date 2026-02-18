@@ -896,4 +896,368 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
     ],
     decisionDeadlineWeeks: 1,
   },
+
+  // ─── 16. Vanity Metrics Offer (Growth Trap) ─────────────────────────
+  {
+    id: 'opportunity-vanity-metrics',
+    title: 'Vanity Metrics Offer',
+    category: 'funding',
+    minWeek: 10,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.meta.week >= 10 &&
+      state.product.customers > 20 &&
+      state.finances.fundingHistory.length > 0,
+    descriptions: {
+      default:
+        'A "growth hacking" firm has slid into your DMs offering to inflate your metrics for investors. Fake signups, bot traffic, inflated DAUs. It is technically not illegal. Technically.',
+      realistic:
+        'A growth consultancy with suspiciously good case studies is offering to "optimize your funnel metrics" before your next investor meeting. Their methods involve bulk email signups from purchased lists, automated bot sessions that inflate DAU counts, and creative reinterpretation of "active user." Their pitch deck uses the phrase "perception is reality" seven times.',
+      satirical:
+        'A firm called "GrowthHackz" (with a z, because integrity) wants to inflate your numbers so aggressively that your Series A deck will look like a hockey stick drew itself. Their CEO assures you this is "standard practice" and that "every unicorn did this early on," which is both probably true and deeply concerning.',
+      mixed:
+        'A growth consultancy is offering to juice your metrics before your next fundraise. The methods are legal in the same way that putting a "hot dog" label on a turkey leg is legal — technically accurate, spiritually bankrupt.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'inflate-metrics',
+        label: 'Do it — perception is reality',
+        description:
+          'Pay them to inflate your numbers. Investors will see hockey-stick growth. Just pray nobody looks too closely at cohort retention.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -20000 },
+          { path: 'market.investorSentiment', operation: 'add', value: 15 },
+          { path: 'company.reputation', operation: 'add', value: 10 },
+          { path: 'meta.regulatoryHeat', operation: 'add', value: 10 },
+        ],
+      },
+      {
+        id: 'decline-vanity',
+        label: 'Decline — real metrics or bust',
+        description:
+          'You would rather grow slowly and honestly than build a house of cards. Your mother would be proud.',
+        effects: [
+          { path: 'founder.reputation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 17. Free Tier Abuse (Growth Trap) ──────────────────────────────
+  {
+    id: 'opportunity-free-tier-abuse',
+    title: 'Free Tier Abuse',
+    category: 'product',
+    minWeek: 8,
+    maxOccurrences: 2,
+    cooldownWeeks: 12,
+    weight: 4,
+    condition: (state: GameState) =>
+      (state.finances.pricingModel === 'free' || state.product.customers > 50) &&
+      state.meta.week >= 8,
+    descriptions: {
+      default:
+        'Bots and scrapers are flooding your free tier. Your infrastructure costs are skyrocketing but your "user count" looks amazing in pitch decks.',
+      realistic:
+        'Your monitoring dashboard shows a 400% spike in API calls, almost all from automated scripts. Someone on Hacker News posted a tutorial on using your free tier as a cheap backend for their crypto bot. Your AWS bill just tripled, but on the bright side, your "Monthly Active Users" chart has never looked better.',
+      satirical:
+        'Congratulations — you have achieved product-market fit with robots. Your free tier is being strip-mined by scrapers, crypto miners, and one very determined teenager running 847 accounts. Your AWS bill now exceeds your revenue by a factor that would make a grown CFO weep, but hey, your pitch deck says "10x user growth" and technically it is not lying.',
+      mixed:
+        'Your free tier has become the all-you-can-eat buffet of the internet. Bots are gorging themselves on your API while your infrastructure groans under the weight. The good news: user numbers are through the roof. The bad news: none of them are human.',
+    },
+    immediateEffects: [
+      { path: 'finances.cash', operation: 'add', value: -8000 },
+    ],
+    decisionOptions: [
+      {
+        id: 'add-rate-limiting',
+        label: 'Add rate limiting',
+        description:
+          'Implement strict rate limits and bot detection. You will lose some legitimate users caught in the crossfire, but your servers will stop crying.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -5000 },
+          { path: 'product.customers', operation: 'multiply', value: 0.9 },
+          { path: 'product.techDebtTotal', operation: 'add', value: -3 },
+          { path: 'product.overallQuality', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'keep-vanity-numbers',
+        label: 'Keep the vanity numbers',
+        description:
+          'Let the bots stay. Your user count looks incredible in investor meetings, and nobody has asked about retention yet.',
+        effects: [
+          { path: 'finances.weeklyBurn', operation: 'add', value: 5000 },
+          { path: 'market.investorSentiment', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'add-paywall',
+        label: 'Add a paywall',
+        description:
+          'Slap a paywall on the free tier. You will lose a lot of users, but the ones who stay are the ones who actually want your product. Revolutionary concept.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 0.7 },
+          { path: 'product.churnRate', operation: 'multiply', value: 0.7 },
+          { path: 'finances.weeklyRevenue', operation: 'add', value: 3000 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 18. Feature Creep Request (Growth Trap) ────────────────────────
+  {
+    id: 'opportunity-feature-creep',
+    title: 'Feature Creep Request',
+    category: 'product',
+    minWeek: 6,
+    maxOccurrences: 0,
+    cooldownWeeks: 8,
+    weight: 4,
+    condition: (state: GameState) =>
+      state.product.customers > 30 &&
+      state.product.features.length >= 1 &&
+      state.meta.week >= 6,
+    descriptions: {
+      default:
+        'Your biggest customer wants custom features that would take weeks to build. They account for 30% of your revenue and they know it.',
+      realistic:
+        'Your largest enterprise customer just sent a 12-page feature request document. They want custom dashboards, a proprietary integration, and a reporting module that has nothing to do with your core product. Their contract renewal is in six weeks. Their account manager has used the phrase "strategic partnership" four times in one email.',
+      satirical:
+        'Your whale customer — the one who pays enough to keep the lights on — has sent you a feature request list that reads like a ransom note. "Build us a custom CRM inside your product or we walk." They know they are 30% of your revenue because they hired an intern specifically to calculate that number and bring it up in every meeting.',
+      mixed:
+        'Your biggest customer has discovered leverage. They want features that have nothing to do with your roadmap, delivered yesterday, and they are casually mentioning competitor names in every email. This is the startup equivalent of a hostage negotiation, except the hostage is your product vision.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'build-custom-features',
+        label: 'Build what they want',
+        description:
+          'Drop everything and build their wish list. The tech debt will be enormous, but so will the invoice.',
+        effects: [
+          { path: 'product.techDebtTotal', operation: 'add', value: 5 },
+          { path: 'product.overallQuality', operation: 'add', value: -5 },
+          { path: 'finances.cash', operation: 'add', value: 15000 },
+          { path: 'product.churnRate', operation: 'multiply', value: 0.8 },
+        ],
+      },
+      {
+        id: 'offer-workaround',
+        label: 'Offer a workaround',
+        description:
+          'Propose a creative workaround using existing features and a bit of duct tape. They will not love it, but they might accept it.',
+        effects: [
+          { path: 'company.reputation', operation: 'add', value: -2 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'say-no-to-creep',
+        label: 'Say no',
+        description:
+          'Politely decline and stay focused on your roadmap. They might leave, but your product stays coherent and your team stays sane.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 0.92 },
+          { path: 'company.culture', operation: 'add', value: 3 },
+          { path: 'product.overallQuality', operation: 'add', value: 2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 19. Premature Scaling Pressure (Growth Trap) ───────────────────
+  {
+    id: 'opportunity-premature-scaling',
+    title: 'Premature Scaling Pressure',
+    category: 'funding',
+    minWeek: 10,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 3,
+    condition: (state: GameState) =>
+      (state.company.stage === 'seed' || state.company.stage === 'series-a') &&
+      state.team.teamSize < 10 &&
+      state.meta.week >= 10 &&
+      state.finances.fundingHistory.length >= 1,
+    descriptions: {
+      default:
+        'Your lead investor wants you to "scale aggressively." They want 10x growth. You have 3 people and a WeWork hot desk.',
+      realistic:
+        'Your lead investor just scheduled an "urgent strategy call." They want to see a plan for 10x growth in the next two quarters, including aggressive hiring, a major marketing push, and expansion into two new verticals. Your entire team fits in a booth at Denny\'s. Your CTO is also your intern.',
+      satirical:
+        'Your VC, who has never operated a business but has very strong opinions about operating businesses, wants you to "blitzscale." They sent you a copy of the book with seventeen passages highlighted, all of which boil down to "spend money faster." They want 10x growth from a team that still shares a single Figma license.',
+      mixed:
+        'The board wants hockey-stick growth and they want it yesterday. Never mind that your entire engineering team is two people who are already working weekends — the investor deck needs bigger numbers, and someone on Sand Hill Road just said the word "blitzscale" with a straight face.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'scale-aggressively',
+        label: 'Scale! Scale! Scale!',
+        description:
+          'Triple the marketing spend, hire fast, and pray. Your investors will be thrilled. Your bank account will not.',
+        effects: [
+          { path: 'finances.marketingSpend', operation: 'multiply', value: 3 },
+          { path: 'finances.cash', operation: 'add', value: -50000 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+          { path: 'market.investorSentiment', operation: 'add', value: 8 },
+        ],
+      },
+      {
+        id: 'grow-sustainably',
+        label: 'Grow sustainably',
+        description:
+          'Push back on the investor. Real growth takes time. They will not love hearing it, but your runway will thank you.',
+        effects: [
+          { path: 'market.investorSentiment', operation: 'add', value: -5 },
+          { path: 'founder.reputation', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'fake-scaling',
+        label: 'Fake it',
+        description:
+          'Spend a little, look like you are scaling. Increase marketing just enough to move the charts, then present it with the confidence of someone who definitely has a plan.',
+        effects: [
+          { path: 'finances.marketingSpend', operation: 'multiply', value: 1.5 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+          { path: 'finances.cash', operation: 'add', value: -15000 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 20. Acqui-hire Offer (Growth Trap) ─────────────────────────────
+  {
+    id: 'opportunity-acquihire-offer',
+    title: 'Acqui-hire Offer',
+    category: 'funding',
+    minWeek: 15,
+    maxOccurrences: 1,
+    cooldownWeeks: 20,
+    weight: 2,
+    condition: (state: GameState) =>
+      state.company.valuation < 200000 &&
+      state.team.teamSize >= 3 &&
+      state.meta.week >= 15,
+    descriptions: {
+      default:
+        'A big tech company wants to acqui-hire your team. Your engineers get six-figure signing bonuses. You get a middle-management title and a Googleplex badge. The startup dream dies, but the 401k lives.',
+      realistic:
+        'A FAANG corp dev team reached out. They are not interested in your product — they want your engineers. The offer is structured as an acquisition, but the term sheet makes it clear: your team gets absorbed, your product gets sunset, and you get a "Director of Special Projects" title that everyone knows means nothing. The signing bonuses, however, are very real.',
+      satirical:
+        'Google wants to buy your startup, not because your product is good, but because your engineers are cheaper to acquire than to recruit. You will get a title like "Senior Director of Innovation" which translates to "person who attends meetings about meetings." Your product will join Google Graveyard within 18 months, but at least you will have free kombucha on tap.',
+      mixed:
+        'A big tech company is offering to acqui-hire your team. The money is real. The "Director" title is not. Your engineers will get six-figure bonuses and RSUs. You will get an existential crisis and a lanyard.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'accept-acquihire',
+        label: 'Accept the offer',
+        description:
+          'Take the money and the badge. The startup dream is over, but your bank account has never felt more alive. Your LinkedIn will say "exited."',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 100000 },
+          { path: 'company.reputation', operation: 'add', value: -20 },
+        ],
+      },
+      {
+        id: 'reject-acquihire',
+        label: 'Reject and double down',
+        description:
+          'Decline the offer and rally the team. Nothing unites a startup like turning down a payday together. Your team believes in the mission now — or at least in proving the big company wrong.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: 10 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'founder.reputation', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'negotiate-acquihire',
+        label: 'Negotiate for more',
+        description:
+          'Counter-offer. Use the leverage to squeeze out a better deal. Your team will feel like bargaining chips, because they are.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: 50000 },
+          { path: 'company.culture', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: -3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 21. Partnership Dependency (Growth Trap) ───────────────────────
+  {
+    id: 'opportunity-platform-partnership',
+    title: 'Partnership Dependency',
+    category: 'market',
+    minWeek: 12,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 3,
+    condition: (state: GameState) =>
+      state.meta.week >= 12 &&
+      state.product.customers > 40 &&
+      state.company.stage !== 'garage',
+    descriptions: {
+      default:
+        'A major platform offers to feature your product in their marketplace. Great exposure, but you would be building on their rails. When they sneeze, you catch pneumonia.',
+      realistic:
+        'A major cloud platform wants to feature your product in their marketplace. They are offering co-marketing, a dedicated integration team, and access to their enterprise customer base. The catch: you need to rebuild your deployment pipeline around their infrastructure, use their auth system, and give them a 30% revenue cut. Also, their API changes every quarter without warning.',
+      satirical:
+        'A platform that changes its API more often than most people change their socks wants you to build your entire product on their infrastructure. They are offering "preferred partner status," which means your logo appears on page 47 of their marketplace next to 200 other "preferred partners." When they inevitably deprecate the API you built on, they will send a cheerful email with 30 days notice and a link to their migration guide that does not exist yet.',
+      mixed:
+        'A major platform is dangling distribution in front of you like a carrot. The exposure would be enormous, but the dependency would be absolute. It is the startup equivalent of moving into your partner\'s apartment on the second date — exciting, terrifying, and very hard to undo.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'accept-platform-partnership',
+        label: 'Accept the partnership',
+        description:
+          'Go all in on the platform. The customer access is worth the dependency. Probably. Hopefully.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 1.3 },
+          { path: 'finances.cash', operation: 'add', value: -10000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 5 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'negotiate-platform-terms',
+        label: 'Negotiate better terms',
+        description:
+          'Push for a less restrictive deal. Less exposure, but you keep more control and dignity.',
+        effects: [
+          { path: 'product.customers', operation: 'multiply', value: 1.15 },
+          { path: 'finances.cash', operation: 'add', value: -5000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 3 },
+          { path: 'company.reputation', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'stay-independent-platform',
+        label: 'Stay independent',
+        description:
+          'Build your own distribution. Slower, harder, but nobody can pull the rug. You control your destiny, even if that destiny involves a lot more cold outreach.',
+        effects: [
+          { path: 'product.overallQuality', operation: 'add', value: 2 },
+          { path: 'company.culture', operation: 'add', value: 3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
 ];

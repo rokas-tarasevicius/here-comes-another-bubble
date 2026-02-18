@@ -934,12 +934,34 @@ function checkGameOver(state: GameState): GameState {
 
   // 1. Out of cash
   if (state.finances.cash <= 0) {
+    const peakCash = Math.max(...state.weekHistory.map(w => w.cash), 0);
+    const burnRate = state.finances.weeklyBurn;
+    const revenue = state.finances.weeklyRevenue;
+    const customers = state.product.customers;
+    const teamSize = state.team.teamSize;
+
+    let details = `Your startup ran out of money after ${state.meta.week} weeks.`;
+    if (burnRate > 0 && revenue > 0) {
+      details += ` You were burning $${Math.round(burnRate).toLocaleString()}/week against only $${Math.round(revenue).toLocaleString()}/week in revenue.`;
+    } else if (burnRate > 0) {
+      details += ` You were burning $${Math.round(burnRate).toLocaleString()}/week with no revenue.`;
+    }
+    if (peakCash > 0) {
+      details += ` Peak cash was $${Math.round(peakCash).toLocaleString()}.`;
+    }
+    if (teamSize > 0) {
+      details += ` ${teamSize} employees are now updating their LinkedIn profiles.`;
+    }
+    if (customers > 0) {
+      details += ` ${customers} customers will need to find a new provider.`;
+    }
+
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: 'Ran out of cash. Your startup is dead.',
+        gameOverReason: details,
       },
     };
   }
@@ -948,12 +970,26 @@ function checkGameOver(state: GameState): GameState {
   // Only trigger if the player HAD a team before (check week history for non-zero team)
   const hadTeamBefore = state.weekHistory.some(w => w.teamSize > 0);
   if (state.team.teamSize === 0 && hadTeamBefore && state.meta.week > 3) {
+    const peakTeam = Math.max(...state.weekHistory.map(w => w.teamSize), 0);
+    const avgMorale = state.weekHistory.length > 0
+      ? Math.round(state.weekHistory.slice(-4).reduce((sum, w) => sum + (w.avgMorale ?? 50), 0) / Math.min(4, state.weekHistory.length))
+      : 50;
+
+    let details = `Everyone quit. Your entire team walked out after ${state.meta.week} weeks.`;
+    if (peakTeam > 0) {
+      details += ` You once had ${peakTeam} people believing in the mission.`;
+    }
+    if (avgMorale < 30) {
+      details += ` Morale had been at rock-bottom (${avgMorale}%) for weeks — the writing was on the wall.`;
+    }
+    details += ` There's nobody left to build your "disruptive AI solution."`;
+
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: "Everyone quit. Your entire team walked out. There's nobody left to build your 'disruptive AI solution.'",
+        gameOverReason: details,
       },
     };
   }
@@ -963,12 +999,24 @@ function checkGameOver(state: GameState): GameState {
     (e) => e.eventId === 'auto-bubble-emergency' && e.resolvedOptionId === 'shutdown',
   );
   if (shutdownChosen) {
+    const cashLeft = Math.round(state.finances.cash);
+    const valuation = state.company.valuation;
+
+    let details = `You chose to shut down after ${state.meta.week} weeks.`;
+    if (cashLeft > 0) {
+      details += ` $${cashLeft.toLocaleString()} in remaining cash was returned to investors.`;
+    }
+    if (valuation > 0) {
+      details += ` At its peak, ${state.company.name} was valued at $${Math.round(valuation).toLocaleString()}.`;
+    }
+    details += ' The dream is over — but at least you got out on your own terms.';
+
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: 'You chose to shut down. The remaining cash was returned to investors. The dream is over.',
+        gameOverReason: details,
       },
     };
   }
@@ -976,24 +1024,22 @@ function checkGameOver(state: GameState): GameState {
   // 4. Regulatory Shutdown: regulatoryHeat exceeds 80 in healthcare/fintech
   const isRegulatedSegment = state.market.segment === 'ai-healthcare' || state.market.segment === 'ai-fintech';
   if (isRegulatedSegment && state.meta.regulatoryHeat > 80) {
-    return {
-      ...state,
-      meta: {
-        ...state.meta,
-        gameOver: true,
-        gameOverReason: "The regulators shut you down. Turns out 'move fast and break things' doesn't work in regulated industries.",
-      },
-    };
-  }
+    const segment = state.market.segment === 'ai-healthcare' ? 'healthcare' : 'fintech';
+    const heat = Math.round(state.meta.regulatoryHeat);
 
-  // 5. Acqui-hire Loss: valuation < $50K AND team > 3 AND random check
-  if (state.company.valuation < 50_000 && state.team.teamSize > 3 && Math.random() < 0.15) {
+    let details = `The regulators shut you down after ${state.meta.week} weeks.`;
+    details += ` Regulatory heat reached ${heat}/100 in the ${segment} sector.`;
+    details += ` Turns out "move fast and break things" doesn't work when you're handling ${segment === 'healthcare' ? 'patient data' : 'people\'s money'}.`;
+    if (state.product.customers > 0) {
+      details += ` ${state.product.customers} customers are now stuck in regulatory limbo.`;
+    }
+
     return {
       ...state,
       meta: {
         ...state.meta,
         gameOver: true,
-        gameOverReason: 'Google acqui-hired your team. You get a signing bonus and a badge. Your startup dream dies in a Googleplex conference room.',
+        gameOverReason: details,
       },
     };
   }
@@ -1140,7 +1186,6 @@ export function advanceWeek(
 
   // 2.5 Save pre-event values for derived state conflict resolution
   const preEventBurn = next.finances.weeklyBurn;
-  const preEventRevenue = next.finances.weeklyRevenue;
   const preEventValuation = next.company.valuation;
 
   // 3. Process events (capture PMF before events so we can preserve event deltas)
@@ -1149,13 +1194,10 @@ export function advanceWeek(
 
   // 3.5 Detect event-applied modifiers
   const postEventBurn = next.finances.weeklyBurn;
-  const postEventRevenue = next.finances.weeklyRevenue;
   const postEventValuation = next.company.valuation;
 
   const burnRatio = preEventBurn > 0 && postEventBurn !== preEventBurn
     ? postEventBurn / preEventBurn : 1;
-  const revenueRatio = preEventRevenue > 0 && postEventRevenue !== preEventRevenue
-    ? postEventRevenue / preEventRevenue : 1;
   const valuationRatio = preEventValuation > 0 && postEventValuation !== preEventValuation
     ? postEventValuation / preEventValuation : 1;
 

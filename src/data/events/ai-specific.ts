@@ -140,11 +140,7 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         label: 'Stick with current model',
         description:
           'If it ain\'t broke, don\'t fix it. Save the money and focus on product.',
-        effects: [
-          { path: 'product.overallQuality', operation: 'add', value: -3 },
-          { path: 'company.culture', operation: 'add', value: -3 },
-          { path: 'team.morale', operation: 'add', value: -3 },
-        ],
+        effects: [],
       },
     ],
     decisionDeadlineWeeks: 2,
@@ -182,7 +178,6 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
           'Eat the margin hit. Keep customers happy. Hope they drop prices again.',
         effects: [
           { path: 'finances.cash', operation: 'add', value: -30000 },
-          { path: 'product.customers', operation: 'add', value: 5 },
         ],
       },
       {
@@ -191,7 +186,6 @@ export const AI_SPECIFIC_EVENTS: GameEvent[] = [
         description:
           'Raise your own prices. Some customers will leave but the math has to work.',
         effects: [
-          { path: 'finances.weeklyRevenue', operation: 'multiply', value: 1.2 },
           { path: 'product.customers', operation: 'multiply', value: 0.85 },
           { path: 'product.churnRate', operation: 'add', value: 0.05 },
           { path: 'company.reputation', operation: 'add', value: -3 },

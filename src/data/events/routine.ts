@@ -233,10 +233,10 @@ export const ROUTINE_EVENTS: GameEvent[] = [
       {
         id: 'switch-provider',
         label: 'Evaluate Switching Providers',
-        description: 'Look into alternatives. Risk of migration headaches.',
+        description: 'Look into alternatives. Migration costs and headaches guaranteed.',
         effects: [
-          { path: 'product.techDebtTotal', operation: 'add', value: 3 },
-          { path: 'finances.cash', operation: 'add', value: 2_000 },
+          { path: 'product.techDebtTotal', operation: 'add', value: 5 },
+          { path: 'finances.cash', operation: 'add', value: -6_000 },
         ],
       },
     ],
@@ -1211,6 +1211,293 @@ export const ROUTINE_EVENTS: GameEvent[] = [
         effects: [
           { path: 'founder.bizSkill', operation: 'add', value: 1 },
         ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 26. Investor Dinner ──────────────────────────────────────────────
+  {
+    id: 'routine-investor-dinner',
+    title: 'Investor Dinner',
+    category: 'funding',
+    minWeek: 4,
+    maxOccurrences: 0,
+    cooldownWeeks: 6,
+    weight: 4,
+    condition: (state) =>
+      state.finances.cash > 20_000 &&
+      state.meta.week >= 4 &&
+      (state.finances.fundingHistory.length > 0 || state.company.valuation > 100_000),
+    descriptions: {
+      default: 'A prominent VC wants to have dinner with you to discuss your startup.',
+      realistic:
+        'A well-connected investor reached out for dinner. These relationships take years to build — this is your chance to get warm intros to their portfolio network.',
+      satirical:
+        'A Sand Hill Road VC wants dinner at a restaurant where the appetizers cost more than your MRR. They\'ll spend two hours name-dropping their portfolio companies and exactly four minutes listening to your pitch. But hey — warm intros.',
+      mixed:
+        'Dinner invite from a VC. The restaurant has no prices on the menu, which means you can\'t afford it. But in venture capital, spending money you don\'t have to impress people you don\'t like is called "networking."',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'go-to-dinner',
+        label: 'Go to Dinner',
+        description: 'Show up, dress nice, pick up the tab. Full networking mode.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -3_000 },
+          { path: 'market.investorSentiment', operation: 'add', value: 5 },
+          { path: 'founder.reputation', operation: 'add', value: 2 },
+          { path: 'founder.network', operation: 'add', value: 1 },
+        ],
+      },
+      {
+        id: 'send-cofounder',
+        label: 'Send Your Co-founder',
+        description: 'Delegate the schmoozing. Cheaper, but less impactful.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -1_500 },
+          { path: 'market.investorSentiment', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'decline-dinner',
+        label: 'Politely Decline',
+        description: 'You\'re too busy building. VCs remember snubs though.',
+        effects: [
+          { path: 'market.investorSentiment', operation: 'add', value: -2 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 27. Founder Burnout ──────────────────────────────────────────────
+  {
+    id: 'routine-founder-burnout',
+    title: 'Founder Burnout',
+    category: 'personal',
+    minWeek: 10,
+    maxOccurrences: 3,
+    cooldownWeeks: 12,
+    weight: 3,
+    condition: (state) =>
+      state.meta.week >= 10 &&
+      (state.team.morale < 60 || state.meta.lowMoraleWeeks > 3),
+    descriptions: {
+      default: 'You\'ve been working too hard. Burnout is setting in across the team.',
+      realistic:
+        'The 80-hour weeks are catching up. Decision quality is declining, you\'re snapping at people in Slack, and the last time you saw sunlight was during a coffee run two Tuesdays ago.',
+      satirical:
+        'You\'ve been working 80-hour weeks. The bags under your eyes have bags. Your therapist fired you for not showing up. Your Slack status has been "🔥 grinding" for six weeks straight. Your body is running on cortisol and cold brew.',
+      mixed:
+        'Burnout check: you fell asleep during your own standup, you\'ve eaten cereal for dinner seven days running, and your therapist keeps texting "u ok?" You are not ok. Nobody is ok.',
+    },
+    immediateEffects: [
+      { path: 'team.morale', operation: 'add', value: -3 },
+      { path: 'company.culture', operation: 'add', value: -2 },
+    ],
+    decisionOptions: [
+      {
+        id: 'take-week-off',
+        label: 'Take a Week Off',
+        description: 'Rest and recharge. VCs will judge you, but your brain will thank you.',
+        effects: [
+          { path: 'company.reputation', operation: 'add', value: -5 },
+          { path: 'team.morale', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+          { path: 'founder.learning', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'power-through',
+        label: 'Power Through',
+        description: 'Sleep is for the post-exit version of you. Push harder.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -3 },
+          { path: 'founder.techSkill', operation: 'add', value: 2 },
+        ],
+        tone: 'satirical',
+      },
+      {
+        id: 'hire-executive-coach',
+        label: 'Hire an Executive Coach',
+        description: 'A professional who tells you what your friends already said, but for $15K.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -15_000 },
+          { path: 'founder.bizSkill', operation: 'add', value: 5 },
+          { path: 'founder.reputation', operation: 'add', value: 3 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 1,
+  },
+
+  // ─── 28. Founder Gets Recruited ───────────────────────────────────────
+  {
+    id: 'routine-founder-recruited',
+    title: 'Founder Gets Recruited',
+    category: 'personal',
+    minWeek: 12,
+    maxOccurrences: 2,
+    cooldownWeeks: 16,
+    weight: 2,
+    condition: (state) =>
+      state.meta.week >= 12 &&
+      state.founder.reputation >= 30 &&
+      state.team.teamSize >= 3,
+    descriptions: {
+      default: 'A big tech recruiter reached out with an offer you\'d be crazy to consider. Right?',
+      realistic:
+        'A FAANG recruiter contacted you about a VP-level role. $500K base, RSUs, full benefits. It\'s a serious offer that would provide financial stability — but would mean walking away from everything you\'ve built.',
+      satirical:
+        'A FAANG recruiter slid into your DMs. $500K base, RSUs, free lunch forever. Your startup pays you in equity and existential dread. The recruiter\'s LinkedIn message started with "I know you\'re not looking, but..." — the startup founder\'s forbidden fruit.',
+      mixed:
+        'Big tech recruiter DM\'d you. Half a million base, unlimited PTO (that nobody actually takes), and a cafeteria with seven cuisine stations. Your current compensation: ramen equity and the privilege of checking Slack at 2 AM.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'not-interested',
+        label: 'Not Interested',
+        description: 'You\'re building something here. Loyalty inspires the team.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: 3 },
+          { path: 'company.culture', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'hear-them-out',
+        label: 'Hear Them Out',
+        description: 'Take the call. Word might get around though.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: -3 },
+          { path: 'founder.network', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'use-as-leverage',
+        label: 'Use It as Leverage',
+        description: 'Negotiate a raise for yourself. Founders deserve to eat too.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -10_000 },
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+        ],
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 29. Equity Dispute ───────────────────────────────────────────────
+  {
+    id: 'routine-equity-dispute',
+    title: 'Equity Dispute',
+    category: 'team',
+    minWeek: 8,
+    maxOccurrences: 2,
+    cooldownWeeks: 20,
+    weight: 3,
+    condition: (state) =>
+      state.meta.week >= 8 &&
+      state.team.teamSize >= 2 &&
+      state.company.stage !== 'garage',
+    descriptions: {
+      default: 'An early employee is asking for more equity. They have a compelling case.',
+      realistic:
+        'Employee #1 has requested a meeting about equity. They joined when the company was two people and a whiteboard. They wrote most of the core product. Their current equity share doesn\'t reflect their contribution, and they know it.',
+      satirical:
+        'Employee #1 says they deserve more equity. They wrote 80% of the code. They have a point. Your lawyer has a different point. Your cap table is about to become a group therapy session. The 409A valuation just became everyone\'s favorite topic.',
+      mixed:
+        'The equity conversation you\'ve been dreading is here. Your first employee wants a bigger slice. They built the product while you were "doing BD" (updating your LinkedIn). They have a spreadsheet. You have anxiety.',
+    },
+    immediateEffects: [
+      { path: 'team.morale', operation: 'add', value: -3 },
+    ],
+    decisionOptions: [
+      {
+        id: 'grant-equity',
+        label: 'Grant Extra Equity',
+        description: 'Dilute yourself a bit. They earned it. Team unity restored.',
+        effects: [
+          { path: 'finances.founderEquity', operation: 'multiply', value: 0.97 },
+          { path: 'team.morale', operation: 'add', value: 8 },
+          { path: 'company.culture', operation: 'add', value: 5 },
+        ],
+      },
+      {
+        id: 'offer-raise-instead',
+        label: 'Offer a Raise Instead',
+        description: 'Cash now vs. equity later. Easier on the cap table.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -5_000 },
+          { path: 'team.morale', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'explain-vesting',
+        label: 'Explain the Vesting Schedule Again',
+        description: 'Pull out the whiteboard. They\'ve heard this speech before.',
+        effects: [
+          { path: 'team.morale', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -3 },
+        ],
+        tone: 'satirical',
+      },
+    ],
+    decisionDeadlineWeeks: 2,
+  },
+
+  // ─── 30. Speaking Invitation ──────────────────────────────────────────
+  {
+    id: 'routine-speaking-invite',
+    title: 'Speaking Invitation',
+    category: 'personal',
+    minWeek: 8,
+    maxOccurrences: 0,
+    cooldownWeeks: 10,
+    weight: 3,
+    condition: (state) =>
+      state.meta.week >= 8 &&
+      (state.company.reputation >= 15 || state.founder.reputation >= 25) &&
+      state.product.customers > 10,
+    descriptions: {
+      default: 'A tech conference invited you to speak on a panel about the future of AI.',
+      realistic:
+        'You\'ve been invited to speak at a respected industry conference. It\'s a great opportunity for brand visibility, recruiting, and investor attention — if you can deliver a compelling talk.',
+      satirical:
+        'A tech conference wants you to speak on a panel about "AI and the Future of Everything." The other panelists all have more funding than you. One of them literally coined the term "synergy." You\'ll have exactly 7 minutes to sound smart before the moderator pivots to someone from Google.',
+      mixed:
+        'Conference speaking invite. You\'ll be on a panel with three people who have 100x your funding and one person who keeps saying "blockchain" unprompted. Great exposure though — if you can get a word in edgewise.',
+    },
+    immediateEffects: [],
+    decisionOptions: [
+      {
+        id: 'accept-and-prepare',
+        label: 'Accept and Prepare',
+        description: 'Fly out, nail the talk, work the afterparty. Full send.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -2_000 },
+          { path: 'company.reputation', operation: 'add', value: 5 },
+          { path: 'founder.reputation', operation: 'add', value: 5 },
+          { path: 'market.investorSentiment', operation: 'add', value: 3 },
+        ],
+      },
+      {
+        id: 'accept-wing-it',
+        label: 'Accept but Wing It',
+        description: 'Show up, improvise, hope for the best. Cheaper but riskier.',
+        effects: [
+          { path: 'finances.cash', operation: 'add', value: -1_000 },
+          { path: 'company.reputation', operation: 'add', value: 2 },
+          { path: 'founder.reputation', operation: 'add', value: 2 },
+        ],
+      },
+      {
+        id: 'decline-invite',
+        label: 'Decline',
+        description: 'Focus on the product. Conferences will still be there next quarter.',
+        effects: [],
       },
     ],
     decisionDeadlineWeeks: 2,
