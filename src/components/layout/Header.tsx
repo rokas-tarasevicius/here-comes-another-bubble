@@ -47,6 +47,7 @@ export function Header() {
   const gameState = useGameStore((s) => s.gameState);
   const isSimulating = useGameStore((s) => s.isSimulating);
   const endWeek = useGameStore((s) => s.endWeek);
+  const setScreen = useGameStore((s) => s.setScreen);
 
   if (!gameState) return null;
 
@@ -101,12 +102,14 @@ export function Header() {
         )}
 
         <button
-          onClick={endWeek}
-          disabled={isSimulating || hasUrgentUnresolved}
+          onClick={hasUrgentUnresolved ? () => setScreen('decisions') : endWeek}
+          disabled={isSimulating}
           className={`btn-glossy text-xs md:text-sm ${
-            isSimulating || hasUrgentUnresolved
+            isSimulating
               ? 'btn-silver cursor-not-allowed opacity-60'
-              : 'btn-green'
+              : hasUrgentUnresolved
+                ? 'btn-red'
+                : 'btn-green'
           }`}
         >
           {isSimulating ? 'Simulating...' : hasUrgentUnresolved ? 'Resolve Decisions First' : 'Next Week \u2192'}
