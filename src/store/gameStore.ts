@@ -115,6 +115,8 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       currentScreen: 'overview',
       decisionsThisTurn: [],
       isSimulating: false,
+      showWeekRecap: false,
+      lastSaveTime: null,
       tutorialStep: tutorialDone ? null : 0,
     });
   },

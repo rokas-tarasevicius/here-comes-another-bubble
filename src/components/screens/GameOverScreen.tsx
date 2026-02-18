@@ -280,13 +280,19 @@ export function GameOverScreen() {
         {/* Action buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button
-            onClick={() => setScreen('newgame')}
+            onClick={() => {
+              useGameStore.setState({ gameState: null, showWeekRecap: false });
+              setScreen('newgame');
+            }}
             className="btn-glossy btn-glossy-lg btn-green"
           >
             New Game
           </button>
           <button
-            onClick={() => setScreen('title')}
+            onClick={() => {
+              useGameStore.setState({ gameState: null, showWeekRecap: false });
+              setScreen('title');
+            }}
             className="btn-glossy btn-glossy-lg btn-silver"
           >
             Main Menu
