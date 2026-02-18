@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import './index.css';
 import { useGameStore } from './store/index.ts';
 import { AppShell } from './components/layout/AppShell.tsx';
@@ -8,6 +8,7 @@ import { OverviewScreen } from './components/screens/OverviewScreen.tsx';
 import { FinanceScreen } from './components/screens/FinanceScreen.tsx';
 import { MarketScreen } from './components/screens/MarketScreen.tsx';
 import { CompanyScreen } from './components/screens/CompanyScreen.tsx';
+import { TeamScreen } from './components/screens/TeamScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
@@ -17,23 +18,33 @@ import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
 
+const GAMEPLAY_SCREENS = [
+  { id: 'overview', Component: OverviewScreen },
+  { id: 'company', Component: CompanyScreen },
+  { id: 'team', Component: TeamScreen },
+  { id: 'finance', Component: FinanceScreen },
+  { id: 'market', Component: MarketScreen },
+  { id: 'decisions', Component: DecisionScreen },
+] as const;
+
 function GameplayScreen() {
   const currentScreen = useGameStore((s) => s.currentScreen);
+  const visited = useRef(new Set<string>([currentScreen]));
+  visited.current.add(currentScreen);
 
-  switch (currentScreen) {
-    case 'overview':
-      return <OverviewScreen />;
-    case 'company':
-      return <CompanyScreen />;
-    case 'finance':
-      return <FinanceScreen />;
-    case 'market':
-      return <MarketScreen />;
-    case 'decisions':
-      return <DecisionScreen />;
-    default:
-      return <OverviewScreen />;
-  }
+  return (
+    <>
+      {GAMEPLAY_SCREENS.map(({ id, Component }) => {
+        if (!visited.current.has(id)) return null;
+        const active = currentScreen === id;
+        return (
+          <div key={id} hidden={!active}>
+            <Component />
+          </div>
+        );
+      })}
+    </>
+  );
 }
 
 // ─── App root ──────────────────────────────────────────────────────────
@@ -77,15 +88,25 @@ function App() {
       if (e.key === 'n' || e.key === 'N') {
         if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon && !isSimulating && !showWeekRecap) {
           e.preventDefault();
-          originalEndWeek();
+          const { decisionsThisTurn } = useGameStore.getState();
+          const unresolved = gameState.pendingDecisions.filter(
+            (d) => d.deadline <= gameState.meta.week && !decisionsThisTurn.some(
+              (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+            )
+          );
+          if (unresolved.length > 0) {
+            setScreen('decisions');
+          } else {
+            originalEndWeek();
+          }
         }
       }
 
-      // Number keys 1-5 for screen navigation
+      // Number keys 1-6 for screen navigation
       if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
-        const screens = ['overview', 'company', 'finance', 'market', 'decisions'];
+        const screens = ['overview', 'company', 'team', 'finance', 'market', 'decisions'];
         const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 5) {
+        if (num >= 1 && num <= screens.length) {
           e.preventDefault();
           setScreen(screens[num - 1]);
         }

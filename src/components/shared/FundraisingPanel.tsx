@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { CompanyStage, FundingRound, PricingModel } from '../../types/game.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
+import { InfoTip } from './InfoTip.tsx';
 
 export interface FundraisingPanelProps {
   stage: CompanyStage;
@@ -10,6 +11,9 @@ export interface FundraisingPanelProps {
   pricePerUnit: number;
   lastPricingChangeWeek: number;
   currentWeek: number;
+  fundingSoughtThisWeek?: boolean;
+  investorSentiment: number;
+  raiseChance: number;
   onSeekFunding: (targetStage: string) => void;
   onChangePricing: (model: PricingModel, price: number) => void;
 }
@@ -53,6 +57,9 @@ export function FundraisingPanel({
   pricePerUnit,
   lastPricingChangeWeek,
   currentWeek,
+  fundingSoughtThisWeek,
+  investorSentiment,
+  raiseChance,
   onSeekFunding,
   onChangePricing,
 }: FundraisingPanelProps) {
@@ -79,26 +86,15 @@ export function FundraisingPanel({
 
   return (
     <div className="space-y-4">
-      {/* Stage & Equity */}
+      {/* Fundraising */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">
-          Fundraising
-        </h3>
+        <h3 className="retro-section-heading"><span className="retro-label-tip">Fundraising<InfoTip text="Raise capital from investors to extend your runway. Each round dilutes your equity. Investor interest depends on your valuation, reputation, and market conditions. You can only seek funding once per week." /></span></h3>
 
-        <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm text-[--color-retro-text]">Company Stage</span>
-          <span className="retro-badge retro-badge-green">
-            {STAGE_LABELS[stage]}
-          </span>
-        </div>
-
-        {/* Founder Equity Bar */}
-        <div className="retro-inset mb-3">
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm text-[--color-retro-text]">Founder Equity</span>
-            <span className="text-sm font-[--font-retro-mono] font-bold text-[--color-retro-green]">
-              {formatPercent(equityPercent)}
-            </span>
+        {/* Equity progress bar */}
+        <div className="mb-3">
+          <div className="flex items-baseline justify-between mb-1.5">
+            <span className="retro-label">Founder Equity<InfoTip text="Your ownership stake. Diluted each funding round. Keep above 10% to maintain board control. Your final payout at exit = valuation × equity." /></span>
+            <span className="retro-value text-[--color-retro-green]">{formatPercent(equityPercent)}</span>
           </div>
           <div className="retro-progress">
             <div
@@ -106,23 +102,55 @@ export function FundraisingPanel({
               style={{ width: `${equityPercent}%` }}
             />
           </div>
-          <p className="mt-1 text-xs text-[--color-retro-text-light]">
-            {formatPercent(dilutionPercent)} diluted to investors
-          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="flex items-center gap-2 flex-wrap mb-4">
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Stage</span>
+            <span className="retro-stat-tag-value">{STAGE_LABELS[stage]}</span>
+          </span>
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Diluted<InfoTip text="Total equity given away to investors across all rounds. Every fundraise increases dilution. Higher dilution = lower founder payout at exit." /></span>
+            <span className="retro-stat-tag-value text-[--color-retro-orange]">{formatPercent(dilutionPercent)}</span>
+          </span>
+          {fundingHistory.length > 0 && (
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Rounds</span>
+              <span className="retro-stat-tag-value">{fundingHistory.length}</span>
+            </span>
+          )}
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Sentiment<InfoTip text="How enthusiastic investors are (0–100). Driven by bubble index, market trends, and hype cycles. Higher sentiment = easier fundraising and better valuations." /></span>
+            <span className={`retro-stat-tag-value ${
+              investorSentiment >= 60 ? 'text-[--color-retro-green]' : investorSentiment >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+            }`}>{Math.round(investorSentiment)}</span>
+          </span>
+          {nextStage && stage !== 'dead' && stage !== 'public' && (
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Raise %<InfoTip text="Your estimated chance of closing a round. Based on investor sentiment (20%), revenue (15%), PMF (15%), founder biz skill (15%), reputation (15%), team size (10%), and network (10%)." /></span>
+              <span className={`retro-stat-tag-value ${
+                raiseChance >= 60 ? 'text-[--color-retro-green]' : raiseChance >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+              }`}>{Math.round(raiseChance)}%</span>
+            </span>
+          )}
         </div>
 
         {/* Seek Funding Button */}
         {nextStage && stage !== 'dead' && stage !== 'public' && (
           <button
             onClick={handleSeekFunding}
-            className="btn-glossy btn-green w-full"
+            disabled={!!fundingSoughtThisWeek}
+            className={`btn-glossy w-full ${fundingSoughtThisWeek ? 'btn-silver opacity-60 cursor-not-allowed' : 'btn-green'}`}
           >
-            Seek Funding ({nextStage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())})
+            {fundingSoughtThisWeek
+              ? 'Funding Sought This Week'
+              : `Seek Funding (${nextStage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())})`}
           </button>
         )}
       </div>
 
-      {/* Funding History Table */}
+      {/* Funding History */}
       {fundingHistory.length > 0 && (
         <div className="retro-card" style={{ padding: 0 }}>
           <h3 className="retro-section-heading" style={{ margin: '16px 16px 12px' }}>
@@ -133,10 +161,10 @@ export function FundraisingPanel({
               <thead>
                 <tr>
                   <th>Stage</th>
-                  <th>Amount</th>
-                  <th>Valuation</th>
+                  <th className="text-right">Amount</th>
+                  <th className="text-right">Valuation</th>
                   <th>Investor</th>
-                  <th>Week</th>
+                  <th className="text-right">Week</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,14 +173,14 @@ export function FundraisingPanel({
                     <td className="font-semibold text-[--color-retro-text]">
                       {round.stage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
                     </td>
-                    <td className="font-[--font-retro-mono] text-[--color-retro-green] font-semibold">
+                    <td className="font-retro-mono text-[--color-retro-green] font-semibold text-right">
                       {formatCurrency(round.amount)}
                     </td>
-                    <td className="font-[--font-retro-mono] text-[--color-retro-text]">
+                    <td className="font-retro-mono text-[--color-retro-text] text-right">
                       {formatCurrency(round.valuation)}
                     </td>
                     <td className="text-[--color-retro-text-muted]">{round.investorName}</td>
-                    <td className="text-[--color-retro-text-light]">{round.weekClosed}</td>
+                    <td className="font-retro-mono text-[--color-retro-text-light] text-right">{round.weekClosed}</td>
                   </tr>
                 ))}
               </tbody>
@@ -161,57 +189,55 @@ export function FundraisingPanel({
         </div>
       )}
 
-      {/* Pricing Section */}
+      {/* Pricing */}
       <div className="retro-card">
-        <h3 className="retro-section-heading">
-          Pricing
-        </h3>
+        <h3 className="retro-section-heading"><span className="retro-label-tip">Pricing<InfoTip text="Set your revenue model and unit price. Subscription = fixed per customer/week. Usage-Based = variable. Higher price = more revenue per customer but slower growth. 8-week cooldown between model switches." /></span></h3>
 
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm text-[--color-retro-text]">Current Model</span>
-          <span className="retro-badge retro-badge-blue">
-            {PRICING_MODELS.find((m) => m.value === pricingModel)?.label ?? pricingModel}
+        <div className="flex items-center gap-2 flex-wrap mb-4">
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Model</span>
+            <span className="retro-stat-tag-value">{PRICING_MODELS.find((m) => m.value === pricingModel)?.label ?? pricingModel}</span>
           </span>
-        </div>
-
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm text-[--color-retro-text]">Price per Unit</span>
-          <span className="text-sm font-[--font-retro-mono] font-bold text-[--color-retro-blue]">
-            {formatCurrency(pricePerUnit)}
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Unit Price</span>
+            <span className="retro-stat-tag-value text-[--color-retro-blue]">{formatCurrency(pricePerUnit)}</span>
           </span>
         </div>
 
         {/* Change Pricing Controls */}
-        <div className="retro-hr" />
-        <div className="space-y-2 pt-2">
-          <label className="block text-xs font-bold text-[--color-retro-text-muted]">Change Pricing Model</label>
+        <div className="space-y-3">
           {lastPricingChangeWeek > 0 && (currentWeek - lastPricingChangeWeek) < 8 && selectedModel !== pricingModel && (
             <p className="text-xs text-[--color-retro-orange]">
               Cooldown: {8 - (currentWeek - lastPricingChangeWeek)} weeks until you can switch models
             </p>
           )}
-          <select
-            value={selectedModel}
-            onChange={(e) => setSelectedModel(e.target.value as PricingModel)}
-            className="retro-input w-full"
-          >
-            {PRICING_MODELS.map((model) => (
-              <option key={model.value} value={model.value}>
-                {model.label}
-              </option>
-            ))}
-          </select>
-
-          <label className="block text-xs font-bold text-[--color-retro-text-muted]">Price per Unit ($)</label>
-          <input
-            type="number"
-            min="1"
-            step="1"
-            value={priceInput}
-            onChange={(e) => setPriceInput(e.target.value)}
-            className="retro-input w-full"
-          />
-
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="retro-label block mb-1.5">Model</label>
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value as PricingModel)}
+                className="retro-input w-full"
+              >
+                {PRICING_MODELS.map((model) => (
+                  <option key={model.value} value={model.value}>
+                    {model.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="retro-label block mb-1.5">Price ($)</label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={priceInput}
+                onChange={(e) => setPriceInput(e.target.value)}
+                className="retro-input w-full"
+              />
+            </div>
+          </div>
           <button
             onClick={handleChangePricing}
             className="btn-glossy btn-primary w-full"

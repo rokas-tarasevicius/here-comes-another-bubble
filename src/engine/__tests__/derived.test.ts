@@ -1117,7 +1117,7 @@ describe('calculateWeeklyBurn (extended)', () => {
     expect(burn).toBe(10600);
   });
 
-  it('does NOT include marketingSpend (handled separately in simulation)', () => {
+  it('includes marketingSpend in weekly burn', () => {
     const state = makeTestState({
       team: {
         members: [],
@@ -1143,9 +1143,8 @@ describe('calculateWeeklyBurn (extended)', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // marketingSpend is NOT included in calculateWeeklyBurn
-    // only base fixed cost: 100
-    expect(burn).toBe(100);
+    // base fixed cost: 100 + marketingSpend: 5000
+    expect(burn).toBe(5100);
   });
 });
 

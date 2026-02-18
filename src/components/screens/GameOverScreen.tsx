@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-yellow-400';
+    case 'S': return 'text-amber-600';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -20,7 +20,7 @@ function gradeColor(grade: string): string {
 
 function gradeBorderColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'border-yellow-400';
+    case 'S': return 'border-amber-600';
     case 'A': return 'border-[--color-retro-green]';
     case 'B': return 'border-[--color-retro-blue]';
     case 'C': return 'border-[--color-retro-border-dark]';
@@ -96,13 +96,13 @@ function ScoreBar({
       <div className="w-20 text-right text-sm font-medium text-[--color-retro-text-muted]">
         {categoryLabel(category)}
       </div>
-      <div className="retro-progress relative flex-1 !h-6">
+      <div className="retro-progress retro-progress-lg relative flex-1">
         <div
           className={categoryBarClass(category)}
           style={{ width: animate ? `${pct}%` : '0%', transition: 'width 1s ease-out' }}
         />
       </div>
-      <div className="w-16 text-right font-[--font-retro-mono] text-sm text-[--color-retro-text]">
+      <div className="w-16 text-right font-retro-mono text-sm text-[--color-retro-text]">
         {value}/{max}
       </div>
     </div>
@@ -178,7 +178,7 @@ export function GameOverScreen() {
       <div className="relative z-10 w-full max-w-2xl space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="mb-2 text-4xl font-extrabold font-[--font-retro-heading] tracking-tight text-[--color-retro-text] sm:text-5xl">
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight text-[--color-retro-text] sm:text-5xl">
             {isWin ? 'You Won!' : 'Game Over'}
           </h1>
           <p className={`text-lg ${isWin ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'}`}>{reason}</p>
@@ -186,15 +186,15 @@ export function GameOverScreen() {
 
         {/* Company summary */}
         <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-[--color-retro-text-muted]">
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Company </span>
             <span className="font-semibold text-[--color-retro-text]">{gameState.company.name}</span>
           </div>
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Weeks </span>
             <span className="font-semibold text-[--color-retro-text]">{gameState.meta.week}</span>
           </div>
-          <div className="retro-card !py-2 !px-4">
+          <div className="retro-card retro-card-compact">
             <span className="text-[--color-retro-text-light]">Valuation </span>
             <span className="font-semibold text-[--color-retro-green]">
               {formatCurrency(gameState.company.valuation)}
@@ -252,7 +252,7 @@ export function GameOverScreen() {
           {score.difficultyMultiplier !== 1.0 && (
             <div className="mt-4 border-t border-[--color-retro-border] pt-3 text-right text-sm text-[--color-retro-text-light]">
               Difficulty multiplier:{' '}
-              <span className="font-[--font-retro-mono] font-semibold text-[--color-retro-text]">
+              <span className="font-retro-mono font-semibold text-[--color-retro-text]">
                 x{score.difficultyMultiplier}
               </span>
             </div>
@@ -280,13 +280,19 @@ export function GameOverScreen() {
         {/* Action buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <button
-            onClick={() => setScreen('newgame')}
+            onClick={() => {
+              useGameStore.setState({ gameState: null, showWeekRecap: false });
+              setScreen('newgame');
+            }}
             className="btn-glossy btn-glossy-lg btn-green"
           >
             New Game
           </button>
           <button
-            onClick={() => setScreen('title')}
+            onClick={() => {
+              useGameStore.setState({ gameState: null, showWeekRecap: false });
+              setScreen('title');
+            }}
             className="btn-glossy btn-glossy-lg btn-silver"
           >
             Main Menu

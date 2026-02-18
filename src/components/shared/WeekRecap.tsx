@@ -97,19 +97,17 @@ export function WeekRecap() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0, 0, 0, 0.6)' }}
+      className="retro-modal-overlay"
       onClick={dismissWeekRecap}
       role="dialog"
       aria-modal="true"
     >
       <div
-        className="retro-card-raised w-full max-w-md mx-4"
-        style={{ padding: '24px' }}
+        className="retro-modal w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <h2 className="text-xl font-bold font-[--font-retro-heading] text-[--color-retro-text] mb-4 text-center">
+        <h2 className="text-xl font-bold text-[--color-retro-text] mb-4 text-center">
           Week {meta.week - 1} Recap
         </h2>
 
@@ -123,12 +121,12 @@ export function WeekRecap() {
               <div key={row.label} className="flex items-center justify-between text-sm">
                 <span className="text-[--color-retro-text-muted]">{row.label}</span>
                 <div className="flex items-center gap-3">
-                  <span className="font-[--font-retro-mono] text-[--color-retro-text]">
+                  <span className="font-retro-mono text-[--color-retro-text]">
                     {formatValue(row.current, row.format)}
                   </span>
                   {hasChange && delta !== 0 && (
                     <span
-                      className={`font-[--font-retro-mono] text-xs font-semibold ${
+                      className={`font-retro-mono text-xs font-semibold ${
                         delta > 0 ? 'text-[--color-retro-green]' : 'text-[--color-retro-red]'
                       }`}
                     >
@@ -172,7 +170,7 @@ export function WeekRecap() {
         </button>
 
         <p className="text-center text-xs text-[--color-retro-text-light] mt-2">
-          Press <kbd className="retro-badge retro-badge-gray mx-0.5" style={{ fontSize: '10px' }}>Enter</kbd> or <kbd className="retro-badge retro-badge-gray mx-0.5" style={{ fontSize: '10px' }}>Esc</kbd> to dismiss
+          Press <kbd className="retro-badge retro-badge-sm retro-badge-gray mx-0.5">Enter</kbd> or <kbd className="retro-badge retro-badge-sm retro-badge-gray mx-0.5">Esc</kbd> to dismiss
         </p>
       </div>
     </div>

@@ -100,7 +100,7 @@ export function Tutorial() {
         </div>
 
         {/* Title */}
-        <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text] mb-2 text-center">
+        <h2 className="text-lg font-bold text-[--color-retro-text] mb-2 text-center">
           {step.title}
         </h2>
 

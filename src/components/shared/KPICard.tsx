@@ -11,17 +11,17 @@ export interface KPICardProps {
 }
 
 const BORDER_COLORS: Record<NonNullable<KPICardProps['color']>, string> = {
-  emerald: 'border-l-[--color-retro-green]',
-  red: 'border-l-[--color-retro-red]',
-  amber: 'border-l-[--color-retro-orange]',
-  blue: 'border-l-[--color-retro-blue]',
-  violet: 'border-l-[--color-retro-purple]',
+  emerald: 'border-l-retro-green',
+  red: 'border-l-retro-red',
+  amber: 'border-l-retro-orange',
+  blue: 'border-l-retro-blue',
+  violet: 'border-l-retro-purple',
 };
 
 const SPARKLINE_HEX: Record<NonNullable<KPICardProps['color']>, string> = {
-  emerald: '#339933',
+  emerald: '#2b7a2b',
   red: '#cc3333',
-  amber: '#ff6600',
+  amber: '#bf5600',
   blue: '#336699',
   violet: '#663399',
 };
@@ -64,16 +64,19 @@ export function KPICard({
 
   return (
     <div
-      className={`retro-card border-l-4 ${borderColor} flex flex-col gap-2`}
+      className={`retro-card border-l-[5px] ${borderColor} flex flex-col gap-2`}
     >
       {/* Title */}
-      <span className="text-xs font-medium uppercase tracking-wider text-[--color-retro-text-muted]">
+      <span className="retro-label">
         {title}
       </span>
 
       {/* Main value + trend row */}
       <div className="flex items-end justify-between gap-2">
-        <span className={`text-2xl font-bold font-[--font-retro-mono] ${valueColor}`}>
+        <span
+          className={`retro-value-lg font-retro-mono ${valueColor}`}
+          style={{ textShadow: '0 1px 1px rgba(0,0,0,0.06)' }}
+        >
           {value}
         </span>
         {trend && (
@@ -90,12 +93,11 @@ export function KPICard({
 
       {/* Sparkline */}
       {sparklineData && sparklineData.length >= 2 && (
-        <div className="mt-1 rounded bg-[--color-retro-bg-alt] p-1">
+        <div className="retro-inset mt-1 rounded-lg p-1.5">
           <SparklineChart
             data={sparklineData}
             color={sparkHex}
             height={36}
-            width={160}
           />
         </div>
       )}

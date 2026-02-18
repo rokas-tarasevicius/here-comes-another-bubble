@@ -84,7 +84,7 @@ export function TechDebtMeter({ value }: TechDebtMeterProps) {
 
         {/* Center value */}
         <div className="-mt-10 text-center">
-          <span className={`text-2xl font-bold font-[--font-retro-mono] ${textColor}`}>
+          <span className={`text-2xl font-bold font-retro-mono ${textColor}`}>
             {clampedValue}
           </span>
           <p className={`text-xs font-bold ${textColor}`}>{label}</p>

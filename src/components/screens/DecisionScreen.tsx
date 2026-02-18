@@ -90,11 +90,11 @@ export function DecisionScreen() {
   );
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
+    <div className="mx-auto max-w-4xl space-y-8">
       {/* ── Pending Decisions ──────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+          <h2 className="text-lg font-bold text-[--color-retro-text]">
             Pending Decisions
             {unrespondedDecisions.length > 0 && (
               <span className="ml-2 retro-badge retro-badge-orange">
@@ -134,7 +134,7 @@ export function DecisionScreen() {
                 />
               </svg>
             </div>
-            <p className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+            <p className="text-lg font-bold text-[--color-retro-text]">
               All caught up!
             </p>
             <p className="mt-2 text-sm text-[--color-retro-text-muted]">
@@ -147,7 +147,7 @@ export function DecisionScreen() {
       {/* ── Queued Actions ─────────────────────────────────────────────── */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-bold font-[--font-retro-heading] text-[--color-retro-text]">
+          <h2 className="text-lg font-bold text-[--color-retro-text]">
             Queued Actions
             {decisionsThisTurn.length > 0 && (
               <span className="ml-2 retro-badge retro-badge-blue">
@@ -161,7 +161,7 @@ export function DecisionScreen() {
         </div>
 
         {decisionsThisTurn.length > 0 ? (
-          <div className="retro-card divide-y divide-[--color-retro-border] !p-0">
+          <div className="retro-card retro-card-flush divide-y divide-[--color-retro-border]">
             {decisionsThisTurn.map((decision, index) => {
               const badgeClass =
                 TYPE_BADGE_CLASSES[decision.type] ?? 'retro-badge retro-badge-gray';
@@ -184,7 +184,7 @@ export function DecisionScreen() {
                   </div>
                   <button
                     onClick={() => removeDecision(index)}
-                    className="btn-glossy btn-red shrink-0 !px-2.5 !py-1 text-xs"
+                    className="btn-glossy btn-glossy-sm btn-red shrink-0 text-xs"
                   >
                     Remove
                   </button>

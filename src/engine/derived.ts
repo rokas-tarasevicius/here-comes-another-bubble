@@ -12,7 +12,7 @@ export function calculateRunway(state: GameState): number {
 }
 
 /**
- * Calculate total weekly burn: salaries + AI costs + fixed overhead.
+ * Calculate total weekly burn: salaries + AI costs + fixed overhead + marketing.
  */
 export function calculateWeeklyBurn(state: GameState): number {
   const salaries = state.team.members
@@ -27,7 +27,7 @@ export function calculateWeeklyBurn(state: GameState): number {
   const isGarage = state.company.stage === 'garage' || state.company.stage === 'pre-seed';
   const baseCost = isGarage ? 100 : 500;
   const fixedCosts = baseCost + state.team.teamSize * 50;
-  return salaries + aiCosts + fixedCosts;
+  return salaries + aiCosts + fixedCosts + (state.finances.marketingSpend ?? 0);
 }
 
 /**

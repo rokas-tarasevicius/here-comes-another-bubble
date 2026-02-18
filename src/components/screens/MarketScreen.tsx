@@ -2,6 +2,7 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 import { BubbleIndexGauge } from '../shared/BubbleIndexGauge.tsx';
 import { CompetitorTable } from '../shared/CompetitorTable.tsx';
+import { InfoTip } from '../shared/InfoTip.tsx';
 
 /**
  * Market intelligence screen showing market overview, bubble index,
@@ -22,13 +23,18 @@ export function MarketScreen() {
   const { segmentData, competitors, bubbleIndex, bubbleTrend } = market;
 
   // Player row for competitor table
+  const annualRevenuePerCustomer = segmentData.revenuePerCustomer * 52;
+  const totalMarketCustomers = annualRevenuePerCustomer > 0
+    ? segmentData.size / annualRevenuePerCustomer
+    : 1;
   const playerRow = {
     name: company.name,
     funding: finances.fundingHistory.reduce((sum, r) => sum + r.amount, 0),
+    valuation: company.valuation,
     teamSize: team.teamSize + team.aiAgents.length,
     productQuality: product.overallQuality,
-    marketShare: segmentData.size > 0
-      ? product.customers / segmentData.size
+    marketShare: totalMarketCustomers > 0
+      ? product.customers / totalMarketCustomers
       : 0,
     strategy: 'Player-controlled',
   };
@@ -47,10 +53,10 @@ export function MarketScreen() {
   }
 
   return (
-    <div className="space-y-6 p-6 min-w-0">
+    <div className="space-y-6 min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold font-[--font-retro-heading] text-[--color-retro-text]">Market Intelligence</h1>
+        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Market Intelligence</h1>
         <p className="text-sm text-[--color-retro-text-light]">Week {meta.week} market analysis</p>
       </div>
 
@@ -62,66 +68,41 @@ export function MarketScreen() {
             Market Segment
           </h3>
 
-          <div className="mb-3">
-            <h2 className="text-lg font-bold text-[--color-retro-text]">{segmentData.name}</h2>
-            <p className="text-sm text-[--color-retro-text-muted]">{segmentData.description}</p>
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>{segmentData.name}</h2>
+            <p className="text-sm text-[--color-retro-text-muted] mt-0.5">{segmentData.description}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            {/* Market Size */}
-            <div>
-              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Market Size</span>
-              <p className="text-lg font-bold font-[--font-retro-mono] text-[--color-retro-green]">
+          {/* Hero metrics */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1 mb-4">
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">Market Size<InfoTip text="Total addressable market (TAM) in dollars. A larger market means more room to grow but also attracts more competitors." /></span>
+              <span className="retro-value-lg text-[--color-retro-green]">
                 {formatCurrency(segmentData.size)}
-              </p>
+              </span>
             </div>
-
-            {/* Growth Rate */}
-            <div>
-              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Annual Growth</span>
-              <p className="text-lg font-bold font-[--font-retro-mono] text-[--color-retro-blue]">
+            <div className="flex flex-col gap-1.5">
+              <span className="retro-label">Annual Growth<InfoTip text="How fast the market is expanding per year. Higher growth markets increase TAM each week, creating opportunities — but can also inflate the bubble." /></span>
+              <span className="retro-value-lg text-[--color-retro-blue]">
                 {formatPercent(segmentData.growthRate * 100)}
-              </p>
-              <p className="text-xs text-[--color-retro-text-muted]">
-                +{formatCurrency(segmentData.size * segmentData.growthRate / 52)}/wk
-              </p>
+              </span>
             </div>
+          </div>
 
-            {/* Competition Intensity */}
-            <div>
-              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Competition</span>
-              <div className="mt-1">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className={`text-sm font-semibold font-[--font-retro-mono] ${intensityColor(segmentData.competitionIntensity)}`}>
-                    {segmentData.competitionIntensity}/100
-                  </span>
-                </div>
-                <div className="retro-progress !h-2">
-                  <div
-                    className={intensityBarClass(segmentData.competitionIntensity)}
-                    style={{ width: `${segmentData.competitionIntensity}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Regulatory Risk */}
-            <div>
-              <span className="text-xs uppercase tracking-wider text-[--color-retro-text-light]">Regulatory Risk</span>
-              <div className="mt-1">
-                <div className="mb-1 flex items-center justify-between">
-                  <span className={`text-sm font-semibold font-[--font-retro-mono] ${intensityColor(segmentData.regulatoryRisk)}`}>
-                    {segmentData.regulatoryRisk}/100
-                  </span>
-                </div>
-                <div className="retro-progress !h-2">
-                  <div
-                    className={intensityBarClass(segmentData.regulatoryRisk)}
-                    style={{ width: `${segmentData.regulatoryRisk}%` }}
-                  />
-                </div>
-              </div>
-            </div>
+          {/* Supporting stats */}
+          <div className="retro-stat-footer">
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Growth/wk</span>
+              <span className="retro-stat-tag-value text-[--color-retro-blue]">+{formatCurrency(segmentData.size * segmentData.growthRate / 52)}</span>
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Competition<InfoTip text="How fierce the competitor landscape is (0–100). High competition makes it harder to acquire customers and increases churn. Competitors can die or merge." /></span>
+              <span className={`retro-stat-tag-value ${intensityColor(segmentData.competitionIntensity)}`}>{segmentData.competitionIntensity}/100</span>
+            </span>
+            <span className="retro-stat-tag">
+              <span className="retro-stat-tag-label">Reg. Risk<InfoTip text="Regulatory risk (0–100). High values mean governments may impose restrictions, fines, or compliance costs. Can trigger surprise regulatory events." /></span>
+              <span className={`retro-stat-tag-value ${intensityColor(segmentData.regulatoryRisk)}`}>{segmentData.regulatoryRisk}/100</span>
+            </span>
           </div>
         </div>
 

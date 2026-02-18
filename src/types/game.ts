@@ -107,6 +107,7 @@ export interface GameMeta {
   score: number;
   regulatoryHeat: number;  // 0-100, accumulates in regulated segments
   lowMoraleWeeks: number;  // consecutive weeks with morale < 40 (for salary pressure)
+  fundingSoughtThisWeek?: boolean;
 }
 
 export interface FounderProfile {
@@ -306,6 +307,7 @@ export interface WeekSummary {
   revenue: number;
   burn: number;
   customers: number;
+  churnRate: number;
   valuation: number;
   teamSize: number;
   avgMorale: number;

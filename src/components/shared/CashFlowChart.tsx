@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import type { WeekSummary } from '../../types/game.ts';
 import { formatCurrency } from '../../utils/format.ts';
+import { InfoTip } from './InfoTip.tsx';
 
 export interface CashFlowChartProps {
   weekHistory: WeekSummary[];
@@ -74,7 +75,7 @@ export function CashFlowChart({ weekHistory }: CashFlowChartProps) {
   return (
     <div className="retro-card">
       <h3 className="retro-section-heading">
-        Cash Flow Over Time
+        Cash Flow Over Time<InfoTip text="Tracks your Cash (total funds), Revenue (weekly income), and Burn (weekly expenses) over time. When the burn line stays above revenue, you're losing money each week." />
       </h3>
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">

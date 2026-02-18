@@ -67,7 +67,7 @@ export function AIAgentPanel() {
               <div>
                 <div className="mb-0.5 flex items-center justify-between">
                   <span className="text-xs text-[--color-retro-text-muted]">Capability</span>
-                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-purple]">{agent.capability}</span>
+                  <span className="text-xs font-retro-mono text-[--color-retro-purple]">{agent.capability}</span>
                 </div>
                 <div className="retro-progress" style={{ height: '10px' }}>
                   <div
@@ -81,7 +81,7 @@ export function AIAgentPanel() {
               <div>
                 <div className="mb-0.5 flex items-center justify-between">
                   <span className="text-xs text-[--color-retro-text-muted]">Reliability</span>
-                  <span className="text-xs font-[--font-retro-mono] text-[--color-retro-purple]">{agent.reliability}</span>
+                  <span className="text-xs font-retro-mono text-[--color-retro-purple]">{agent.reliability}</span>
                 </div>
                 <div className="retro-progress" style={{ height: '10px' }}>
                   <div
@@ -95,7 +95,7 @@ export function AIAgentPanel() {
             {/* Cost + Assignment */}
             <div className="mb-3 flex items-center justify-between text-xs">
               <span className="text-[--color-retro-text-muted]">
-                Cost: <span className="font-[--font-retro-mono] text-[--color-retro-text]">{formatCost(agent.costPerWeek)}/wk</span>
+                Cost: <span className="font-retro-mono text-[--color-retro-text]">{formatCost(agent.costPerWeek)}/wk</span>
               </span>
               {featureName && (
                 <span className="text-[--color-retro-text-light]">

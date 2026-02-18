@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Competitor } from '../../types/game.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
+import { InfoTip } from './InfoTip.tsx';
 
 export interface CompetitorTableProps {
   competitors: Competitor[];
@@ -8,6 +9,7 @@ export interface CompetitorTableProps {
   player?: {
     name: string;
     funding: number;
+    valuation: number;
     teamSize: number;
     productQuality: number;
     marketShare: number;
@@ -15,13 +17,19 @@ export interface CompetitorTableProps {
   };
 }
 
-type SortKey = 'name' | 'funding' | 'teamSize' | 'productQuality' | 'marketShare';
+function estimateValuation(funding: number, quality: number, marketShare: number): number {
+  const multiple = 2 + quality / 40 + marketShare * 15;
+  return Math.round(funding * multiple);
+}
+
+type SortKey = 'name' | 'funding' | 'valuation' | 'teamSize' | 'productQuality' | 'marketShare';
 type SortDir = 'asc' | 'desc';
 
 interface TableRow {
   id: string;
   name: string;
   funding: number;
+  valuation: number;
   teamSize: number;
   productQuality: number;
   marketShare: number;
@@ -35,7 +43,7 @@ interface TableRow {
  * Columns: Name, Funding, Team Size, Product Quality, Market Share, Strategy, Status.
  */
 export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
-  const [sortKey, setSortKey] = useState<SortKey>('marketShare');
+  const [sortKey, setSortKey] = useState<SortKey>('valuation');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   // Build rows
@@ -43,6 +51,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
     id: c.id,
     name: c.name,
     funding: c.funding,
+    valuation: estimateValuation(c.funding, c.productQuality, c.marketShare),
     teamSize: c.teamSize,
     productQuality: c.productQuality,
     marketShare: c.marketShare,
@@ -56,6 +65,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
       id: '__player__',
       name: player.name,
       funding: player.funding,
+      valuation: player.valuation,
       teamSize: player.teamSize,
       productQuality: player.productQuality,
       marketShare: player.marketShare,
@@ -96,7 +106,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
   return (
     <div className="retro-card" style={{ padding: 0 }}>
       <h3 className="retro-section-heading" style={{ margin: '16px 16px 12px' }}>
-        Competitors
+        <span className="retro-label-tip">Competitors<InfoTip text="Other startups in your market. They compete for customers and funding. Weaker competitors can die. High-share competitors increase pressure on your growth." /></span>
       </h3>
 
       {rows.length === 0 ? (
@@ -117,6 +127,12 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                   onClick={() => handleSort('funding')}
                 >
                   Funding{sortIndicator('funding')}
+                </th>
+                <th
+                  className="cursor-pointer"
+                  onClick={() => handleSort('valuation')}
+                >
+                  Valuation{sortIndicator('valuation')}
                 </th>
                 <th
                   className="cursor-pointer"
@@ -161,8 +177,13 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                     </td>
 
                     {/* Funding */}
-                    <td className="font-[--font-retro-mono] text-[--color-retro-text]">
+                    <td className="font-retro-mono text-[--color-retro-text]">
                       {formatCurrency(row.funding)}
+                    </td>
+
+                    {/* Valuation */}
+                    <td className="font-retro-mono text-[#92400e]">
+                      {formatCurrency(row.valuation)}
                     </td>
 
                     {/* Team Size */}
