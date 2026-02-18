@@ -82,9 +82,9 @@ export function DecisionScreen() {
   const { pendingDecisions, meta } = gameState;
   const currentWeek = meta.week;
 
-  // Filter: only show decisions due within 2 weeks and not already responded to
+  // Filter: only show decisions due this week and not already responded to
   const unrespondedDecisions = pendingDecisions.filter(
-    (d) => d.deadline <= currentWeek + 2 && !decisionsThisTurn.some(
+    (d) => d.deadline <= currentWeek && !decisionsThisTurn.some(
       (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
     )
   );

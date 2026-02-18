@@ -55,9 +55,9 @@ export function Header() {
   const { meta, company, finances, pendingDecisions } = gameState;
   const pendingCount = pendingDecisions.length;
 
-  // Check if any urgent decisions (due within 1 week) are unresolved
+  // Check if any decisions due this week are unresolved
   const hasUrgentUnresolved = pendingDecisions.some(
-    (d) => d.deadline <= meta.week + 1 && !decisionsThisTurn.some(
+    (d) => d.deadline <= meta.week && !decisionsThisTurn.some(
       (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
     )
   );
