@@ -75,9 +75,11 @@ function HeaderReadout({ config }: { config: ReadoutConfig }) {
   const max = hasSparkline ? Math.max(...config.sparklineData) : 0;
   const dataPoints = config.sparklineData.length;
 
+  const showTooltip = config.hasChart;
+
   return (
     <div
-      className={`relative flex items-baseline gap-2 rounded-lg px-3 py-2 transition-all duration-150 ${hasSparkline ? 'cursor-pointer' : 'cursor-default'}`}
+      className={`relative flex items-baseline gap-2 rounded-lg px-3 py-2 transition-all duration-150 ${showTooltip ? 'cursor-pointer' : 'cursor-default'}`}
       style={{
         background: config.bg,
         boxShadow: config.shadow,
@@ -114,8 +116,8 @@ function HeaderReadout({ config }: { config: ReadoutConfig }) {
         </svg>
       )}
 
-      {/* Sparkline tooltip */}
-      {hasSparkline && hovered && (
+      {/* Tooltip */}
+      {showTooltip && hovered && (
         <div
           className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 rounded-xl pointer-events-none"
           style={{
@@ -132,20 +134,27 @@ function HeaderReadout({ config }: { config: ReadoutConfig }) {
               {config.value}
             </span>
           </div>
-          {/* Chart */}
-          <SparklineChart data={config.sparklineData} color={config.sparklineColor} height={48} />
-          {/* Footer: range */}
-          <div className="flex items-center justify-between mt-2 gap-1.5">
-            <span className="retro-stat-tag" style={{ padding: '2px 6px' }}>
-              <span className="retro-stat-tag-label" style={{ fontSize: '8px' }}>Lo</span>
-              <span className="retro-stat-tag-value" style={{ fontSize: '10px' }}>{formatSparklineValue(min, config.isCurrency ?? false)}</span>
-            </span>
-            <span className="retro-label leading-none" style={{ fontSize: '8px' }}>{dataPoints} weeks</span>
-            <span className="retro-stat-tag" style={{ padding: '2px 6px' }}>
-              <span className="retro-stat-tag-label" style={{ fontSize: '8px' }}>Hi</span>
-              <span className="retro-stat-tag-value" style={{ fontSize: '10px' }}>{formatSparklineValue(max, config.isCurrency ?? false)}</span>
-            </span>
-          </div>
+          {hasSparkline ? (
+            <>
+              <SparklineChart data={config.sparklineData} color={config.sparklineColor} height={48} />
+              {/* Footer: range */}
+              <div className="flex items-center justify-between mt-2 gap-1.5">
+                <span className="retro-stat-tag" style={{ padding: '2px 6px' }}>
+                  <span className="retro-stat-tag-label" style={{ fontSize: '8px' }}>Lo</span>
+                  <span className="retro-stat-tag-value" style={{ fontSize: '10px' }}>{formatSparklineValue(min, config.isCurrency ?? false)}</span>
+                </span>
+                <span className="retro-label leading-none" style={{ fontSize: '8px' }}>{dataPoints} weeks</span>
+                <span className="retro-stat-tag" style={{ padding: '2px 6px' }}>
+                  <span className="retro-stat-tag-label" style={{ fontSize: '8px' }}>Hi</span>
+                  <span className="retro-stat-tag-value" style={{ fontSize: '10px' }}>{formatSparklineValue(max, config.isCurrency ?? false)}</span>
+                </span>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-[11px] text-[--color-retro-text-muted] py-3">
+              No trend data yet — check back after a few weeks
+            </p>
+          )}
         </div>
       )}
     </div>

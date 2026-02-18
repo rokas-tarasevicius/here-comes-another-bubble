@@ -148,7 +148,7 @@ export function MainMenuScreen() {
         </div>
 
         {/* Menu buttons */}
-        <div className="flex w-full max-w-xs flex-col gap-3">
+        <div className="flex w-full max-w-sm flex-col gap-3">
           {/* Continue - only if saves exist */}
           {hasSaves && (
             <button
@@ -159,10 +159,10 @@ export function MainMenuScreen() {
             </button>
           )}
 
-          {/* New Game */}
+          {/* New Game - always green */}
           <button
             onClick={() => setScreen('newgame')}
-            className={`btn-glossy btn-glossy-lg w-full ${hasSaves ? 'btn-silver' : 'btn-green'}`}
+            className="btn-glossy btn-glossy-lg btn-green w-full"
           >
             New Game
           </button>
@@ -171,7 +171,7 @@ export function MainMenuScreen() {
           {hasSaves && (
             <button
               onClick={() => setShowSaves(true)}
-              className="btn-glossy btn-silver w-full"
+              className="btn-glossy btn-glossy-lg btn-silver w-full"
             >
               Load Game
             </button>
@@ -180,7 +180,7 @@ export function MainMenuScreen() {
           {/* About */}
           <button
             onClick={() => setShowAbout(true)}
-            className="mt-1 px-6 py-3 text-sm font-medium text-retro-text-light underline decoration-retro-border transition-colors hover:text-retro-blue"
+            className="btn-glossy btn-glossy-lg btn-silver w-full"
           >
             About
           </button>
