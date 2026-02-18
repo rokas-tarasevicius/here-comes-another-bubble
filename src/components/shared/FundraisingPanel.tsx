@@ -12,6 +12,8 @@ export interface FundraisingPanelProps {
   lastPricingChangeWeek: number;
   currentWeek: number;
   fundingSoughtThisWeek?: boolean;
+  investorSentiment: number;
+  raiseChance: number;
   onSeekFunding: (targetStage: string) => void;
   onChangePricing: (model: PricingModel, price: number) => void;
 }
@@ -56,6 +58,8 @@ export function FundraisingPanel({
   lastPricingChangeWeek,
   currentWeek,
   fundingSoughtThisWeek,
+  investorSentiment,
+  raiseChance,
   onSeekFunding,
   onChangePricing,
 }: FundraisingPanelProps) {
@@ -115,6 +119,32 @@ export function FundraisingPanel({
               <span className="retro-stat-tag-label">Rounds</span>
               <span className="retro-stat-tag-value">{fundingHistory.length}</span>
             </span>
+          )}
+        </div>
+
+        {/* Investor Sentiment & Raise Chance */}
+        <div className="retro-inset p-3 mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="retro-label">Investor Sentiment<InfoTip text="How enthusiastic investors are (0–100). Driven by bubble index, market trends, and hype cycles. Higher sentiment = easier fundraising and better valuations." /></span>
+            <span className={`retro-value font-retro-mono text-sm font-semibold ${
+              investorSentiment >= 60 ? 'text-[--color-retro-green]' : investorSentiment >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+            }`}>{Math.round(investorSentiment)}/100</span>
+          </div>
+          <div className="retro-progress retro-progress-sm mb-3">
+            <div
+              className={`retro-progress-bar ${
+                investorSentiment >= 60 ? 'retro-progress-bar-green' : investorSentiment >= 35 ? 'retro-progress-bar-orange' : 'retro-progress-bar-red'
+              }`}
+              style={{ width: `${investorSentiment}%` }}
+            />
+          </div>
+          {nextStage && stage !== 'dead' && stage !== 'public' && (
+            <div className="flex items-center justify-between">
+              <span className="retro-label">Raise Probability<InfoTip text="Your estimated chance of closing a round. Based on investor sentiment (20%), revenue (15%), PMF (15%), founder biz skill (15%), reputation (15%), team size (10%), and network (10%)." /></span>
+              <span className={`retro-value font-retro-mono text-sm font-semibold ${
+                raiseChance >= 60 ? 'text-[--color-retro-green]' : raiseChance >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+              }`}>{Math.round(raiseChance)}%</span>
+            </div>
           )}
         </div>
 

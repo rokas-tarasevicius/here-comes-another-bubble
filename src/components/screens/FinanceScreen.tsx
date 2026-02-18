@@ -21,7 +21,7 @@ export function FinanceScreen() {
     );
   }
 
-  const { finances, product, team, weekHistory, company } = gameState;
+  const { finances, product, team, weekHistory, company, market, founder } = gameState;
 
   // P&L calculations
   const totalSalaries = team.teamSize * team.avgSalary;
@@ -31,6 +31,26 @@ export function FinanceScreen() {
   const overheadEstimate = baseCost + team.teamSize * 50;
   const totalExpenses = totalSalaries + totalAICosts + overheadEstimate + finances.marketingSpend;
   const netIncome = finances.weeklyRevenue - totalExpenses;
+
+  // Raise probability (mirrors applySeekFunding formula in tick.ts)
+  const raiseChance = (() => {
+    const investorSentimentFactor = market.investorSentiment / 100;
+    const revenueFactor = Math.min(finances.weeklyRevenue / 5000, 1);
+    const teamSizeFactor = Math.min((team.teamSize + team.aiAgents.length) / 10, 1);
+    const pmfFactor = product.pmfScore / 100;
+    const founderBizFactor = founder.bizSkill / 100;
+    const founderNetworkFactor = founder.network / 100;
+    const reputationFactor = company.reputation / 100;
+    const rawProb =
+      investorSentimentFactor * 0.20 +
+      revenueFactor * 0.15 +
+      teamSizeFactor * 0.10 +
+      pmfFactor * 0.15 +
+      founderBizFactor * 0.15 +
+      founderNetworkFactor * 0.10 +
+      reputationFactor * 0.15;
+    return Math.max(10, Math.min(85, rawProb * 100));
+  })();
 
   // Pricing model display
   const pricingLabels: Record<string, string> = {
@@ -138,6 +158,8 @@ export function FinanceScreen() {
           lastPricingChangeWeek={finances.lastPricingChangeWeek}
           currentWeek={gameState.meta.week}
           fundingSoughtThisWeek={gameState.meta.fundingSoughtThisWeek}
+          investorSentiment={market.investorSentiment}
+          raiseChance={raiseChance}
           onSeekFunding={(targetStage) => seekFunding(targetStage)}
           onChangePricing={(model, price) => setPricing(model, price)}
         />

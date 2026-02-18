@@ -302,7 +302,9 @@ function simulateRevenue(state: GameState): GameState {
 // ─── Burn ─────────────────────────────────────────────────────────────
 
 function simulateBurn(state: GameState): GameState {
-  const baseBurn = calculateWeeklyBurn(state);
+  const totalBurn = calculateWeeklyBurn(state);
+  const marketingPortion = state.finances.marketingSpend ?? 0;
+  const operationalBurn = totalBurn - marketingPortion;
 
   const strategy = state.meta.growthStrategy;
   let burnMultiplier = 1.0;
@@ -312,8 +314,7 @@ function simulateBurn(state: GameState): GameState {
     burnMultiplier = 0.85;
   }
 
-  const marketingBurn = state.finances.marketingSpend;
-  const burn = Math.round(baseBurn * burnMultiplier + marketingBurn);
+  const burn = Math.round(operationalBurn * burnMultiplier + marketingPortion);
   const netCashChange = state.finances.weeklyRevenue - burn;
 
   return {

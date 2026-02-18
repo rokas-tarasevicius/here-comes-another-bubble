@@ -92,11 +92,11 @@ function App() {
         }
       }
 
-      // Number keys 1-5 for screen navigation
+      // Number keys 1-6 for screen navigation
       if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
-        const screens = ['overview', 'company', 'finance', 'market', 'decisions'];
+        const screens = ['overview', 'company', 'team', 'finance', 'market', 'decisions'];
         const num = parseInt(e.key, 10);
-        if (num >= 1 && num <= 5) {
+        if (num >= 1 && num <= screens.length) {
           e.preventDefault();
           setScreen(screens[num - 1]);
         }
