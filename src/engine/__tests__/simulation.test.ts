@@ -1178,11 +1178,11 @@ describe('Revenue Models', () => {
     const result = simulateWeek(state);
     vi.restoreAllMocks();
 
-    // Revenue ≈ customers * price * qualityMod. Customer count shifts slightly
-    // during simulation, so check approximate range
-    // Base: 500 * 20 * 0.8 = 8000, with small customer growth ~8000-8500
-    expect(result.finances.weeklyRevenue).toBeGreaterThan(7500);
-    expect(result.finances.weeklyRevenue).toBeLessThan(9000);
+    // Revenue = customers * price. Customer count shifts slightly during
+    // simulation, so check approximate range.
+    // Base: 500 * 20 = 10000, with small customer growth ~10000-11000
+    expect(result.finances.weeklyRevenue).toBeGreaterThan(9500);
+    expect(result.finances.weeklyRevenue).toBeLessThan(11500);
   });
 
 });
@@ -1535,7 +1535,7 @@ describe('simulateRevenue', () => {
   // ── Subscription pricing model ──────────────────────────────────────
 
   describe('subscription pricing model', () => {
-    it('produces revenue = customers * price * qualityModifier * bugPenalty', () => {
+    it('produces revenue = customers * price (quality/bugs affect churn, not revenue)', () => {
       const state = revenueState({
         pricingModel: 'subscription',
         pricePerUnit: 20,
@@ -1548,11 +1548,10 @@ describe('simulateRevenue', () => {
       const result = simulateWeek(state);
       vi.restoreAllMocks();
 
-      // qualityModifier = 0.8, bugPenalty = 1.0
-      // Base expected ~= 500 * 20 * 0.8 * 1.0 = 8000
-      // Customers shift slightly during simulation
-      expect(result.finances.weeklyRevenue).toBeGreaterThan(6000);
-      expect(result.finances.weeklyRevenue).toBeLessThan(10000);
+      // Revenue = customers * price. Customer count shifts slightly during simulation.
+      // Base: 500 * 20 = 10000, with small customer growth ~10000-11000
+      expect(result.finances.weeklyRevenue).toBeGreaterThan(9500);
+      expect(result.finances.weeklyRevenue).toBeLessThan(12000);
     });
 
     it('higher price produces proportionally more revenue', () => {
@@ -1580,10 +1579,10 @@ describe('simulateRevenue', () => {
       const highResult = simulateWeek(highPrice);
       vi.restoreAllMocks();
 
-      // Higher price produces more revenue, but price sensitivity means
-      // it's not perfectly proportional (5x price != 5x revenue)
+      // Subscription: revenue = customers * price, so 5x price ≈ 5x revenue.
+      // Small variance from customer count shifts during simulation.
       const ratio = highResult.finances.weeklyRevenue / lowResult.finances.weeklyRevenue;
-      expect(ratio).toBeGreaterThan(1.5);
+      expect(ratio).toBeGreaterThan(4);
       expect(ratio).toBeLessThan(6);
     });
 
@@ -1677,30 +1676,12 @@ describe('simulateRevenue', () => {
   // ── Quality modifier floor ──────────────────────────────────────────
 
   describe('quality modifier floor', () => {
-    it('applies minimum 0.15 quality modifier when overallQuality is 0', () => {
-      const state = revenueState({
-        pricingModel: 'subscription',
-        pricePerUnit: 20,
-        customers: 1000,
-        overallQuality: 0,
-        bugs: 0,
-      });
-
-      vi.spyOn(Math, 'random').mockReturnValue(0.5);
-      const result = simulateWeek(state);
-      vi.restoreAllMocks();
-
-      // qualityModifier = max(0.15, 0/100) = 0.15
-      // Revenue should be positive even with 0 quality
-      expect(result.finances.weeklyRevenue).toBeGreaterThan(0);
-    });
-
-    it('quality=0 revenue is roughly 0.15/0.80 of quality=80 revenue', () => {
-      const zeroQuality = revenueState({
+    it('quality does not affect subscription revenue (only churn)', () => {
+      const lowQuality = revenueState({
         pricingModel: 'subscription',
         pricePerUnit: 20,
         customers: 500,
-        overallQuality: 0,
+        overallQuality: 20,
         bugs: 0,
       });
 
@@ -1713,58 +1694,58 @@ describe('simulateRevenue', () => {
       });
 
       vi.spyOn(Math, 'random').mockReturnValue(0.5);
-      const zeroResult = simulateWeek(zeroQuality);
+      const lowResult = simulateWeek(lowQuality);
       vi.restoreAllMocks();
 
       vi.spyOn(Math, 'random').mockReturnValue(0.5);
       const highResult = simulateWeek(highQuality);
       vi.restoreAllMocks();
 
-      // Zero quality uses floor 0.15, high quality uses 0.80
-      // Ratio should be approximately 0.15/0.80 = 0.1875
-      const ratio = zeroResult.finances.weeklyRevenue / highResult.finances.weeklyRevenue;
-      expect(ratio).toBeGreaterThan(0.1);
-      expect(ratio).toBeLessThan(0.3);
+      // Revenue ≈ customers * price for both — quality only affects churn.
+      // Customer count may differ slightly due to churn differences, but
+      // revenue should be in the same ballpark.
+      const ratio = lowResult.finances.weeklyRevenue / highResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.85);
+      expect(ratio).toBeLessThan(1.15);
     });
 
-    it('quality=15 uses exact value (0.15) at the floor boundary', () => {
-      const atFloor = revenueState({
-        pricingModel: 'subscription',
+    it('quality modifier still applies to usage-based revenue', () => {
+      const lowQuality = revenueState({
+        pricingModel: 'usage-based',
         pricePerUnit: 20,
         customers: 500,
-        overallQuality: 15,
+        overallQuality: 20,
         bugs: 0,
       });
 
-      const belowFloor = revenueState({
-        pricingModel: 'subscription',
+      const highQuality = revenueState({
+        pricingModel: 'usage-based',
         pricePerUnit: 20,
         customers: 500,
-        overallQuality: 5,
+        overallQuality: 80,
         bugs: 0,
       });
 
       vi.spyOn(Math, 'random').mockReturnValue(0.5);
-      const atResult = simulateWeek(atFloor);
+      const lowResult = simulateWeek(lowQuality);
       vi.restoreAllMocks();
 
       vi.spyOn(Math, 'random').mockReturnValue(0.5);
-      const belowResult = simulateWeek(belowFloor);
+      const highResult = simulateWeek(highQuality);
       vi.restoreAllMocks();
 
-      // quality=15 -> qualityModifier = max(0.15, 0.15) = 0.15
-      // quality=5 -> qualityModifier = max(0.15, 0.05) = 0.15
-      // Both should produce nearly identical revenue (both use the 0.15 floor)
-      const ratio = atResult.finances.weeklyRevenue / belowResult.finances.weeklyRevenue;
-      expect(ratio).toBeGreaterThan(0.9);
-      expect(ratio).toBeLessThan(1.1);
+      // Usage-based: quality reduces engagement and thus revenue.
+      // quality=20 → modifier=0.20, quality=80 → modifier=0.80 → ratio ≈ 0.25
+      const ratio = lowResult.finances.weeklyRevenue / highResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.15);
+      expect(ratio).toBeLessThan(0.45);
     });
   });
 
   // ── Bug penalty ─────────────────────────────────────────────────────
 
   describe('bug penalty', () => {
-    it('each bug reduces revenue by 2%', () => {
+    it('bugs do not reduce subscription revenue (only affect churn)', () => {
       const noBugs = revenueState({
         pricingModel: 'subscription',
         pricePerUnit: 30,
@@ -1789,40 +1770,47 @@ describe('simulateRevenue', () => {
       const bugResult = simulateWeek(tenBugs);
       vi.restoreAllMocks();
 
+      // Subscription: bugs affect churn, not per-customer revenue.
+      // Revenue should be similar (small variance from customer count shifts).
+      const ratio = bugResult.finances.weeklyRevenue / noBugResult.finances.weeklyRevenue;
+      expect(ratio).toBeGreaterThan(0.85);
+      expect(ratio).toBeLessThan(1.15);
+    });
+
+    it('each bug reduces usage-based revenue by 2%', () => {
+      const noBugs = revenueState({
+        pricingModel: 'usage-based',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 0,
+      });
+
+      const tenBugs = revenueState({
+        pricingModel: 'usage-based',
+        pricePerUnit: 30,
+        customers: 500,
+        overallQuality: 80,
+        bugs: 10,
+      });
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const noBugResult = simulateWeek(noBugs);
+      vi.restoreAllMocks();
+
+      vi.spyOn(Math, 'random').mockReturnValue(0.5);
+      const bugResult = simulateWeek(tenBugs);
+      vi.restoreAllMocks();
+
       // 10 bugs -> bugPenalty = max(0, 1 - 10*0.02) = 0.8
-      // Revenue ratio should be ~0.8
       const ratio = bugResult.finances.weeklyRevenue / noBugResult.finances.weeklyRevenue;
       expect(ratio).toBeGreaterThan(0.65);
       expect(ratio).toBeLessThan(0.95);
     });
 
-    it('50+ bugs drives revenue near zero', () => {
-      // Note: simulateProductDevelopment runs before simulateRevenue and
-      // reduces bugs by 1 when shipped features exist (shipped feature
-      // maintenance). So starting with 50 bugs means revenue calculation
-      // sees 49 bugs => bugPenalty = max(0, 1 - 49*0.02) = 0.02.
-      // We start with 51 bugs to ensure the penalty is effectively 0
-      // even after the -1 reduction (51 - 1 = 50 bugs => penalty = 0).
-      const manyBugs = revenueState({
-        pricingModel: 'subscription',
-        pricePerUnit: 30,
-        customers: 500,
-        overallQuality: 80,
-        bugs: 51,
-      });
-
-      vi.spyOn(Math, 'random').mockReturnValue(0.5);
-      const result = simulateWeek(manyBugs);
-      vi.restoreAllMocks();
-
-      // 51 initial bugs - 1 from shipped feature = 50 bugs at revenue calc
-      // bugPenalty = max(0, 1 - 50*0.02) = max(0, 0) = 0
-      expect(result.finances.weeklyRevenue).toBe(0);
-    });
-
     it('more than 50 bugs does not produce negative revenue', () => {
       const extremeBugs = revenueState({
-        pricingModel: 'subscription',
+        pricingModel: 'usage-based',
         pricePerUnit: 30,
         customers: 500,
         overallQuality: 80,
@@ -1833,7 +1821,6 @@ describe('simulateRevenue', () => {
       const result = simulateWeek(extremeBugs);
       vi.restoreAllMocks();
 
-      // 100 bugs -> bugPenalty = max(0, 1 - 100*0.02) = max(0, -1) = 0
       expect(result.finances.weeklyRevenue).toBeGreaterThanOrEqual(0);
     });
 

@@ -146,6 +146,7 @@ function computeResults(gameState: import('../../types/index.ts').GameState) {
 export function GameOverScreen() {
   const gameState = useGameStore((s) => s.gameState);
   const setScreen = useGameStore((s) => s.setScreen);
+  const continueInfiniteMode = useGameStore((s) => s.continueInfiniteMode);
 
   // Compute score once on first render via lazy state initializer
   const [results] = useState<{ score: GameScore } | null>(() => {
@@ -257,6 +258,24 @@ export function GameOverScreen() {
             </div>
           )}
         </div>
+
+        {/* Infinite mode prompt (only on win, not already in infinite mode) */}
+        {isWin && !gameState.meta.infiniteMode && (
+          <div className="retro-card-raised p-5 text-center">
+            <h3 className="text-lg font-bold text-[--color-retro-text] mb-1">
+              Think you can reach $10T?
+            </h3>
+            <p className="text-sm text-[--color-retro-text-light] mb-4">
+              Continue in infinite mode — no win triggers, just pure growth until you hit a $10 trillion valuation. Or go bankrupt trying.
+            </p>
+            <button
+              onClick={continueInfiniteMode}
+              className="btn-glossy btn-glossy-lg btn-blue"
+            >
+              Continue — Infinite Mode
+            </button>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

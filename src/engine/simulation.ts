@@ -276,10 +276,13 @@ function simulateRevenue(state: GameState): GameState {
 
   switch (state.finances.pricingModel) {
     case 'subscription':
-      revenue = customers * pricePerUnit * qualityModifier * bugPenalty;
+      // Subscription revenue is predictable: every subscriber pays the fixed price.
+      // Quality/bugs affect churn (customers leaving), not per-customer revenue.
+      revenue = customers * pricePerUnit;
       break;
 
     case 'usage-based': {
+      // Usage-based: low quality → less engagement → less usage → less revenue.
       const activityMultiplier = qualityModifier;
       const weeklyNoise = 1 + (Math.random() - 0.5) * 0.15;
       revenue = customers * pricePerUnit * activityMultiplier * bugPenalty * weeklyNoise * priceEfficiency;

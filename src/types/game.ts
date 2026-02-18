@@ -103,6 +103,7 @@ export interface GameMeta {
   gameOverReason?: string;
   gameWon: boolean;
   gameWonReason?: string;
+  infiniteMode: boolean;
   score: number;
   regulatoryHeat: number;  // 0-100, accumulates in regulated segments
   lowMoraleWeeks: number;  // consecutive weeks with morale < 40 (for salary pressure)

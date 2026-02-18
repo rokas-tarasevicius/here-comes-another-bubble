@@ -81,6 +81,7 @@ export function createInitialState(
       contentSeoWeeks: 0,
       gameOver: false,
       gameWon: false,
+      infiniteMode: false,
       score: 0,
       regulatoryHeat: 0,
       lowMoraleWeeks: 0,

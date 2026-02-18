@@ -1052,6 +1052,22 @@ function checkGameOver(state: GameState): GameState {
 function checkWinCondition(state: GameState): GameState {
   if (state.meta.gameOver || state.meta.gameWon) return state;
 
+  // Infinite mode: only win at $10T valuation
+  if (state.meta.infiniteMode) {
+    if (state.company.valuation >= 10_000_000_000_000) {
+      return {
+        ...state,
+        meta: {
+          ...state.meta,
+          gameWon: true,
+          gameWonReason: `${formatDollars(state.company.valuation)} valuation. You're not a company anymore — you're a country. Economists write papers about your P&L. Congress wants to break you up. Your parents still don't understand what you do.`,
+          score: calculateFinalScore(state),
+        },
+      };
+    }
+    return state;
+  }
+
   if (state.company.stage === 'public' && state.company.valuation > 1_000_000_000) {
     return {
       ...state,

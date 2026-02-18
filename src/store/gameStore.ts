@@ -78,6 +78,7 @@ interface GameStoreActions {
   nextTutorialStep: () => void;
   skipTutorial: () => void;
   seekFunding: (targetStage: string) => void;
+  continueInfiniteMode: () => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
   getSaveSlots: () => SaveSlot[];
@@ -485,6 +486,23 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     if (!gameState) return;
     const nextState = applySeekFunding(gameState, targetStage);
     set({ gameState: nextState });
+  },
+
+  continueInfiniteMode() {
+    const { gameState } = get();
+    if (!gameState || !gameState.meta.gameWon) return;
+    set({
+      gameState: {
+        ...gameState,
+        meta: {
+          ...gameState.meta,
+          gameWon: false,
+          gameWonReason: undefined,
+          infiniteMode: true,
+        },
+      },
+      currentScreen: 'overview',
+    });
   },
 
   saveGame(slot = 0) {
