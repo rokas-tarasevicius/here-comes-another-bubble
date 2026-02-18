@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { calculateScore, type GameScore } from '../../engine/scoring.ts';
-import { addLeaderboardEntry, type LeaderboardEntry } from '../../engine/leaderboard.ts';
+import { addLeaderboardEntry } from '../../engine/leaderboard.ts';
 import { formatCurrency } from '../../utils/format.ts';
 
 // ─── Grade helpers ──────────────────────────────────────────────────────
@@ -109,68 +109,6 @@ function ScoreBar({
   );
 }
 
-// ─── Leaderboard mini table ──────────────────────────────────────────────
-
-function LeaderboardMini({
-  entries,
-  currentScore,
-}: {
-  entries: LeaderboardEntry[];
-  currentScore: number;
-}) {
-  const top10 = entries.slice(0, 10);
-
-  if (top10.length === 0) return null;
-
-  return (
-    <div className="retro-card">
-      <h3 className="retro-section-heading">
-        Leaderboard
-      </h3>
-      <table className="retro-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Company</th>
-            <th className="text-right">Score</th>
-            <th className="text-right">Grade</th>
-          </tr>
-        </thead>
-        <tbody>
-          {top10.map((entry, i) => {
-            const isHighlight = entry.score === currentScore && i === top10.findIndex(e => e.score === currentScore);
-            return (
-              <tr
-                key={`${entry.companyName}-${entry.date}-${i}`}
-                style={isHighlight ? { background: 'var(--color-retro-blue-pale)' } : undefined}
-              >
-                <td className={`font-[--font-retro-mono] font-bold ${
-                  i === 0 ? 'text-[--color-retro-orange]' :
-                  i === 1 ? 'text-[--color-retro-text-muted]' :
-                  i === 2 ? 'text-[--color-retro-orange]' :
-                  'text-[--color-retro-text-light]'
-                }`}>
-                  {i + 1}
-                </td>
-                <td className="text-[--color-retro-text]">
-                  {entry.companyName}
-                  {isHighlight && (
-                    <span className="ml-1 retro-badge retro-badge-green">NEW</span>
-                  )}
-                </td>
-                <td className="text-right font-[--font-retro-mono]">{entry.score}</td>
-                <td className={`text-right font-bold ${gradeColor(entry.grade)}`}>
-                  {entry.grade}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 // ─── Difficulty badge ────────────────────────────────────────────────────
 
 function DifficultyBadge({ difficulty }: { difficulty: string }) {
@@ -193,7 +131,7 @@ function DifficultyBadge({ difficulty }: { difficulty: string }) {
 // Compute score and add to leaderboard once, outside of render cycle
 function computeResults(gameState: import('../../types/index.ts').GameState) {
   const calculated = calculateScore(gameState);
-  const board = addLeaderboardEntry({
+  addLeaderboardEntry({
     companyName: gameState.company.name,
     score: calculated.total,
     grade: calculated.grade,
@@ -202,7 +140,7 @@ function computeResults(gameState: import('../../types/index.ts').GameState) {
     valuation: gameState.company.valuation,
     date: new Date().toISOString(),
   });
-  return { score: calculated, leaderboard: board };
+  return { score: calculated };
 }
 
 export function GameOverScreen() {
@@ -210,13 +148,12 @@ export function GameOverScreen() {
   const setScreen = useGameStore((s) => s.setScreen);
 
   // Compute score once on first render via lazy state initializer
-  const [results] = useState<{ score: GameScore; leaderboard: LeaderboardEntry[] } | null>(() => {
+  const [results] = useState<{ score: GameScore } | null>(() => {
     if (!gameState) return null;
     return computeResults(gameState);
   });
 
   const score = results?.score ?? null;
-  const leaderboard = results?.leaderboard ?? [];
 
   const [animateBars, setAnimateBars] = useState(false);
 
@@ -320,9 +257,6 @@ export function GameOverScreen() {
             </div>
           )}
         </div>
-
-        {/* Leaderboard */}
-        <LeaderboardMini entries={leaderboard} currentScore={score.total} />
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">

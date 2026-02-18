@@ -38,6 +38,8 @@ const MAX_SLOTS = 5;
 
 // ─── Store types ─────────────────────────────────────────────────────
 
+const TUTORIAL_DONE_KEY = 'hcab-tutorial-done';
+
 interface GameStoreState {
   gameState: GameState | null;
   currentScreen: string;
@@ -45,6 +47,7 @@ interface GameStoreState {
   isSimulating: boolean;
   showWeekRecap: boolean;
   lastSaveTime: number | null;
+  tutorialStep: number | null;
 }
 
 interface GameStoreActions {
@@ -71,6 +74,9 @@ interface GameStoreActions {
   makeOffer: (candidateId: string, salary: number) => void;
   fireMember: (memberId: string) => void;
   dismissWeekRecap: () => void;
+  startTutorial: () => void;
+  nextTutorialStep: () => void;
+  skipTutorial: () => void;
   seekFunding: (targetStage: string) => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
@@ -90,6 +96,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   isSimulating: false,
   showWeekRecap: false,
   lastSaveTime: null,
+  tutorialStep: null,
 
   // ── Actions ────────────────────────────────────────────────────────
 
@@ -101,11 +108,13 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       difficulty,
       tone,
     );
+    const tutorialDone = localStorage.getItem(TUTORIAL_DONE_KEY) === '1';
     set({
       gameState,
       currentScreen: 'overview',
       decisionsThisTurn: [],
       isSimulating: false,
+      tutorialStep: tutorialDone ? null : 0,
     });
   },
 
@@ -143,6 +152,27 @@ export const useGameStore = create<GameStore>()((set, get) => ({
 
   dismissWeekRecap() {
     set({ showWeekRecap: false, currentScreen: 'overview' });
+  },
+
+  startTutorial() {
+    set({ tutorialStep: 0 });
+  },
+
+  nextTutorialStep() {
+    const { tutorialStep } = get();
+    if (tutorialStep === null) return;
+    const maxStep = 5;
+    if (tutorialStep >= maxStep) {
+      localStorage.setItem(TUTORIAL_DONE_KEY, '1');
+      set({ tutorialStep: null });
+    } else {
+      set({ tutorialStep: tutorialStep + 1 });
+    }
+  },
+
+  skipTutorial() {
+    localStorage.setItem(TUTORIAL_DONE_KEY, '1');
+    set({ tutorialStep: null, currentScreen: 'overview' });
   },
 
   setScreen(screen) {

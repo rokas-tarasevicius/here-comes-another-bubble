@@ -53,14 +53,15 @@ export function Header() {
 
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const { meta, company, finances, pendingDecisions } = gameState;
-  const pendingCount = pendingDecisions.length;
 
-  // Check if any decisions due this week are unresolved
-  const hasUrgentUnresolved = pendingDecisions.some(
+  // Only count decisions due this week that haven't been responded to yet
+  const unresolvedDecisions = pendingDecisions.filter(
     (d) => d.deadline <= meta.week && !decisionsThisTurn.some(
       (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
     )
   );
+  const pendingCount = unresolvedDecisions.length;
+  const hasUrgentUnresolved = pendingCount > 0;
   const monthName = MONTH_NAMES[meta.month - 1] ?? 'Jan';
   const dateStr = `Week ${meta.week} \u2014 ${monthName} ${meta.day}, ${meta.year}`;
   const stageBadgeClass = STAGE_COLORS[company.stage] ?? 'bg-gray-700 text-gray-300';

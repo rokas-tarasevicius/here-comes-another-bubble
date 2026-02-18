@@ -20,7 +20,16 @@ export function Sidebar() {
   const saveGame = useGameStore((s) => s.saveGame);
   const gameState = useGameStore((s) => s.gameState);
 
-  const pendingCount = gameState?.pendingDecisions.length ?? 0;
+  const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
+
+  // Only count decisions due this week that haven't been responded to yet
+  const pendingCount = gameState
+    ? gameState.pendingDecisions.filter(
+        (d) => d.deadline <= gameState.meta.week && !decisionsThisTurn.some(
+          (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+        )
+      ).length
+    : 0;
 
   return (
     <aside className="retro-sidebar flex w-12 md:w-12 lg:w-48 flex-col">

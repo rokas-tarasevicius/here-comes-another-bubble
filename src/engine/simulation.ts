@@ -257,7 +257,9 @@ function simulateTechDebtConsequences(state: GameState): GameState {
 // ─── Revenue ──────────────────────────────────────────────────────────
 
 function simulateRevenue(state: GameState): GameState {
-  const qualityModifier = state.product.overallQuality / 100;
+  // Floor at 0.15 so paying customers always generate some revenue even before
+  // features ship (overallQuality starts at 0 until a feature reaches 100%).
+  const qualityModifier = Math.max(0.15, state.product.overallQuality / 100);
   const bugPenalty = Math.max(0, 1 - state.product.bugs * 0.02);
   const customers = state.product.customers;
   const pricePerUnit = state.finances.pricePerUnit;

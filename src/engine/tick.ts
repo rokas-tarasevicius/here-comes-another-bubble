@@ -1120,15 +1120,31 @@ export function advanceWeek(
     meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks },
   };
 
-  // 2. Run simulation
+  // 2. Run simulation (capture decision PMF bonus before simulation overwrites it)
+  const preSimPmf = next.product.pmfScore;
   next = simulateWeek(next);
+  const postSimPmf = next.product.pmfScore;
+  // Decisions may have adjusted pmfScore before simulation recalculated it;
+  // the simulation's calculatePMF() only considers shipped features, so we
+  // preserve any decision-driven delta on top of the calculated value.
+  const decisionPmfDelta = preSimPmf - state.product.pmfScore;
+  if (decisionPmfDelta !== 0) {
+    next = {
+      ...next,
+      product: {
+        ...next.product,
+        pmfScore: Math.max(0, Math.min(100, postSimPmf + decisionPmfDelta)),
+      },
+    };
+  }
 
   // 2.5 Save pre-event values for derived state conflict resolution
   const preEventBurn = next.finances.weeklyBurn;
   const preEventRevenue = next.finances.weeklyRevenue;
   const preEventValuation = next.company.valuation;
 
-  // 3. Process events
+  // 3. Process events (capture PMF before events so we can preserve event deltas)
+  const preEventPmf = next.product.pmfScore;
   next = processEvents(next);
 
   // 3.5 Detect event-applied modifiers
@@ -1147,7 +1163,11 @@ export function advanceWeek(
   let burn = calculateWeeklyBurn(next);
   let valuation = calculateValuation(next);
   const avgMorale = calculateAvgMorale(next);
-  const pmfScore = calculatePMF(next);
+  const basePmf = calculatePMF(next);
+
+  // Preserve event-driven PMF adjustments on top of the recalculated base
+  const eventPmfDelta = next.product.pmfScore - preEventPmf;
+  const pmfScore = Math.max(0, Math.min(100, basePmf + decisionPmfDelta + eventPmfDelta));
 
   burn = Math.round(burn * burnRatio);
   const weeklyRevenue = Math.round(next.finances.weeklyRevenue * revenueRatio * 100) / 100;

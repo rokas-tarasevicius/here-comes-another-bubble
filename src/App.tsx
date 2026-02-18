@@ -12,6 +12,7 @@ import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
 import { WeekRecap } from './components/shared/WeekRecap.tsx';
+import { Tutorial } from './components/shared/Tutorial.tsx';
 import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
@@ -108,7 +109,8 @@ function App() {
     if (
       (gameState?.meta.gameOver || gameState?.meta.gameWon) &&
       currentScreen !== 'title' &&
-      currentScreen !== 'gameover'
+      currentScreen !== 'gameover' &&
+      currentScreen !== 'newgame'
     ) {
       setScreen('gameover');
     }
@@ -130,6 +132,7 @@ function App() {
           <GameplayScreen />
         </AppShell>
         <WeekRecap />
+        <Tutorial />
       </>
     );
   }

@@ -1,4 +1,5 @@
 import type { GameState } from '../../types/game.ts';
+import { useGameStore } from '../../store/index.ts';
 import { formatCurrency, formatNumber } from '../../utils/format.ts';
 
 export interface WeeklySummaryProps {
@@ -33,6 +34,7 @@ const CATEGORY_BADGE: Record<string, string> = {
  * Weekly summary component showing last week's key events and metric changes.
  */
 export function WeeklySummary({ gameState }: WeeklySummaryProps) {
+  const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const { meta, eventLog, pendingDecisions, weekHistory, finances, product } = gameState;
   const currentWeek = meta.week;
 
@@ -60,7 +62,11 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
   const revenueDelta = previous ? latest.revenue - previous.revenue : null;
   const customerDelta = previous ? latest.customers - previous.customers : null;
 
-  const pendingCount = pendingDecisions.length;
+  const pendingCount = pendingDecisions.filter(
+    (d) => d.deadline <= currentWeek && !decisionsThisTurn.some(
+      (dt) => dt.type === 'respond-to-event' && dt.decisionId === d.id
+    )
+  ).length;
 
   return (
     <div className="retro-card flex flex-col gap-3">
