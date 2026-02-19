@@ -315,36 +315,36 @@
   --theme-dot-red: #ee5555;
   --theme-dot-orange: #ff8833;
 
-  /* Badge backgrounds — dark tinted versions */
-  --theme-badge-blue-from: #1a2a44;
-  --theme-badge-blue-to: #1e3050;
-  --theme-badge-blue-text: #88bbdd;
-  --theme-badge-blue-border: rgba(85,153,204,0.25);
+  /* Badge backgrounds — dark tinted, lifted for chip visibility */
+  --theme-badge-blue-from: #1e3350;
+  --theme-badge-blue-to: #243a5a;
+  --theme-badge-blue-text: #88ccee;
+  --theme-badge-blue-border: rgba(85,153,204,0.35);
 
-  --theme-badge-green-from: #1a2e1a;
-  --theme-badge-green-to: #1e351e;
-  --theme-badge-green-text: #66cc66;
-  --theme-badge-green-border: rgba(68,170,68,0.25);
+  --theme-badge-green-from: #1a3520;
+  --theme-badge-green-to: #203d28;
+  --theme-badge-green-text: #66dd66;
+  --theme-badge-green-border: rgba(68,170,68,0.35);
 
-  --theme-badge-red-from: #351a1a;
-  --theme-badge-red-to: #3a1e1e;
-  --theme-badge-red-text: #ff8888;
-  --theme-badge-red-border: rgba(238,85,85,0.25);
+  --theme-badge-red-from: #3a1e22;
+  --theme-badge-red-to: #42242a;
+  --theme-badge-red-text: #ff9999;
+  --theme-badge-red-border: rgba(238,85,85,0.35);
 
-  --theme-badge-orange-from: #302010;
-  --theme-badge-orange-to: #352515;
-  --theme-badge-orange-text: #ffaa55;
+  --theme-badge-orange-from: #352818;
+  --theme-badge-orange-to: #3d2e1e;
+  --theme-badge-orange-text: #ffbb66;
   --theme-badge-orange-border: rgba(255,136,51,0.25);
 
-  --theme-badge-purple-from: #251a35;
-  --theme-badge-purple-to: #2a1e3a;
-  --theme-badge-purple-text: #bb88ee;
-  --theme-badge-purple-border: rgba(153,102,204,0.25);
+  --theme-badge-purple-from: #2a1e40;
+  --theme-badge-purple-to: #32244a;
+  --theme-badge-purple-text: #cc99ff;
+  --theme-badge-purple-border: rgba(153,102,204,0.35);
 
-  --theme-badge-gray-from: #2a2e48;
-  --theme-badge-gray-to: #242840;
-  --theme-badge-gray-text: #a0a0a0;
-  --theme-badge-gray-border: rgba(255,255,255,0.08);
+  --theme-badge-gray-from: #303450;
+  --theme-badge-gray-to: #2a2e48;
+  --theme-badge-gray-text: #b0b0b8;
+  --theme-badge-gray-border: rgba(255,255,255,0.12);
 }
 
 
@@ -754,6 +754,12 @@ button.retro-card:focus-visible {
 .retro-badge-sm {
   padding: 2px 8px;
   font-size: 11px;
+}
+
+[data-theme="dark"] .retro-badge {
+  box-shadow:
+    0 1px 3px rgba(0,0,0,0.25),
+    inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
 .retro-badge-blue {
