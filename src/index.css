@@ -538,6 +538,88 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ── Dark mode glossy button adjustments ──────────────────── */
+
+[data-theme="dark"] .btn-glossy {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow:
+    0 8px 3px rgba(0,0,0,0),
+    0 5px 2px rgba(0,0,0,0.08),
+    0 3px 2px rgba(0,0,0,0.15),
+    0 1px 1px rgba(0,0,0,0.20),
+    inset 0 1px 0 rgba(255,255,255,0.12);
+}
+[data-theme="dark"] .btn-glossy::after {
+  background: radial-gradient(ellipse at center bottom, rgba(255,255,255,0.06), transparent 65%);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-glossy:hover {
+    box-shadow:
+      0 10px 4px rgba(0,0,0,0),
+      0 6px 3px rgba(0,0,0,0.10),
+      0 4px 3px rgba(0,0,0,0.18),
+      0 2px 2px rgba(0,0,0,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+}
+[data-theme="dark"] .btn-glossy:active {
+  box-shadow:
+    inset 0 2px 4px rgba(0,0,0,0.35),
+    inset 0 0 2px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-blue {
+  background: linear-gradient(to bottom, #3a6a9e, #254a78 45%, #1a3a60);
+  border-color: rgba(85,153,204,0.35);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-primary:hover,
+  [data-theme="dark"] .btn-blue:hover {
+    background: linear-gradient(to bottom, #4a7aae, #305a88 45%, #204a70);
+  }
+}
+
+[data-theme="dark"] .btn-green {
+  background: linear-gradient(to bottom, #358a35, #226e22 45%, #185818);
+  border-color: rgba(68,170,68,0.35);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-green:hover {
+    background: linear-gradient(to bottom, #409a40, #2d882d 45%, #1e6e1e);
+  }
+}
+
+[data-theme="dark"] .btn-orange {
+  background: linear-gradient(to bottom, #cc6600, #aa5000 45%, #883800);
+  border-color: rgba(255,136,51,0.35);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-orange:hover {
+    background: linear-gradient(to bottom, #dd7711, #bb5500 45%, #994400);
+  }
+}
+
+[data-theme="dark"] .btn-red {
+  background: linear-gradient(to bottom, #bb3030, #991818 45%, #7a1010);
+  border-color: rgba(238,85,85,0.35);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-red:hover {
+    background: linear-gradient(to bottom, #cc4040, #aa2525 45%, #881818);
+  }
+}
+
+[data-theme="dark"] .btn-purple {
+  background: linear-gradient(to bottom, #6a3a98, #502880 45%, #3a1a60);
+  border-color: rgba(153,102,204,0.35);
+}
+@media (hover: hover) {
+  [data-theme="dark"] .btn-purple:hover {
+    background: linear-gradient(to bottom, #7a4aa8, #603890 45%, #4a2870);
+  }
+}
+
 /* Small glossy button */
 .btn-glossy-sm {
   padding: 4px 10px;
