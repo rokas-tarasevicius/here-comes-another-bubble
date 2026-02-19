@@ -438,6 +438,10 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     // Check if already have a pending offer for this candidate
     if (gameState.team.pendingOffers.some(o => o.candidateId === candidateId)) return;
 
+    // Check if player can afford the signing bonus (2x salary)
+    const signingCost = salary * 2;
+    if (gameState.finances.cash < signingCost) return;
+
     set({
       gameState: {
         ...gameState,

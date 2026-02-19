@@ -1351,9 +1351,25 @@ export function advanceWeek(
     const offerLogEntries: EventLogEntry[] = [];
     let cashSpent = 0;
 
+    let availableCash = next.finances.cash;
     for (const offer of resolvedOffers) {
       const candidate = updatedCandidates.find(c => c.id === offer.candidateId);
       if (!candidate) continue;
+
+      // Skip offer if we can't afford the signing bonus
+      const signingCost = offer.offeredSalary * 2;
+      if (availableCash < signingCost) {
+        offerLogEntries.push({
+          id: generateId(),
+          week: next.meta.week,
+          eventId: 'offer-cancelled-funds',
+          title: `Offer to ${candidate.name} Cancelled`,
+          description: `Can't afford the $${signingCost.toLocaleString()} signing bonus for ${candidate.name}. Offer withdrawn.`,
+          category: 'team',
+        });
+        updatedCandidates = updatedCandidates.filter(c => c.id !== candidate.id);
+        continue;
+      }
 
       // Acceptance probability based on salary ratio
       const salaryRatio = offer.offeredSalary / candidate.expectedSalary;
@@ -1378,7 +1394,8 @@ export function advanceWeek(
         };
         updatedMembers.push(newMember);
         updatedCandidates = updatedCandidates.filter(c => c.id !== candidate.id);
-        cashSpent += offer.offeredSalary * 2; // signing bonus
+        cashSpent += signingCost;
+        availableCash -= signingCost;
 
         offerLogEntries.push({
           id: generateId(),
