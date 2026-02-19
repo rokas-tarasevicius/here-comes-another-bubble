@@ -22,10 +22,19 @@ export function calculateWeeklyBurn(state: GameState): number {
     (sum, agent) => sum + agent.costPerWeek,
     0,
   );
-  // Fixed costs: infrastructure and overhead
-  // Garage stage: just cloud hosting ($100/wk). As you grow, costs scale.
-  const isGarage = state.company.stage === 'garage' || state.company.stage === 'pre-seed';
-  const baseCost = isGarage ? 100 : 500;
+  // Fixed costs: infrastructure, overhead, and founder living expenses
+  // Garage stage: cloud hosting + founder living costs (~$500/wk). As you grow, costs scale.
+  const stageCosts: Record<string, number> = {
+    'garage': 500,
+    'pre-seed': 700,
+    'seed': 1200,
+    'series-a': 2500,
+    'series-b': 5000,
+    'series-c': 8000,
+    'growth': 15000,
+    'public': 25000,
+  };
+  const baseCost = stageCosts[state.company.stage] ?? 500;
   const fixedCosts = baseCost + state.team.teamSize * 50;
   return salaries + aiCosts + fixedCosts + (state.finances.marketingSpend ?? 0);
 }
