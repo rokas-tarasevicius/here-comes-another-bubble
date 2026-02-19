@@ -18,6 +18,7 @@ import {
   calculateAvgMorale,
   calculatePMF,
 } from './derived.ts';
+import { calculateScore } from './scoring.ts';
 import { generateId } from '../utils/id.ts';
 import { randomName, TRAIT_POOL } from '../data/names.ts';
 
@@ -1124,13 +1125,7 @@ function checkWinCondition(state: GameState): GameState {
 }
 
 function calculateFinalScore(state: GameState): number {
-  let score = 0;
-  score += Math.min(400, Math.round(state.company.valuation / 2_500_000));
-  score += Math.min(200, Math.round(state.finances.weeklyRevenue / 25));
-  score += Math.min(100, (state.team.teamSize + state.team.aiAgents.length) * 5);
-  score += Math.round(state.finances.founderEquity * 200);
-  score += Math.max(0, 100 - state.meta.week);
-  return score;
+  return calculateScore(state).total;
 }
 
 // ─── Regulatory heat simulation ───────────────────────────────────────
