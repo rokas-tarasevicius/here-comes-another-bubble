@@ -262,13 +262,9 @@ export function BackgroundMusic() {
         {/* Main music button */}
         <button
           onClick={togglePlay}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${isPlaying ? 'music-play--active' : 'music-play'}`}
+          className={`music-btn-circle flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${isPlaying ? 'music-play--active' : 'music-play'}`}
           title={isPlaying ? 'Pause music' : 'Play music'}
           aria-label={isPlaying ? 'Pause music' : 'Play music'}
-          style={{
-            border: isPlaying ? '1px solid rgba(255,255,255,0.2)' : `1px solid var(--theme-glass-border-hover)`,
-            color: isPlaying ? '#ffffff' : 'var(--color-retro-text-muted)',
-          }}
         >
           {/* Musical note icon */}
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
