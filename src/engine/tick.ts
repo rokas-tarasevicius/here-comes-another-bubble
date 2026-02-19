@@ -92,6 +92,8 @@ function applyStartFeature(
   };
 }
 
+// Note: store.setPricing handles UI-driven pricing changes with identical logic.
+// This engine path handles pricing changes from the decision queue (events/auto-decisions).
 function applySetPricing(
   state: GameState,
   model: GameState['finances']['pricingModel'],
