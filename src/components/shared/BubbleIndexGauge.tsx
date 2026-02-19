@@ -26,11 +26,11 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
 
   return (
     <div className="retro-card">
-      <div className="mb-2 flex items-start justify-between">
+      <div className="mb-2 flex items-center justify-between">
         <h3 className="retro-section-heading" style={{ marginBottom: 0, borderBottom: 'none', paddingBottom: 0 }}>
           Bubble Index<InfoTip text="Market hype meter (0–100). When it pops (reaches critical levels), valuations crash, funding dries up, and customers flee. High bubble inflates your valuation — but the crash is brutal. Survive it to win." />
         </h3>
-        <span className={`retro-badge ${zone.colorClass === 'retro-gauge-cool' ? 'retro-badge-blue' : zone.colorClass === 'retro-gauge-warm' ? 'retro-badge-orange' : 'retro-badge-red'}`}>
+        <span className={`retro-badge shrink-0 ${zone.colorClass === 'retro-gauge-cool' ? 'retro-badge-blue' : zone.colorClass === 'retro-gauge-warm' ? 'retro-badge-orange' : 'retro-badge-red'}`}>
           {zone.label}
         </span>
       </div>
