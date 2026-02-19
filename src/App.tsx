@@ -165,7 +165,7 @@ function App() {
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {screen}
-      <div className="fixed bottom-[60px] right-[11px] z-50">
+      <div className="fixed bottom-[68px] right-4 z-50">
         <ThemeToggle />
       </div>
       <BackgroundMusic />
