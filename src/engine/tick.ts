@@ -1010,33 +1010,7 @@ function checkGameOver(state: GameState): GameState {
     };
   }
 
-  // 2. Team wiped out: escalating attrition reduced team to 0
-  // Only trigger if the player HAD a team before (check week history for non-zero team)
-  const hadTeamBefore = state.weekHistory.some(w => w.teamSize > 0);
-  if (state.team.teamSize === 0 && hadTeamBefore && state.meta.week > 3) {
-    const peakTeam = Math.max(...state.weekHistory.map(w => w.teamSize), 0);
-    const avgMorale = state.weekHistory.length > 0
-      ? Math.round(state.weekHistory.slice(-4).reduce((sum, w) => sum + (w.avgMorale ?? 50), 0) / Math.min(4, state.weekHistory.length))
-      : 50;
-
-    let details = `Everyone quit. Your entire team walked out after ${state.meta.week} weeks.`;
-    if (peakTeam > 0) {
-      details += ` You once had ${peakTeam} people believing in the mission.`;
-    }
-    if (avgMorale < 30) {
-      details += ` Morale had been at rock-bottom (${avgMorale}%) for weeks — the writing was on the wall.`;
-    }
-    details += ` There's nobody left to build your "disruptive AI solution."`;
-
-    return {
-      ...state,
-      meta: {
-        ...state.meta,
-        gameOver: true,
-        gameOverReason: details,
-      },
-    };
-  }
+  // 2. (Removed) Team wiped out — the founder can always keep going solo.
 
   // 3. Shutdown chosen: player chose to shut down during bubble emergency
   const shutdownChosen = state.eventLog.some(

@@ -1027,9 +1027,9 @@ describe('Escalating Game Over (Soft Landing)', () => {
     }
   });
 
-  it('team reaching 0 from attrition triggers game over', () => {
+  it('team reaching 0 from attrition does NOT end the game (founder continues solo)', () => {
     const state = makeDeepState({
-      meta: { week: 5 }, // > 3 so the check activates
+      meta: { week: 5 },
       team: { teamSize: 1, avgSalary: 3000, morale: 5, aiAgents: [] },
       finances: {
         ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
@@ -1043,10 +1043,9 @@ describe('Escalating Game Over (Soft Landing)', () => {
     const result = advanceWeek(state, []);
     vi.restoreAllMocks();
 
-    // Team should be 0, which triggers game over
+    // Team gone but founder keeps going
     expect(result.team.teamSize).toBe(0);
-    expect(result.meta.gameOver).toBe(true);
-    expect(result.meta.gameOverReason).toContain('quit');
+    expect(result.meta.gameOver).toBe(false);
   });
 
   it('bubble < 25 tanks valuation by 20%', () => {

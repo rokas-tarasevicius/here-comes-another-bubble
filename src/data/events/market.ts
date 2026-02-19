@@ -815,7 +815,7 @@ export const MARKET_EVENTS: GameEvent[] = [
     maxOccurrences: 0,
     cooldownWeeks: 10,
     weight: 4,
-    condition: (state) => state.market.talentMarketHeat > 40,
+    condition: (state) => state.market.talentMarketHeat > 40 && state.team.teamSize > 0,
     descriptions: {
       default: 'Competition for AI talent is intensifying. Hiring costs are rising.',
       realistic:

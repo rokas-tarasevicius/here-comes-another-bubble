@@ -1,57 +1,7 @@
 import type { GameEvent } from '../../types/events.ts';
 
 export const ROUTINE_EVENTS: GameEvent[] = [
-  // ─── 1. New Job Applicant ──────────────────────────────────────────────
-  {
-    id: 'routine-new-job-applicant',
-    title: 'New Job Applicant',
-    category: 'team',
-    minWeek: 6,
-    maxOccurrences: 0,
-    cooldownWeeks: 4,
-    weight: 5,
-    condition: (state) => state.finances.cash > 40_000 || state.finances.fundingHistory.length > 0,
-    descriptions: {
-      default: 'A strong candidate just applied to your open role.',
-      realistic:
-        'A promising candidate with relevant experience submitted their application. Their background checks out and they seem genuinely interested in the mission.',
-      satirical:
-        'Someone with "AI Visionary" in their LinkedIn headline applied. Their resume is entirely written by ChatGPT, but honestly, it\'s better than most human-written ones.',
-      mixed:
-        'A solid candidate applied. They actually read the job description — which already puts them in the top 1% of applicants.',
-    },
-    immediateEffects: [],
-    decisionOptions: [
-      {
-        id: 'hire_1_3500',
-        label: 'Hire Them',
-        description: 'Extend an offer immediately. $3,500/week salary.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -14_000 },
-          { path: 'company.reputation', operation: 'add', value: 1 },
-        ],
-      },
-      {
-        id: 'pass',
-        label: 'Pass',
-        description: 'Not the right fit right now.',
-        effects: [],
-      },
-      {
-        id: 'hire_1_2000',
-        label: 'Offer Below Market',
-        description: 'Offer $2,000/week plus equity. They might walk.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -8_000 },
-          { path: 'company.reputation', operation: 'add', value: -2 },
-        ],
-        tone: 'satirical',
-      },
-    ],
-    decisionDeadlineWeeks: 2,
-  },
-
-  // ─── 2. Feature Shipped ────────────────────────────────────────────────
+  // ─── 1. Feature Shipped ────────────────────────────────────────────────
   {
     id: 'routine-feature-shipped',
     title: 'Feature Shipped',
@@ -490,49 +440,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     decisionDeadlineWeeks: 1,
   },
 
-  // ─── 11. Intern Application ────────────────────────────────────────────
-  {
-    id: 'routine-intern-application',
-    title: 'Intern Application',
-    category: 'team',
-    minWeek: 4,
-    maxOccurrences: 0,
-    cooldownWeeks: 8,
-    weight: 4,
-    condition: (state) =>
-      state.team.teamSize >= 2 && state.finances.cash > 10_000,
-    descriptions: {
-      default: 'A CS student applied for an internship at your startup.',
-      realistic:
-        'A junior from Stanford\'s CS program wants to intern this summer. They\'re eager but will need significant mentorship.',
-      satirical:
-        'A 19-year-old applied for an internship. Their GitHub has more stars than your production repo. They want "$40/hour minimum because Bay Area." They also have three side projects that are better than your product.',
-      mixed:
-        'Intern application: Stanford CS junior, impressive side projects, wants to "learn about startup culture." Translation: they want LinkedIn content material.',
-    },
-    immediateEffects: [],
-    decisionOptions: [
-      {
-        id: 'hire_1_1200',
-        label: 'Hire the Intern',
-        description: 'Cheap labor, $1,200/week. Will need mentoring time.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -4_800 },
-          { path: 'team.morale', operation: 'add', value: 2 },
-          { path: 'company.culture', operation: 'add', value: 1 },
-        ],
-      },
-      {
-        id: 'pass-intern',
-        label: 'Pass',
-        description: 'Not the right time to mentor someone.',
-        effects: [],
-      },
-    ],
-    decisionDeadlineWeeks: 2,
-  },
-
-  // ─── 12. Team Lunch ────────────────────────────────────────────────────
+  // ─── 11. Team Lunch ────────────────────────────────────────────────────
   {
     id: 'routine-team-lunch',
     title: 'Team Lunch',
@@ -836,57 +744,7 @@ export const ROUTINE_EVENTS: GameEvent[] = [
     decisionDeadlineWeeks: 0,
   },
 
-  // ─── 19. Technical Interview ───────────────────────────────────────────
-  {
-    id: 'routine-technical-interview',
-    title: 'Technical Interview',
-    category: 'team',
-    minWeek: 3,
-    maxOccurrences: 0,
-    cooldownWeeks: 4,
-    weight: 5,
-    condition: (state) =>
-      state.finances.cash > 30_000 && state.team.teamSize >= 1,
-    descriptions: {
-      default: 'You\'re interviewing a promising engineering candidate today.',
-      realistic:
-        'Final round interview with a strong engineering candidate. They have competing offers and want to make a decision this week.',
-      satirical:
-        'The candidate aced the whiteboard. They can invert a binary tree AND make small talk. Basically a unicorn. They have 17 competing offers because apparently everyone is hiring AI engineers.',
-      mixed:
-        'Interview went well. The candidate is sharp, experienced, and — rarest of all — seems like a normal human being. They have other offers though, so the clock is ticking.',
-    },
-    immediateEffects: [],
-    decisionOptions: [
-      {
-        id: 'hire_1_4000',
-        label: 'Make a Strong Offer',
-        description: 'Top of market: $4,000/week. Lock them in.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -16_000 },
-          { path: 'product.overallQuality', operation: 'add', value: 2 },
-          { path: 'company.reputation', operation: 'add', value: 1 },
-        ],
-      },
-      {
-        id: 'hire_1_3200',
-        label: 'Standard Offer',
-        description: 'Market rate: $3,200/week. Fair but might lose them.',
-        effects: [
-          { path: 'finances.cash', operation: 'add', value: -12_800 },
-        ],
-      },
-      {
-        id: 'pass-candidate',
-        label: 'Pass on This One',
-        description: 'Not the right fit or timing.',
-        effects: [],
-      },
-    ],
-    decisionDeadlineWeeks: 1,
-  },
-
-  // ─── 20. Performance Review Season ─────────────────────────────────────
+  // ─── 19. Performance Review Season ─────────────────────────────────────
   {
     id: 'routine-performance-review',
     title: 'Performance Review Season',

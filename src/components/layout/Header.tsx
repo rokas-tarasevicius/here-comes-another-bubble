@@ -185,7 +185,6 @@ export function Header() {
   const customerHistory = weekHistory.map((w) => w.customers);
   const churnHistory = weekHistory.map((w) => w.churnRate);
   const teamHistory = weekHistory.map((w) => w.teamSize);
-  const moraleHistory = weekHistory.map((w) => w.avgMorale);
   const pmfHistory = weekHistory.map((w) => w.pmfScore);
   const totalTeam = team.teamSize + team.aiAgents.length;
 
@@ -213,7 +212,6 @@ export function Header() {
   const usersChange = weekChange(customerHistory);
   const churnChange = weekChange(churnHistory);
   const teamChange = weekChange(teamHistory);
-  const moraleChange = weekChange(moraleHistory);
   const pmfChange = weekChange(pmfHistory);
 
   // Runway calculation
@@ -285,26 +283,6 @@ export function Header() {
       shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(51,102,153,0.08), 0 1px 0 rgba(255,255,255,0.7)',
       change: teamChange.change,
       changeDirection: teamChange.dir,
-      hasChart: true,
-    },
-    {
-      label: 'Morale',
-      value: `${Math.round(team.morale)}`,
-      sparklineData: moraleHistory,
-      sparklineColor: team.morale >= 60 ? '#2b7a2b' : team.morale >= 40 ? '#b45309' : '#cc3333',
-      valueClass: team.morale >= 60
-        ? 'text-[--color-retro-green-dark]'
-        : team.morale >= 40
-          ? 'text-[--color-retro-orange]'
-          : 'text-[--color-retro-red]',
-      bg: team.morale >= 60
-        ? 'linear-gradient(to bottom, #e6f3e6, #eef7ee)'
-        : team.morale >= 40
-          ? 'linear-gradient(to bottom, #fef3c7, #fef9e7)'
-          : 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
-      change: moraleChange.change,
-      changeDirection: moraleChange.dir,
       hasChart: true,
     },
     {
