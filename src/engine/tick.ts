@@ -495,6 +495,20 @@ function applyEventResponse(
     };
   }
 
+  // FAANG poaching: acqui-let-go removes 1 team member
+  if (optionId === 'acqui-let-go') {
+    const acquiMembers = next.team.members ?? [];
+    if (acquiMembers.length > 0) {
+      const newMembers = acquiMembers.slice(0, -1);
+      const newSize = newMembers.length;
+      const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
+      next = {
+        ...next,
+        team: { ...next.team, members: newMembers, teamSize: newSize, avgSalary: newAvg },
+      };
+    }
+  }
+
   // Task 8: Refuse raise — 20% chance of losing 1 person
   const refuseRaiseMemberCount = next.team.members?.length ?? next.team.teamSize;
   if (optionId === 'refuse-raise' && refuseRaiseMemberCount > 0 && Math.random() < 0.2) {
