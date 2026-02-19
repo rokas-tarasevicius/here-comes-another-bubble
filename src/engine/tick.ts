@@ -325,6 +325,19 @@ function applyEventResponse(
   next.product.bugs = Math.max(0, next.product.bugs);
   next.product.techDebtTotal = Math.max(0, next.product.techDebtTotal);
 
+  // Sync individual member salaries when avgSalary changes (e.g. salary cuts)
+  if (next.team.members && next.team.members.length > 0) {
+    const prevAvg = state.team.avgSalary;
+    const newAvg = next.team.avgSalary;
+    if (prevAvg > 0 && newAvg !== prevAvg) {
+      const ratio = newAvg / prevAvg;
+      next.team.members = next.team.members.map(m => ({
+        ...m,
+        salary: Math.round(m.salary * ratio),
+      }));
+    }
+  }
+
   // Remove from pending, mark in log
   next = {
     ...next,
