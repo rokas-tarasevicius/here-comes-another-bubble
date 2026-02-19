@@ -970,7 +970,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
     condition: (state: GameState) =>
       state.product.customers > 20 &&
       state.meta.week >= 10 &&
-      state.product.customers > 20,
+      state.market.competitors.some(c => c.alive),
     descriptions: {
       default:
         'A well-funded competitor just undercut your pricing by 60%. They are burning VC money to steal your customers. Their unit economics are hilariously negative but that is their investors\' problem.',
