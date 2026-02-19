@@ -1534,6 +1534,31 @@ button.retro-card:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   THEME TOGGLE — circular button matching music button style
+   ═══════════════════════════════════════════════════════════════ */
+
+.theme-toggle {
+  background: linear-gradient(to bottom, var(--theme-surface-from), var(--theme-inset-to));
+  border: 1px solid var(--theme-glass-border-hover);
+  color: var(--color-retro-text-muted);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06), inset 0 1px 0 var(--theme-highlight-strong);
+}
+.theme-toggle:hover {
+  color: var(--color-retro-text);
+  border-color: var(--color-retro-orange);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 var(--theme-highlight-strong);
+}
+.theme-toggle--dark {
+  color: var(--color-retro-orange);
+  border-color: rgba(255,136,51,0.3);
+}
+.theme-toggle--dark:hover {
+  color: var(--color-retro-orange-light);
+  border-color: var(--color-retro-orange);
+  box-shadow: 0 2px 10px rgba(255,136,51,0.2), 0 1px 3px rgba(0,0,0,0.15), inset 0 1px 0 var(--theme-highlight-strong);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    INFOTIP — tooltip popup
    ═══════════════════════════════════════════════════════════════ */
 
