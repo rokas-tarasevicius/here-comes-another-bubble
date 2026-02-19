@@ -141,8 +141,8 @@ function simulateProductDevelopment(state: GameState): GameState {
     const newProgress = clamp(feature.progress + totalProgress, 0, 100);
 
     // Task 12: Quality based on team size, not flat
-    const baseTargetQuality = clamp(30 + state.team.teamSize * 8 + designAgentBonus, 30, 95);
-    let targetQuality = baseTargetQuality * (qualityMultiplier + founderQualityBonus) * focusQualityMultiplier;
+    const baseTargetQuality = clamp(30 + state.team.teamSize * 5 + designAgentBonus, 30, 85);
+    let targetQuality = baseTargetQuality * clamp(qualityMultiplier * focusQualityMultiplier + founderQualityBonus * 0.3, 0.5, 1.5);
 
     // Task 10: High morale boosts quality
     if (state.team.morale > 80) {
