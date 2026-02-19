@@ -1138,6 +1138,9 @@ function simulateRegulatoryHeat(state: GameState): GameState {
   const regulatoryRisk = state.market.segmentData.regulatoryRisk;
   heatDelta += regulatoryRisk * 0.005;
 
+  // Natural decay — regulators cool off if you behave
+  heatDelta -= 0.3;
+
   if (state.meta.growthStrategy === 'move-fast') {
     heatDelta += 0.5;
   }
@@ -1150,7 +1153,12 @@ function simulateRegulatoryHeat(state: GameState): GameState {
   }
 
   if (state.meta.growthStrategy === 'quality-first') {
-    heatDelta -= 0.3;
+    heatDelta -= 0.4;
+  }
+
+  // High quality products reduce regulatory scrutiny
+  if (state.product.overallQuality > 70) {
+    heatDelta -= 0.2;
   }
 
   if (state.product.overallQuality < 40 && state.product.customers > 20) {
