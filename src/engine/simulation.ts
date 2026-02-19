@@ -911,7 +911,9 @@ function simulateStageProgression(state: GameState): GameState {
       }
       break;
     case 'series-a':
-      if (valuation > 50_000_000 && customers > 500) {
+      // Use revenue threshold instead of raw customer count
+      // so enterprise segments (fewer high-value customers) aren't blocked
+      if (valuation > 50_000_000 && (customers > 200 || revenue > 10_000)) {
         newStage = 'series-b';
       }
       break;
