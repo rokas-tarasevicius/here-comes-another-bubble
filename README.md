@@ -1,73 +1,110 @@
-# React + TypeScript + Vite
+# Here Comes Another Bubble
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> *Build your AI startup. Try not to die.*
 
-Currently, two official plugins are available:
+A satirical startup simulation game set during the AI bubble. You play as a founder navigating the absurd world of Silicon Valley — hiring engineers, shipping features, raising funding, and desperately trying to IPO before the bubble pops and takes your valuation with it.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Inspired by [the 2007 song of the same name](https://www.youtube.com/watch?v=I6IQ_FOCE6I) about the original Web 2.0 bubble.
 
-## React Compiler
+**[Play it now](https://here-comes-another-bubble.vercel.app)**
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+![Gameplay Screenshot](screenshots/readme-gameplay.png)
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **5 founder archetypes** — Technical Hacker, Visionary Hustler, Balanced Generalist, Ex-BigTech Corporate Refugee, Academic Researcher — each with different starting stats, cash, and playstyles
+- **7 market segments** — AI DevTools, Healthcare, Fintech, Education, Enterprise, Consumer, and Creative Tools — with distinct economics, regulation risk, and competition
+- **Week-by-week simulation** — manage cash flow, burn rate, hiring, product development, and growth strategy as time ticks forward
+- **The Bubble Index** — a market-wide sentiment indicator that inflates valuations on the way up and wipes them out on the way down
+- **Event system** — 100+ randomized events across categories: market shifts, team drama, product crises, funding opportunities, regulatory heat, and Silicon Valley absurdity
+- **Decision-driven gameplay** — weekly decisions with real trade-offs that shape your company's trajectory
+- **Multiple win conditions** — IPO, acquisition (your choice to accept), or reaching unicorn status
+- **Multiple death conditions** — running out of cash, losing your entire team, regulatory shutdown, or just giving up
+- **Scoring system** — letter grades (S through F) based on valuation, revenue, team size, and speed, with difficulty multipliers
+- **Skeuomorphic Web 2.0 aesthetic** — tactile surfaces, layered shadows, glossy buttons, and a design that looks like it was built in 2007 (on purpose)
+- **Background music** — the original "Here Comes Another Bubble" song plays via embedded YouTube
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 18+
+- Yarn
+
+### Install & Run
+
+```bash
+git clone https://github.com/rokas-tarasevicius/here-comes-another-bubble.git
+cd here-comes-another-bubble
+yarn install
+yarn dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Other Commands
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+yarn build        # Type-check + production build
+yarn lint         # ESLint
+npx vitest run    # Run all tests (320 tests across 6 suites)
 ```
+
+## Tech Stack
+
+- **React 19** + **TypeScript** — strict mode, no enums, union types throughout
+- **Vite 7** — dev server and production builds
+- **Zustand 5** — single-store state management with immutable updates
+- **Tailwind CSS v4** — utility-first styling with a custom retro design system
+- **Recharts 3** — sparkline charts and data visualization
+- **Vitest 4** — unit testing with jsdom environment
+
+## Architecture
+
+The game engine is **purely functional** — all simulation logic takes state in, returns new state out, never mutates. The React UI reads from a Zustand store that calls into the engine.
+
+```
+UI (React components) → Store (Zustand) → Engine (pure functions) → New State
+```
+
+```
+src/
+  engine/         # Pure game simulation (tick, events, scoring, derived metrics)
+  store/          # Zustand store — bridges UI to engine
+  components/
+    layout/       # App shell, header, sidebar, event feed
+    screens/      # One screen per game view (Overview, Company, Finance, Market, etc.)
+    shared/       # Reusable components (KPICard, DecisionCard, charts, gauges)
+  data/           # Static game data (founders, markets, competitors, 100+ events)
+  types/          # All TypeScript types
+```
+
+## How to Play
+
+1. **Name your startup** — or pick a ridiculous pre-made name
+2. **Choose your founder** — each archetype has different strengths and starting cash
+3. **Pick a market** — balance growth potential against competition and regulation
+4. **Play week by week** — advance time, respond to events, and make strategic decisions
+5. **Manage your resources** — hire/fire team members, set pricing, choose growth strategies, seek funding
+6. **Watch the bubble** — when the Bubble Index is high, valuations soar; when it crashes, everyone suffers
+7. **Try to win** — reach IPO ($1B+ valuation at public stage), get acquired, or become a unicorn
+
+## Contributing
+
+Contributions are welcome! The game is built to be extensible — adding new events, founder types, market segments, or game mechanics is straightforward.
+
+1. Fork the repo
+2. Create a feature branch (`feat/your-feature`)
+3. Make your changes and add tests
+4. Ensure `npx tsc -b` and `npx vitest run` pass
+5. Open a PR
+
+## Contributors
+
+- [Rokas Tarasevicius](https://github.com/rokas-tarasevicius) — creator
+- [Paulius Dovidaitis](https://github.com/Dovidaitis) — contributor
+- [Claude](https://claude.ai) — AI pair programmer
+
+## License
+
+MIT
