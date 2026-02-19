@@ -182,7 +182,7 @@ function applyHireTeam(state: GameState, count: number, salary: number): GameSta
     newMembers.push({
       id: generateId(),
       name: `Team Member ${(state.team.members?.length ?? state.team.teamSize) + i + 1}`,
-      role: roles[Math.floor(Math.random() * 2)],
+      role: roles[Math.floor(Math.random() * roles.length)],
       skill: 40 + Math.floor(Math.random() * 30),
       salary,
       morale: 75,

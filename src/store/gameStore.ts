@@ -365,7 +365,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       newMembers.push({
         id: `hire-${Date.now()}-${i}`,
         name: randomName(),
-        role: roles[Math.floor(Math.random() * 2)], // mostly engineers/designers
+        role: roles[Math.floor(Math.random() * roles.length)],
         skill: 40 + Math.floor(Math.random() * 30),
         salary,
         morale: 70 + Math.floor(Math.random() * 20),
