@@ -371,14 +371,17 @@ function simulateMarket(state: GameState): GameState {
 
   let competitorDeathBoost = 0;
   if (newBubbleIndex > 85) {
+    // High bubble: euphoria — investors are generous, talent is hot
     newInvestorSentiment = clamp(newInvestorSentiment + rand(2, 5), 0, 100);
     newTalentHeat = clamp(newTalentHeat + rand(1, 3), 0, 100);
-    competitorDeathBoost = 0.03;
+    // Competitors thrive in high bubble — no death boost
   }
 
   if (newBubbleIndex < 25) {
+    // Bubble popping: competitors run out of funding and die
     newInvestorSentiment = clamp(newInvestorSentiment - rand(2, 5), 0, 100);
     newTalentHeat = clamp(newTalentHeat - rand(2, 4), 0, 100);
+    competitorDeathBoost = 0.04;
   }
 
   // Task 11: Bubble < 25 tanks investor sentiment and valuation
