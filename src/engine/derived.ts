@@ -133,10 +133,7 @@ export function calculateValuation(state: GameState): number {
   // Pricing model valuation multiplier: investors value recurring revenue models higher
   const pricingValuationMap: Record<string, number> = {
     'subscription': 1.5,
-    'enterprise': 1.8,
     'usage-based': 1.2,
-    'free': 0.6,
-    'one-time': 1.0,
   };
   const pricingMultiplier = pricingValuationMap[state.finances.pricingModel] ?? 1.0;
 
