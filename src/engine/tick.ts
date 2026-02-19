@@ -1108,15 +1108,51 @@ function checkWinCondition(state: GameState): GameState {
     };
   }
 
+  // Acquisition offer — present as a decision, don't auto-win
   if (state.company.valuation > 500_000_000 && Math.random() < 0.05) {
     const acquirers = ['Google', 'Microsoft', 'Apple', 'Meta', 'Amazon', 'Nvidia', 'Salesforce'];
     const acquirer = acquirers[Math.floor(Math.random() * acquirers.length)];
+    const offerAmount = Math.round(state.company.valuation * 1.3);
+    const alreadyPending = state.pendingDecisions.some(d => d.eventId === 'acquisition-offer');
+    if (!alreadyPending) {
+      const decisionId = generateId();
+      return {
+        ...state,
+        pendingDecisions: [...state.pendingDecisions, {
+          id: decisionId,
+          eventId: 'acquisition-offer',
+          prompt: `${acquirer} wants to acquire your company for ${formatDollars(offerAmount)}. Your equity would be worth ${formatDollars(Math.round(offerAmount * state.finances.founderEquity))}. Do you sell?`,
+          options: [
+            { id: 'accept-acquisition', label: 'Accept the Offer', description: `Sell to ${acquirer} for ${formatDollars(offerAmount)}. Cash out and win.`, effects: [] },
+            { id: 'reject-acquisition', label: 'Reject — Keep Building', description: 'Turn them down. You\'re not done yet.', effects: [{ path: 'company.reputation', operation: 'add' as const, value: 5 }] },
+          ],
+          deadline: state.meta.week + 2,
+          defaultOptionId: 'reject-acquisition',
+        }],
+        eventLog: [...state.eventLog, {
+          id: generateId(),
+          week: state.meta.week,
+          eventId: 'acquisition-offer',
+          title: `${acquirer} Acquisition Offer`,
+          description: `${acquirer} offered ${formatDollars(offerAmount)} for your company.`,
+          category: 'funding',
+          decisionId,
+        }],
+      };
+    }
+  }
+
+  // Check if player accepted an acquisition offer
+  const acceptedAcq = state.eventLog.find(
+    e => e.eventId === 'acquisition-offer' && e.resolvedOptionId === 'accept-acquisition'
+  );
+  if (acceptedAcq) {
     return {
       ...state,
       meta: {
         ...state.meta,
         gameWon: true,
-        gameWonReason: `${acquirer} just acquired your company for ${formatDollars(Math.round(state.company.valuation * 1.3))}. Your equity is worth ${formatDollars(Math.round(state.company.valuation * 1.3 * state.finances.founderEquity))}. Not bad for a startup that started in a garage.`,
+        gameWonReason: `Your company was acquired for ${formatDollars(Math.round(state.company.valuation * 1.3))}. Your equity is worth ${formatDollars(Math.round(state.company.valuation * 1.3 * state.finances.founderEquity))}. Not bad for a startup that started in a garage.`,
         score: calculateFinalScore(state),
       },
     };
