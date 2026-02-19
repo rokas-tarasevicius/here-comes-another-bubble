@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useGameStore } from '../../store/index.ts';
-import { useThemeContext } from '../../contexts/ThemeContext.tsx';
 
 interface NavItem {
   id: string;
@@ -97,36 +96,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'decisions', label: 'Decisions', icon: <IconDecisions /> },
 ];
 
-function IconMoon() {
-  return (
-    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  );
-}
-
-function IconSun() {
-  return (
-    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  );
-}
-
 export function Sidebar() {
   const currentScreen = useGameStore((s) => s.currentScreen);
   const setScreen = useGameStore((s) => s.setScreen);
   const saveGame = useGameStore((s) => s.saveGame);
   const gameState = useGameStore((s) => s.gameState);
-  const { theme, toggleTheme } = useThemeContext();
 
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
@@ -197,14 +171,6 @@ export function Sidebar() {
         >
           <span className="shrink-0 opacity-75">{saveState === 'saved' ? <IconCheck /> : <IconSave />}</span>
           <span className="sidebar-label">{saveState === 'saved' ? 'Saved!' : 'Save'}</span>
-        </button>
-        <button
-          onClick={toggleTheme}
-          title={theme === 'light' ? 'Switch to night mode' : 'Switch to light mode'}
-          className="retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap"
-        >
-          <span className="shrink-0 opacity-75">{theme === 'light' ? <IconMoon /> : <IconSun />}</span>
-          <span className="sidebar-label">{theme === 'light' ? 'Night Mode' : 'Light Mode'}</span>
         </button>
         <button
           onClick={() => setScreen('title')}

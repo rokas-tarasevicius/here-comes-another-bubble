@@ -17,6 +17,7 @@ import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
 import { WeekRecap } from './components/shared/WeekRecap.tsx';
 import { Tutorial } from './components/shared/Tutorial.tsx';
 import { BackgroundMusic } from './components/shared/BackgroundMusic.tsx';
+import { ThemeToggle } from './components/shared/ThemeToggle.tsx';
 
 // ─── Screen router ─────────────────────────────────────────────────────
 
@@ -164,7 +165,10 @@ function App() {
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {screen}
-      <BackgroundMusic />
+      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-center gap-2">
+        <ThemeToggle />
+        <BackgroundMusic />
+      </div>
     </ThemeContext.Provider>
   );
 }

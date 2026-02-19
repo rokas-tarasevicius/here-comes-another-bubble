@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
-import { ThemeToggle } from '../shared/ThemeToggle.tsx';
+
 
 // ─── Floating Bubbles Background (Web 2.0 pastel style) ────────────────
 
@@ -108,11 +108,6 @@ export function MainMenuScreen() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-retro-bg px-4">
       <BubblesBackground />
-
-      {/* Theme toggle */}
-      <div className="absolute top-4 right-4 z-20">
-        <ThemeToggle />
-      </div>
 
       {/* Content */}
       <div className="relative z-10 flex w-full max-w-lg flex-col items-center">
