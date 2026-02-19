@@ -822,11 +822,17 @@ function simulateCustomers(state: GameState): GameState {
     : 0;
   const pricingBaseChurn = segmentBaseChurn + pricingChurnAdjust + priceChurnPenalty;
 
-  const effectiveChurn = clamp(
+  const calculatedChurn = clamp(
     (pricingBaseChurn + qualityBonus + bugPenalty + competitorPull - supportBonus - channelChurnReduction) * diffMods.churnMultiplier,
     0.01,
     0.25,
   );
+  // Preserve decision-driven churn adjustments by taking the min of
+  // calculated churn and any decision-modified churn rate
+  const decisionChurn = state.product.churnRate;
+  const effectiveChurn = decisionChurn > 0 && decisionChurn < calculatedChurn
+    ? (calculatedChurn + decisionChurn) / 2  // blend to preserve decision influence
+    : calculatedChurn;
   const churned = currentCustomers * effectiveChurn;
 
   // Task 4: Individual competitor customer stealing
