@@ -79,7 +79,7 @@ export function TeamScreen() {
     <div className="space-y-6 max-w-5xl mx-auto min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Team</h1>
+        <h1 className="page-heading text-2xl font-bold text-[--color-retro-text]">Team</h1>
         <p className="text-sm text-[--color-retro-text-light]">Manage your employees, hire candidates, and deploy AI agents</p>
       </div>
 
@@ -316,17 +316,13 @@ export function TeamScreen() {
       <div className="retro-card">
         <h3 className="retro-section-heading"><span className="retro-label-tip">AI Agent Catalog<InfoTip text="Deploy AI agents to augment your team. Cheaper than humans but lower capability. Setup fee is 2x weekly cost. Agents contribute to features, marketing, or support depending on type." /></span></h3>
 
-        {/* Type selector — use inline styles to avoid Tailwind specificity issues */}
+        {/* Type selector */}
         <div className="flex gap-1.5 mb-4 flex-wrap">
           {AI_AGENT_TYPES.map(type => (
             <button
               key={type}
               onClick={() => setSelectedAgentType(type)}
-              style={selectedAgentType === type
-                ? { background: '#336699', color: '#ffffff', borderColor: '#336699' }
-                : { background: '#ffffff', color: '#374151', borderColor: 'rgba(0,0,0,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.06)' }
-              }
-              className="px-3 py-1.5 text-xs font-bold rounded-md border transition-colors"
+              className={`btn-glossy btn-glossy-sm ${selectedAgentType === type ? 'btn-blue' : 'btn-silver'}`}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </button>

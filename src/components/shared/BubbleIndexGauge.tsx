@@ -6,10 +6,10 @@ export interface BubbleIndexGaugeProps {
 }
 
 function getZone(value: number): { label: string; color: string; arcColor: string } {
-  if (value < 30) return { label: 'Cool', color: 'text-[--color-retro-blue]', arcColor: '#336699' };
-  if (value < 60) return { label: 'Warm', color: 'text-[--color-retro-orange]', arcColor: '#ff6600' };
-  if (value < 80) return { label: 'Hot', color: 'text-[--color-retro-orange-dark]', arcColor: '#cc5500' };
-  return { label: 'BUBBLE!', color: 'text-[--color-retro-red]', arcColor: '#cc3333' };
+  if (value < 30) return { label: 'Cool', color: 'text-[--color-retro-blue]', arcColor: 'var(--color-retro-blue)' };
+  if (value < 60) return { label: 'Warm', color: 'text-[--color-retro-orange]', arcColor: 'var(--color-retro-orange)' };
+  if (value < 80) return { label: 'Hot', color: 'text-[--color-retro-orange-dark]', arcColor: 'var(--color-retro-orange-dark)' };
+  return { label: 'BUBBLE!', color: 'text-[--color-retro-red]', arcColor: 'var(--color-retro-red)' };
 }
 
 /**
@@ -42,7 +42,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 20 100 A 80 80 0 0 1 47.15 34.34"
             fill="none"
-            stroke="#336699"
+            stroke="var(--color-retro-blue)"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -51,7 +51,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 47.15 34.34 A 80 80 0 0 1 100 20"
             fill="none"
-            stroke="#ff6600"
+            stroke="var(--color-retro-orange)"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -60,7 +60,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 100 20 A 80 80 0 0 1 146.63 30.72"
             fill="none"
-            stroke="#cc5500"
+            stroke="var(--color-retro-orange-dark)"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -69,7 +69,7 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           <path
             d="M 146.63 30.72 A 80 80 0 0 1 180 100"
             fill="none"
-            stroke="#cc3333"
+            stroke="var(--color-retro-red)"
             strokeWidth="12"
             strokeLinecap="round"
             opacity="0.4"
@@ -89,8 +89,8 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
           </g>
 
           {/* Min/Max labels */}
-          <text x="15" y="115" fill="#999999" fontSize="10">0</text>
-          <text x="175" y="115" fill="#999999" fontSize="10">100</text>
+          <text x="15" y="115" fill="var(--theme-chart-axis)" fontSize="10">0</text>
+          <text x="175" y="115" fill="var(--theme-chart-axis)" fontSize="10">100</text>
         </svg>
 
         {/* Value display */}

@@ -58,7 +58,7 @@ export function CompanyScreen() {
     <div className="space-y-6 max-w-5xl mx-auto min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Company</h1>
+        <h1 className="text-2xl font-bold text-[--color-retro-text] page-heading">Company</h1>
         <p className="text-sm text-[--color-retro-text-light]">Product, strategy, and user acquisition</p>
       </div>
 
@@ -255,7 +255,7 @@ export function CompanyScreen() {
                       ? 'bg-retro-green-pale text-retro-green-dark font-semibold border-retro-green/20'
                       : 'bg-[--color-retro-bg-alt] text-[--color-retro-text-muted] border-transparent hover:border-[--color-retro-border] hover:text-[--color-retro-text]'
                   }`}
-                    style={spend === amt ? { boxShadow: 'inset 0 1px 2px rgba(43,122,43,0.1)' } : {}}
+
                 >
                   {amt === 0 ? '$0' : formatCurrency(amt)}
                 </button>
@@ -277,12 +277,7 @@ export function CompanyScreen() {
                 <button
                   key={s.id}
                   onClick={() => setGrowthStrategy(s.id)}
-                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''}`}
-                  style={isActive ? {
-                    background: 'linear-gradient(to bottom, #edf3fa, #e4edf7)',
-                    borderColor: 'rgba(51,102,153,0.20)',
-                    boxShadow: 'inset 0 1px 3px rgba(51,102,153,0.12), 0 0 0 1px rgba(51,102,153,0.06)',
-                  } : undefined}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active retro-strategy-option--blue' : ''}`}
                 >
                   <span className={`text-sm font-semibold ${
                     isActive ? 'text-retro-blue' : 'text-[--color-retro-text]'
@@ -304,12 +299,7 @@ export function CompanyScreen() {
                 <button
                   key={f.id}
                   onClick={() => setProductFocus(f.id)}
-                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''}`}
-                  style={isActive ? {
-                    background: 'linear-gradient(to bottom, #f2ebf8, #ebe3f2)',
-                    borderColor: 'rgba(102,51,153,0.20)',
-                    boxShadow: 'inset 0 1px 3px rgba(102,51,153,0.12), 0 0 0 1px rgba(102,51,153,0.06)',
-                  } : undefined}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active retro-strategy-option--purple' : ''}`}
                 >
                   <span className={`text-sm font-semibold ${
                     isActive ? 'text-retro-purple' : 'text-[--color-retro-text]'
@@ -333,12 +323,7 @@ export function CompanyScreen() {
                   key={ch.id}
                   onClick={() => available && setAcquisitionChannel(ch.id)}
                   disabled={!available}
-                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active' : ''} ${!available ? 'opacity-40' : ''}`}
-                  style={isActive ? {
-                    background: 'linear-gradient(to bottom, #eaf6ea, #e2f0e2)',
-                    borderColor: 'rgba(43,122,43,0.20)',
-                    boxShadow: 'inset 0 1px 3px rgba(43,122,43,0.12), 0 0 0 1px rgba(43,122,43,0.06)',
-                  } : undefined}
+                  className={`retro-strategy-option ${isActive ? 'retro-strategy-option--active retro-strategy-option--green' : ''} ${!available ? 'opacity-40' : ''}`}
                 >
                   <div className="flex items-center gap-2">
                     <span className={`text-sm font-semibold ${

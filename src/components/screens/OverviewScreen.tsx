@@ -64,7 +64,7 @@ export function OverviewScreen() {
         <div className="flex flex-col gap-4">
           {/* Company Stats Card */}
           <div className="retro-card flex flex-col gap-4">
-            <h3 className="retro-section-heading" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>Company Stats</h3>
+            <h3 className="page-heading retro-section-heading">Company Stats</h3>
 
             {/* Hero: Stage + Valuation */}
             <div className="grid grid-cols-2 gap-x-6">

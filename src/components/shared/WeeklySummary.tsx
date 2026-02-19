@@ -103,11 +103,7 @@ export function WeeklySummary({ gameState }: WeeklySummaryProps) {
             {lastWeekEvents.slice(0, 5).map((event) => (
               <div
                 key={event.id}
-                className="rounded-lg px-3 py-2.5 border border-black/6"
-                style={{
-                  background: 'linear-gradient(to bottom, #ffffff, #fcfbf9)',
-                  boxShadow: '0 1px 2px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.9)',
-                }}
+                className="summary-item rounded-lg px-3 py-2.5 border border-black/6"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className={CATEGORY_BADGE[event.category] ?? 'retro-badge retro-badge-sm retro-badge-gray'}>

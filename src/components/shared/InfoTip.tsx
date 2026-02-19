@@ -56,6 +56,7 @@ export function InfoTip({ text }: InfoTipProps) {
       />
       {open && pos && createPortal(
         <div
+          className="infotip-popup"
           style={{
             position: 'fixed',
             zIndex: 9999,
@@ -70,10 +71,6 @@ export function InfoTip({ text }: InfoTipProps) {
             fontSize: '11px',
             lineHeight: 1.5,
             fontWeight: 400,
-            color: 'var(--color-retro-text)',
-            background: 'linear-gradient(to bottom, #ffffff, #faf8f5)',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-            border: '1px solid rgba(0,0,0,0.08)',
             textTransform: 'none' as const,
             letterSpacing: 'normal',
             pointerEvents: 'none' as const,

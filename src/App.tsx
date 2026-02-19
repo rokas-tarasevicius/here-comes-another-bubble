@@ -1,6 +1,8 @@
 import { useEffect, useCallback, useRef } from 'react';
 import './index.css';
 import { useGameStore } from './store/index.ts';
+import { useTheme } from './hooks/useTheme.ts';
+import { ThemeContext } from './contexts/ThemeContext.tsx';
 import { AppShell } from './components/layout/AppShell.tsx';
 import { MainMenuScreen } from './components/screens/MainMenuScreen.tsx';
 import { NewGameScreen } from './components/screens/NewGameScreen.tsx';
@@ -50,6 +52,7 @@ function GameplayScreen() {
 // ─── App root ──────────────────────────────────────────────────────────
 
 function App() {
+  const { theme, toggleTheme } = useTheme();
   const currentScreen = useGameStore((s) => s.currentScreen);
   const gameState = useGameStore((s) => s.gameState);
   const endWeek = useGameStore((s) => s.endWeek);
@@ -159,10 +162,10 @@ function App() {
   }
 
   return (
-    <>
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {screen}
       <BackgroundMusic />
-    </>
+    </ThemeContext.Provider>
   );
 }
 

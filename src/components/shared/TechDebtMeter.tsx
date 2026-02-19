@@ -40,7 +40,7 @@ export function TechDebtMeter({ value }: TechDebtMeterProps) {
   const dashOffset = circumference - fillLength;
 
   // Color for the arc stroke - retro palette
-  const arcStroke = clampedValue <= 30 ? '#339933' : clampedValue <= 60 ? '#ff6600' : '#cc3333';
+  const arcStroke = clampedValue <= 30 ? 'var(--color-retro-green)' : clampedValue <= 60 ? 'var(--color-retro-orange)' : 'var(--color-retro-red)';
 
   return (
     <div className="retro-inset">
@@ -62,7 +62,7 @@ export function TechDebtMeter({ value }: TechDebtMeterProps) {
           <path
             d={`M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
             fill="none"
-            stroke="#cccccc"
+            stroke="var(--theme-chart-grid)"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
           />
@@ -78,8 +78,8 @@ export function TechDebtMeter({ value }: TechDebtMeterProps) {
             className="transition-all duration-500"
           />
           {/* Zone markers */}
-          <text x="6" y="88" fill="#339933" fontSize="8">0</text>
-          <text x="147" y="88" fill="#cc3333" fontSize="8">100</text>
+          <text x="6" y="88" fill="var(--color-retro-green)" fontSize="8">0</text>
+          <text x="147" y="88" fill="var(--color-retro-red)" fontSize="8">100</text>
         </svg>
 
         {/* Center value */}

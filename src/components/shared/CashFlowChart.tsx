@@ -11,6 +11,7 @@ import {
 import type { WeekSummary } from '../../types/game.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { InfoTip } from './InfoTip.tsx';
+import { useChartColors } from '../../hooks/useChartColors.ts';
 
 export interface CashFlowChartProps {
   weekHistory: WeekSummary[];
@@ -57,6 +58,7 @@ function formatYAxis(value: number): string {
  * Uses Recharts with responsive sizing.
  */
 export function CashFlowChart({ weekHistory }: CashFlowChartProps) {
+  const colors = useChartColors();
   const data: ChartDataPoint[] = weekHistory.map((w) => ({
     week: w.week,
     cash: w.cash,
@@ -80,49 +82,49 @@ export function CashFlowChart({ weekHistory }: CashFlowChartProps) {
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#cccccc" />
+            <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
             <XAxis
               dataKey="week"
-              stroke="#999999"
-              tick={{ fill: '#666666', fontSize: 12 }}
-              label={{ value: 'Week', position: 'insideBottomRight', offset: -5, fill: '#999999', fontSize: 11 }}
+              stroke={colors.axis}
+              tick={{ fill: colors.tick, fontSize: 12 }}
+              label={{ value: 'Week', position: 'insideBottomRight', offset: -5, fill: colors.axis, fontSize: 11 }}
             />
             <YAxis
-              stroke="#999999"
-              tick={{ fill: '#666666', fontSize: 12 }}
+              stroke={colors.axis}
+              tick={{ fill: colors.tick, fontSize: 12 }}
               tickFormatter={formatYAxis}
               width={60}
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend
-              wrapperStyle={{ fontSize: 12, color: '#666666' }}
+              wrapperStyle={{ fontSize: 12, color: colors.tick }}
             />
             <Line
               type="monotone"
               dataKey="cash"
               name="Cash"
-              stroke="#336699"
+              stroke={colors.blue}
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#336699' }}
+              activeDot={{ r: 4, fill: colors.blue }}
             />
             <Line
               type="monotone"
               dataKey="revenue"
               name="Revenue"
-              stroke="#339933"
+              stroke={colors.green}
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#339933' }}
+              activeDot={{ r: 4, fill: colors.green }}
             />
             <Line
               type="monotone"
               dataKey="burn"
               name="Burn"
-              stroke="#cc3333"
+              stroke={colors.red}
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 4, fill: '#cc3333' }}
+              activeDot={{ r: 4, fill: colors.red }}
             />
           </LineChart>
         </ResponsiveContainer>

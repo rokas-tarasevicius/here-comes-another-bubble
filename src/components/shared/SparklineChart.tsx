@@ -13,7 +13,7 @@ export interface SparklineChartProps {
  */
 export function SparklineChart({
   data,
-  color = '#336699',
+  color = 'var(--color-retro-blue)',
   height = 40,
 }: SparklineChartProps) {
   if (data.length < 2) return null;

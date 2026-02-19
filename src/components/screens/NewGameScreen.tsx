@@ -152,17 +152,12 @@ function StepIndicator({
               {/* Full-width connector behind the circle */}
               {i < total - 1 && (
                 <div
-                  className="absolute h-0.5 rounded-full"
-                  style={{
-                    left: '50%',
-                    right: '-50%',
-                    background: '#d0ccc5',
-                  }}
+                  className="step-connector absolute h-0.5 rounded-full"
+                  style={{ left: '50%', right: '-50%' }}
                 >
                   <div
-                    className="absolute inset-0 rounded-full motion-reduce:transition-none!"
+                    className="step-connector-fill absolute inset-0 rounded-full motion-reduce:transition-none!"
                     style={{
-                      background: 'linear-gradient(to right, #44aa44, #339933)',
                       transformOrigin: 'left',
                       transform: stepNum < current ? 'scaleX(1)' : 'scaleX(0)',
                       transition: 'transform 500ms cubic-bezier(0.165, 0.84, 0.44, 1)',
@@ -176,29 +171,9 @@ function StepIndicator({
                 type="button"
                 onClick={clickable ? () => onStepClick?.(stepNum) : undefined}
                 disabled={!clickable}
-                className={`relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                className={`step-circle ${isActive ? 'step-circle--active' : isCompleted ? 'step-circle--completed' : 'step-circle--default'} relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                   clickable ? 'cursor-pointer hover:scale-110 active:scale-95' : 'cursor-default'
                 }`}
-                style={{
-                  background: isActive
-                    ? 'linear-gradient(to bottom, #5588bb, #336699)'
-                    : isCompleted
-                      ? 'linear-gradient(to bottom, #55bb55, #339933)'
-                      : 'linear-gradient(to bottom, #ffffff, #e6e2db)',
-                  border: isActive
-                    ? '2px solid #2a5580'
-                    : isCompleted
-                      ? '2px solid #2a802a'
-                      : '1px solid #c4c0ba',
-                  color: isActive || isCompleted ? '#ffffff' : '#9a9590',
-                  boxShadow: isActive
-                    ? '0 2px 6px rgba(51,102,153,0.4), inset 0 1px 0 rgba(255,255,255,0.3)'
-                    : '0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.5)',
-                  textShadow: isActive || isCompleted
-                    ? '0 -1px 0 rgba(0,0,0,0.3)'
-                    : 'none',
-                  transition: 'background 400ms cubic-bezier(0.165, 0.84, 0.44, 1), border-color 400ms cubic-bezier(0.165, 0.84, 0.44, 1), color 300ms ease-out, box-shadow 400ms cubic-bezier(0.165, 0.84, 0.44, 1), transform 150ms ease',
-                }}
               >
                 {isCompleted ? (
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -325,9 +300,9 @@ function StepCompanyName({
       {/* Suggested names */}
       <div className="mt-6 flex w-full max-w-sm flex-col items-center">
         <div className="mb-4 flex items-center gap-3 w-full">
-          <div className="h-px flex-1" style={{ background: 'linear-gradient(to right, transparent, rgba(0,0,0,0.08))' }} />
+          <div className="name-divider-line h-px flex-1" />
           <span className="text-[10px] font-medium text-[--color-retro-text-light] tracking-wide">or pick one</span>
-          <div className="h-px flex-1" style={{ background: 'linear-gradient(to left, transparent, rgba(0,0,0,0.08))' }} />
+          <div className="name-divider-line-reverse h-px flex-1" />
         </div>
         <div
           className="retro-inset w-full rounded-xl px-4 py-3.5"
@@ -341,21 +316,9 @@ function StepCompanyName({
                   onClick={() => onChange(name)}
                   className={`cursor-pointer rounded-full px-3 py-1 text-[11px] font-medium transition-all duration-150 ${
                     selected
-                      ? ''
-                      : 'hover:text-[--color-retro-text] hover:shadow-[0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] hover:-translate-y-px active:translate-y-0 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]'
+                      ? 'name-chip-selected'
+                      : 'name-chip hover:text-[--color-retro-text] hover:shadow-[0_2px_4px_rgba(0,0,0,0.1),inset_0_1px_0_rgba(255,255,255,0.8)] hover:-translate-y-px active:translate-y-0 active:shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]'
                   }`}
-                  style={selected ? {
-                    background: 'linear-gradient(to bottom, #5e91c4, #3a6a9e)',
-                    color: '#fff',
-                    boxShadow: '0 1px 3px rgba(51,102,153,0.3), inset 0 1px 0 rgba(255,255,255,0.2)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    textShadow: '0 1px 1px rgba(0,0,0,0.15)',
-                  } : {
-                    background: 'linear-gradient(to bottom, #ffffff, #f5f3f0)',
-                    color: 'var(--color-retro-text-muted)',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
-                    border: '1px solid rgba(0,0,0,0.06)',
-                  }}
                 >
                   {name}
                 </button>
@@ -396,21 +359,16 @@ function StepFounder({
               onClick={() => onSelect(founder.archetype)}
               className={`cursor-pointer rounded-lg border p-4 text-left flex flex-col ${
                 isSelected
-                  ? 'retro-card-raised border-retro-blue shadow-lg'
+                  ? 'newgame-card-selected retro-card-raised border-retro-blue shadow-lg'
                   : 'retro-card'
               }`}
-              style={isSelected ? {
-                borderColor: '#336699',
-                background: 'linear-gradient(to bottom, #ffffff, #eef4fb)',
-              } : undefined}
             >
               {/* Header */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-retro-text">{founder.displayName}</h3>
                   <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ background: 'linear-gradient(to bottom, #5588bb, #336699)' }}
+                    className={`newgame-checkmark flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}
                   >
                     <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -481,21 +439,16 @@ function StepMarket({
               onClick={() => onSelect(segKey)}
               className={`cursor-pointer rounded-lg border p-4 text-left flex flex-col ${
                 isSelected
-                  ? 'retro-card-raised border-retro-blue shadow-lg'
+                  ? 'newgame-card-selected retro-card-raised border-retro-blue shadow-lg'
                   : 'retro-card'
               }`}
-              style={isSelected ? {
-                borderColor: '#336699',
-                background: 'linear-gradient(to bottom, #ffffff, #eef4fb)',
-              } : undefined}
             >
               {/* Header */}
               <div className="mb-3">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-retro-text">{seg.name}</h3>
                   <div
-                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}
-                    style={{ background: 'linear-gradient(to bottom, #5588bb, #336699)' }}
+                    className={`newgame-checkmark flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0'}`}
                   >
                     <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -540,20 +493,6 @@ function StepSettings({
   onDifficulty: (d: Difficulty) => void;
   onTone: (t: Tone) => void;
 }) {
-  const difficultySelectedStyles: Record<string, { borderColor: string; background: string }> = {
-    green: { borderColor: '#339933', background: 'linear-gradient(to bottom, #ffffff, #e8f5e8)' },
-    blue: { borderColor: '#336699', background: 'linear-gradient(to bottom, #ffffff, #eef4fb)' },
-    orange: { borderColor: '#ff6600', background: 'linear-gradient(to bottom, #ffffff, #fff5eb)' },
-    red: { borderColor: '#cc3333', background: 'linear-gradient(to bottom, #ffffff, #fbeef0)' },
-  };
-
-  const difficultyDotColors: Record<string, string> = {
-    green: '#339933',
-    blue: '#336699',
-    orange: '#ff6600',
-    red: '#cc3333',
-  };
-
   return (
     <div className="mx-auto max-w-2xl">
       {/* Difficulty */}
@@ -578,20 +517,13 @@ function StepSettings({
                 onClick={() => onDifficulty(opt.value)}
                 className={`cursor-pointer rounded-lg border p-4 text-left ${
                   isSelected
-                    ? 'retro-card-raised shadow-md'
+                    ? `difficulty-card--${opt.color} retro-card-raised shadow-md`
                     : 'retro-card'
                 }`}
-                style={isSelected ? difficultySelectedStyles[opt.color] : undefined}
               >
                 <div className="mb-1 flex items-center gap-2">
                   <div
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{
-                      background: isSelected
-                        ? `radial-gradient(circle at 30% 30%, ${difficultyDotColors[opt.color]}88, ${difficultyDotColors[opt.color]})`
-                        : '#d0ccc5',
-                      boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
-                    }}
+                    className={`h-2.5 w-2.5 rounded-full ${isSelected ? `difficulty-dot--${opt.color}` : 'difficulty-dot'}`}
                   />
                   <span className="font-bold text-retro-text">{opt.label}</span>
                 </div>
@@ -619,23 +551,13 @@ function StepSettings({
                 onClick={() => onTone(opt.value)}
                 className={`cursor-pointer rounded-lg border p-4 text-left ${
                   isSelected
-                    ? 'retro-card-raised shadow-md'
+                    ? 'tone-card-selected retro-card-raised shadow-md'
                     : 'retro-card'
                 }`}
-                style={isSelected ? {
-                  borderColor: '#663399',
-                  background: 'linear-gradient(to bottom, #ffffff, #f3eef8)',
-                } : undefined}
               >
                 <div className="mb-1 flex items-center gap-2">
                   <div
-                    className="h-2.5 w-2.5 rounded-full"
-                    style={{
-                      background: isSelected
-                        ? 'radial-gradient(circle at 30% 30%, #8855bb, #663399)'
-                        : '#d0ccc5',
-                      boxShadow: isSelected ? '0 1px 2px rgba(0,0,0,0.2)' : 'none',
-                    }}
+                    className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'tone-dot-selected' : 'difficulty-dot'}`}
                   />
                   <span className="font-bold text-retro-text">{opt.label}</span>
                 </div>
@@ -692,41 +614,27 @@ function StepSummary({
   return (
     <div className="mx-auto max-w-lg">
       <div className="mb-6 text-center">
-        <h2 className="mb-2 text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Ready to Launch</h2>
+        <h2 className="page-heading mb-2 text-2xl font-bold text-[--color-retro-text]">Ready to Launch</h2>
         <p className="text-sm text-[--color-retro-text-muted]">
           Review your choices. There is no going back after this. Well, there is, but it costs VC credibility.
         </p>
       </div>
 
       <div
-        className="rounded-2xl overflow-hidden"
-        style={{
-          background: 'linear-gradient(to bottom, #f6f4f1, #edeae5)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.8)',
-          border: '1px solid rgba(0,0,0,0.08)',
-        }}
+        className="summary-outer rounded-2xl overflow-hidden"
       >
         {/* Company name hero */}
         <div
-          className="px-6 py-6 text-center"
-          style={{
-            background: 'linear-gradient(145deg, #d0daea 0%, #bccade 40%, #c5d3e6 100%)',
-            boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 6px rgba(0,0,0,0.08)',
-            borderBottom: '1px solid rgba(0,0,0,0.08)',
-          }}
+          className="summary-hero px-6 py-6 text-center"
         >
-          <span className="text-[9px] font-semibold uppercase tracking-[0.2em]" style={{ color: 'rgba(42,85,128,0.55)', textShadow: '0 1px 0 rgba(255,255,255,0.4)' }}>Company</span>
-          <h3 className="mt-1.5 text-2xl font-extrabold tracking-tight" style={{ color: '#1e3a5c', textShadow: '0 1px 0 rgba(255,255,255,0.5), 0 -1px 0 rgba(0,0,0,0.05)' }}>{companyName}</h3>
+          <span className="summary-hero-label text-[9px] font-semibold uppercase tracking-[0.2em]">Company</span>
+          <h3 className="summary-hero-name mt-1.5 text-2xl font-extrabold tracking-tight">{companyName}</h3>
         </div>
 
         <div className="p-5 space-y-3">
           {/* Founder */}
           <div
-            className="rounded-xl px-4 py-3"
-            style={{
-              background: 'linear-gradient(to bottom, #ffffff, #f7f5f2)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,1), 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.05)',
-            }}
+            className="summary-info-card rounded-xl px-4 py-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
@@ -744,8 +652,8 @@ function StepSummary({
                   ].map(s => (
                     <div key={s.label} className="flex items-center gap-1.5">
                       <span className="text-[9px] font-semibold uppercase tracking-wide text-[--color-retro-text-muted] w-6">{s.label}</span>
-                      <div className="flex-1 h-1.5 rounded-full" style={{ background: '#e5e2dd' }}>
-                        <div className="h-full rounded-full" style={{ width: `${s.value}%`, background: s.color, boxShadow: `inset 0 1px 0 rgba(255,255,255,0.3)` }} />
+                      <div className="summary-stat-track flex-1 h-1.5 rounded-full">
+                        <div className="summary-stat-fill h-full rounded-full" style={{ width: `${s.value}%`, background: s.color }} />
                       </div>
                       <span className="font-retro-mono text-[9px] font-medium text-[--color-retro-text-muted] w-4 text-right">{s.value}</span>
                     </div>
@@ -754,7 +662,7 @@ function StepSummary({
               </div>
               <div className="text-right shrink-0">
                 <span className="retro-label">Cash</span>
-                <div className="font-retro-mono text-sm font-bold text-[--color-retro-green]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>
+                <div className="page-heading font-retro-mono text-sm font-bold text-[--color-retro-green]">
                   {founder ? formatCash(founder.startingCash) : ''}
                 </div>
               </div>
@@ -763,11 +671,7 @@ function StepSummary({
 
           {/* Market */}
           <div
-            className="rounded-xl px-4 py-3"
-            style={{
-              background: 'linear-gradient(to bottom, #ffffff, #f7f5f2)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,1), 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.05)',
-            }}
+            className="summary-info-card rounded-xl px-4 py-3"
           >
             <div className="flex items-baseline justify-between">
               <span className="text-sm font-bold text-[--color-retro-text]">{market.name}</span>
@@ -791,11 +695,7 @@ function StepSummary({
 
           {/* Settings */}
           <div
-            className="flex items-center gap-2 flex-wrap rounded-xl px-4 py-2.5"
-            style={{
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.02), rgba(0,0,0,0.04))',
-              boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
-            }}
+            className="summary-settings-row flex items-center gap-2 flex-wrap rounded-xl px-4 py-2.5"
           >
             <span className={difficultyBadgeClass[difficulty]}>{difficultyLabels[difficulty]}</span>
             <span className="retro-badge retro-badge-purple">{toneLabels[tone]}</span>

@@ -62,7 +62,7 @@ export function FinanceScreen() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Finances</h1>
+        <h1 className="page-heading text-2xl font-bold text-[--color-retro-text]">Finances</h1>
         <p className="text-sm text-[--color-retro-text-light]">Week {gameState.meta.week} financial overview</p>
       </div>
 

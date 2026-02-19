@@ -7,7 +7,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-amber-600';
+    case 'S': return 'text-[--color-retro-orange-dark]';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -20,27 +20,11 @@ function gradeColor(grade: string): string {
 // ─── Rank badge ──────────────────────────────────────────────────────────
 
 function RankBadge({ rank }: { rank: number }) {
-  if (rank === 1) {
+  if (rank <= 3) {
+    const medalClass = rank === 1 ? 'medal-gold' : rank === 2 ? 'medal-silver' : 'medal-bronze';
     return (
-      <div className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold"
-        style={{ background: 'linear-gradient(to bottom, #ffcc00, #cc9900)', color: '#7a5c00', border: '1px solid #b8860b', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4)' }}>
-        1
-      </div>
-    );
-  }
-  if (rank === 2) {
-    return (
-      <div className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold"
-        style={{ background: 'linear-gradient(to bottom, #e0e0e0, #b0b0b0)', color: '#555', border: '1px solid #999', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4)' }}>
-        2
-      </div>
-    );
-  }
-  if (rank === 3) {
-    return (
-      <div className="flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold"
-        style={{ background: 'linear-gradient(to bottom, #e8a060, #cc7733)', color: '#6a3a10', border: '1px solid #aa6622', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.4)' }}>
-        3
+      <div className={`flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold ${medalClass}`}>
+        {rank}
       </div>
     );
   }

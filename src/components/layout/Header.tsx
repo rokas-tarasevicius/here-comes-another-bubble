@@ -3,6 +3,7 @@ import { useGameStore } from '../../store/index.ts';
 import type { CompanyStage } from '../../types/game.ts';
 import { SparklineChart } from '../shared/SparklineChart.tsx';
 
+
 const STAGE_LABELS: Record<CompanyStage, string> = {
   'garage': 'Garage',
   'pre-seed': 'Pre-Seed',
@@ -46,8 +47,7 @@ interface ReadoutConfig {
   sparklineData: number[];
   sparklineColor: string;
   valueClass: string;
-  bg: string;
-  shadow: string;
+  readoutClass: string;
   isCurrency?: boolean;
   change?: string;
   changeDirection?: 'up' | 'down' | 'flat';
@@ -74,11 +74,7 @@ function HeaderReadout({ config }: { config: ReadoutConfig }) {
 
   return (
     <div
-      className={`relative flex items-baseline gap-2 rounded-lg px-3 py-2 transition-all duration-150 ${showTooltip ? 'cursor-pointer' : 'cursor-default'}`}
-      style={{
-        background: config.bg,
-        boxShadow: config.shadow,
-      }}
+      className={`relative flex items-baseline gap-2 rounded-lg px-3 py-2 transition-all duration-150 ${config.readoutClass} ${showTooltip ? 'cursor-pointer' : 'cursor-default'}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -114,13 +110,8 @@ function HeaderReadout({ config }: { config: ReadoutConfig }) {
       {/* Tooltip */}
       {showTooltip && hovered && (
         <div
-          className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 rounded-xl pointer-events-none"
-          style={{
-            background: 'linear-gradient(to bottom, #ffffff, #faf8f5)',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.14), 0 2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-            width: '200px',
-            padding: '12px 14px',
-          }}
+          className="readout-tooltip absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 rounded-xl pointer-events-none"
+          style={{ width: '200px', padding: '12px 14px' }}
         >
           {/* Header */}
           <div className="flex items-baseline justify-between mb-2">
@@ -225,10 +216,9 @@ export function Header() {
       label: 'Valuation',
       value: formatCash(company.valuation),
       sparklineData: valuationHistory,
-      sparklineColor: '#b45309',
-      valueClass: 'text-[#92400e]',
-      bg: 'linear-gradient(to bottom, #fef3c7, #fef9e7)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(180,83,9,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      sparklineColor: 'var(--color-retro-orange-dark)',
+      valueClass: 'text-[--color-retro-orange-dark]',
+      readoutClass: 'readout-amber',
       isCurrency: true,
       change: valuationChange.change,
       changeDirection: valuationChange.dir,
@@ -238,10 +228,9 @@ export function Header() {
       label: 'Cash',
       value: formatCash(finances.cash),
       sparklineData: cashHistory,
-      sparklineColor: '#2b7a2b',
+      sparklineColor: 'var(--color-retro-green)',
       valueClass: 'text-[--color-retro-green-dark]',
-      bg: 'linear-gradient(to bottom, #e6f3e6, #eef7ee)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(43,122,43,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-green',
       isCurrency: true,
       change: cashChange.change,
       changeDirection: cashChange.dir,
@@ -251,10 +240,9 @@ export function Header() {
       label: 'Revenue',
       value: `${formatCash(finances.weeklyRevenue)}/w`,
       sparklineData: revenueHistory,
-      sparklineColor: '#336699',
+      sparklineColor: 'var(--color-retro-blue)',
       valueClass: 'text-[--color-retro-blue]',
-      bg: 'linear-gradient(to bottom, #e6eef6, #eef3f9)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(51,102,153,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-blue',
       isCurrency: true,
       change: revenueChange.change,
       changeDirection: revenueChange.dir,
@@ -264,10 +252,9 @@ export function Header() {
       label: 'Burn',
       value: `${formatCash(finances.weeklyBurn)}/w`,
       sparklineData: burnHistory,
-      sparklineColor: '#cc3333',
+      sparklineColor: 'var(--color-retro-red)',
       valueClass: 'text-[--color-retro-red]',
-      bg: 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(153,43,43,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-red',
       isCurrency: true,
       change: burnChange.change,
       changeDirection: burnChange.dir === 'up' ? 'down' : burnChange.dir === 'down' ? 'up' : 'flat',
@@ -277,10 +264,9 @@ export function Header() {
       label: 'Team',
       value: String(totalTeam),
       sparklineData: teamHistory,
-      sparklineColor: '#336699',
+      sparklineColor: 'var(--color-retro-blue)',
       valueClass: 'text-[--color-retro-blue]',
-      bg: 'linear-gradient(to bottom, #e6eef6, #eef3f9)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(51,102,153,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-blue',
       change: teamChange.change,
       changeDirection: teamChange.dir,
       hasChart: true,
@@ -289,10 +275,9 @@ export function Header() {
       label: 'Users',
       value: product.customers.toLocaleString(),
       sparklineData: customerHistory,
-      sparklineColor: '#7c3aed',
-      valueClass: 'text-[#6d28d9]',
-      bg: 'linear-gradient(to bottom, #efe6f6, #f3eef9)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(109,40,217,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      sparklineColor: 'var(--color-retro-purple)',
+      valueClass: 'text-[--color-retro-purple]',
+      readoutClass: 'readout-purple',
       change: usersChange.change,
       changeDirection: usersChange.dir,
       hasChart: true,
@@ -301,14 +286,13 @@ export function Header() {
       label: 'Churn',
       value: `${(product.churnRate * 100).toFixed(1)}%`,
       sparklineData: churnHistory,
-      sparklineColor: '#cc3333',
+      sparklineColor: 'var(--color-retro-red)',
       valueClass: product.churnRate > 0.1
         ? 'text-[--color-retro-red]'
         : product.churnRate > 0.05
           ? 'text-[--color-retro-orange]'
           : 'text-[--color-retro-green-dark]',
-      bg: 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(153,43,43,0.08), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-red',
       change: churnChange.change,
       changeDirection: churnChange.dir === 'up' ? 'down' : churnChange.dir === 'down' ? 'up' : 'flat',
       hasChart: true,
@@ -317,18 +301,13 @@ export function Header() {
       label: 'PMF',
       value: `${Math.round(product.pmfScore)}`,
       sparklineData: pmfHistory,
-      sparklineColor: product.pmfScore >= 60 ? '#2b7a2b' : product.pmfScore >= 30 ? '#b45309' : '#cc3333',
+      sparklineColor: product.pmfScore >= 60 ? 'var(--color-retro-green)' : product.pmfScore >= 30 ? 'var(--color-retro-orange)' : 'var(--color-retro-red)',
       valueClass: product.pmfScore >= 60
         ? 'text-[--color-retro-green-dark]'
         : product.pmfScore >= 30
           ? 'text-[--color-retro-orange]'
           : 'text-[--color-retro-red]',
-      bg: product.pmfScore >= 60
-        ? 'linear-gradient(to bottom, #e6f3e6, #eef7ee)'
-        : product.pmfScore >= 30
-          ? 'linear-gradient(to bottom, #fef3c7, #fef9e7)'
-          : 'linear-gradient(to bottom, #f3e6e6, #f7eeee)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: product.pmfScore >= 60 ? 'readout-green' : product.pmfScore >= 30 ? 'readout-amber' : 'readout-red',
       change: pmfChange.change,
       changeDirection: pmfChange.dir,
       hasChart: true,
@@ -337,14 +316,13 @@ export function Header() {
       label: 'Runway',
       value: runwayStr,
       sparklineData: [],
-      sparklineColor: '#336699',
+      sparklineColor: 'var(--color-retro-blue)',
       valueClass: isProfitable || runwayWeeks > 26
         ? 'text-[--color-retro-green-dark]'
         : runwayWeeks >= 12
           ? 'text-[--color-retro-orange]'
           : 'text-[--color-retro-red]',
-      bg: 'linear-gradient(to bottom, #eae7e2, #f0ede8)',
-      shadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
+      readoutClass: 'readout-neutral',
     },
   ];
 
@@ -354,7 +332,7 @@ export function Header() {
         {/* Company name */}
         <h1
           className="text-base md:text-xl font-extrabold tracking-tight text-[--color-retro-text] shrink-0"
-          style={{ textShadow: '0 1px 0 rgba(255,255,255,0.8)' }}
+          style={{ textShadow: '0 1px 0 var(--theme-text-shadow)' }}
         >
           {company.name}
         </h1>
@@ -372,13 +350,7 @@ export function Header() {
 
         {/* Metrics */}
         <div className="hidden sm:flex items-stretch gap-1.5 min-w-0">
-          <div
-            className="flex items-baseline gap-2 rounded-lg px-3 py-2"
-            style={{
-              background: 'linear-gradient(to bottom, #eae7e2, #f0ede8)',
-              boxShadow: 'inset 0 1.5px 3px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(0,0,0,0.04), 0 1px 0 rgba(255,255,255,0.7)',
-            }}
-          >
+          <div className="readout-neutral flex items-baseline gap-2 rounded-lg px-3 py-2">
             <span className="retro-label" style={{ fontSize: '9px', lineHeight: 1 }}>Wk</span>
             <span className="font-retro-mono text-xs font-medium text-[--color-retro-text]" style={{ lineHeight: 1 }}>
               {meta.week}

@@ -191,14 +191,7 @@ export function BackgroundMusic() {
             opacity: showSlider ? 1 : 0,
           }}
         >
-          <div
-            className="mr-1 flex items-center gap-2.5 rounded-full px-3 py-2"
-            style={{
-              background: 'linear-gradient(to bottom, #ffffff, #f5f3f0)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-              border: '1px solid rgba(0,0,0,0.1)',
-            }}
-          >
+          <div className="music-button mr-1 flex items-center gap-2.5 rounded-full px-3 py-2">
             {/* Mute toggle */}
             <button
               onClick={toggleMute}
@@ -212,22 +205,14 @@ export function BackgroundMusic() {
             <div className="relative flex-1" style={{ height: '20px' }}>
               {/* Track */}
               <div
-                className="absolute left-0 right-0 rounded-full"
-                style={{
-                  height: '6px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  background: 'linear-gradient(to bottom, #d8d4cf, #e2dedb)',
-                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.6)',
-                }}
+                className="music-track absolute left-0 right-0 rounded-full"
+                style={{ height: '6px', top: '50%', transform: 'translateY(-50%)' }}
               >
                 {/* Fill */}
                 <div
-                  className="h-full rounded-full"
+                  className="music-track-fill h-full rounded-full"
                   style={{
                     width: `${isMuted ? 0 : volume}%`,
-                    background: 'linear-gradient(to bottom, #5e91c4, #3a6a9e)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
                     transition: isDragging ? 'none' : 'width 0.1s ease-out',
                   }}
                 />
@@ -243,14 +228,15 @@ export function BackgroundMusic() {
                 }}
               >
                 <div
+                  className={isDragging ? 'music-thumb' : ''}
                   style={{
                     width: isDragging ? '18px' : '14px',
                     height: isDragging ? '18px' : '14px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(to bottom, #ffffff, #e8e5e0)',
+                    background: `linear-gradient(to bottom, var(--theme-surface-from), var(--theme-inset-bg))`,
                     boxShadow: isDragging
-                      ? '0 2px 6px rgba(51,102,153,0.35), 0 0 0 2.5px rgba(58,106,158,0.4), inset 0 1px 0 rgba(255,255,255,0.9)'
-                      : '0 1px 4px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
+                      ? '0 2px 6px rgba(51,102,153,0.35), 0 0 0 2.5px rgba(58,106,158,0.4), inset 0 1px 0 var(--theme-highlight-strong)'
+                      : '0 1px 4px rgba(0,0,0,0.25), 0 0 0 1px var(--theme-glass-border), inset 0 1px 0 var(--theme-highlight-strong)',
                     transition: 'width 0.15s ease, height 0.15s ease, background 0.15s ease, box-shadow 0.15s ease',
                   }}
                 />
@@ -276,21 +262,12 @@ export function BackgroundMusic() {
         {/* Main music button */}
         <button
           onClick={togglePlay}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-150 ${isPlaying ? 'music-play--active' : 'music-play'}`}
           title={isPlaying ? 'Pause music' : 'Play music'}
           aria-label={isPlaying ? 'Pause music' : 'Play music'}
           style={{
-            background: isPlaying
-              ? 'linear-gradient(to bottom, #5e91c4, #3a6a9e)'
-              : 'linear-gradient(to bottom, #ffffff, #f0ede8)',
-            boxShadow: isPlaying
-              ? '0 2px 8px rgba(51,102,153,0.35), 0 1px 3px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.25)'
-              : '0 2px 8px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.9)',
-            border: isPlaying
-              ? '1px solid rgba(255,255,255,0.2)'
-              : '1px solid rgba(0,0,0,0.1)',
+            border: isPlaying ? '1px solid rgba(255,255,255,0.2)' : `1px solid var(--theme-glass-border-hover)`,
             color: isPlaying ? '#ffffff' : 'var(--color-retro-text-muted)',
-            transition: 'all 0.15s ease',
           }}
         >
           {/* Musical note icon */}

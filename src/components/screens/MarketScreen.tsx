@@ -50,7 +50,7 @@ export function MarketScreen() {
     <div className="space-y-6 min-w-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Market Intelligence</h1>
+        <h1 className="page-heading text-2xl font-bold text-[--color-retro-text]">Market Intelligence</h1>
         <p className="text-sm text-[--color-retro-text-light]">Week {meta.week} market analysis</p>
       </div>
 
@@ -63,7 +63,7 @@ export function MarketScreen() {
           </h3>
 
           <div className="mb-4">
-            <h2 className="text-lg font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.5)' }}>{segmentData.name}</h2>
+            <h2 className="page-heading text-lg font-bold text-[--color-retro-text]">{segmentData.name}</h2>
             <p className="text-sm text-[--color-retro-text-muted] mt-0.5">{segmentData.description}</p>
           </div>
 

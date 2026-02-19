@@ -48,7 +48,7 @@ export function AIAgentPanel() {
           <div
             key={agent.id}
             className="retro-card"
-            style={{ borderColor: '#9988aa', borderLeftWidth: '3px', borderLeftColor: '#663399' }}
+            style={{ borderColor: 'var(--color-retro-purple-light)', borderLeftWidth: '3px', borderLeftColor: 'var(--color-retro-purple)' }}
           >
             {/* Header */}
             <div className="mb-3 flex items-start justify-between">

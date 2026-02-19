@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
+import { ThemeToggle } from '../shared/ThemeToggle.tsx';
 
 // ─── Floating Bubbles Background (Web 2.0 pastel style) ────────────────
 
@@ -8,31 +9,13 @@ function BubblesBackground() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Pastel gradient circles - Web 2.0 style */}
-      <div
-        className="absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-30"
-        style={{ background: 'radial-gradient(circle, #d8e6f3 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute top-1/3 -right-32 h-80 w-80 rounded-full opacity-25"
-        style={{ background: 'radial-gradient(circle, #d8f0d8 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute -bottom-20 left-1/4 h-72 w-72 rounded-full opacity-25"
-        style={{ background: 'radial-gradient(circle, #e8d8f0 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute top-1/4 left-1/2 h-64 w-64 rounded-full opacity-20"
-        style={{ background: 'radial-gradient(circle, #fff0e0 0%, transparent 70%)' }}
-      />
+      <div className="blob-blue absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-30" />
+      <div className="blob-green absolute top-1/3 -right-32 h-80 w-80 rounded-full opacity-25" />
+      <div className="blob-purple absolute -bottom-20 left-1/4 h-72 w-72 rounded-full opacity-25" />
+      <div className="blob-orange absolute top-1/4 left-1/2 h-64 w-64 rounded-full opacity-20" />
 
       {/* Subtle pinstripe overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.04]"
-        style={{
-          backgroundImage:
-            'repeating-linear-gradient(0deg, #999999 0px, #999999 1px, transparent 1px, transparent 4px)',
-        }}
-      />
+      <div className="pinstripe-overlay absolute inset-0 opacity-[0.04]" />
     </div>
   );
 }
@@ -125,6 +108,11 @@ export function MainMenuScreen() {
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-retro-bg px-4">
       <BubblesBackground />
+
+      {/* Theme toggle */}
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex w-full max-w-lg flex-col items-center">

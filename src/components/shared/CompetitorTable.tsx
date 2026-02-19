@@ -163,8 +163,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                 return (
                   <tr
                     key={row.id}
-                    className={rowOpacity}
-                    style={row.isPlayer ? { background: 'var(--color-retro-blue-pale)' } : undefined}
+                    className={`${rowOpacity} ${row.isPlayer ? 'competitor-player-row' : ''}`}
                   >
                     {/* Name */}
                     <td>
@@ -182,7 +181,7 @@ export function CompetitorTable({ competitors, player }: CompetitorTableProps) {
                     </td>
 
                     {/* Valuation */}
-                    <td className="font-retro-mono text-[#92400e]">
+                    <td className="font-retro-mono competitor-valuation">
                       {formatCurrency(row.valuation)}
                     </td>
 

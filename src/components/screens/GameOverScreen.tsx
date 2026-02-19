@@ -8,7 +8,7 @@ import { formatCurrency } from '../../utils/format.ts';
 
 function gradeColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'text-amber-600';
+    case 'S': return 'text-[--color-retro-orange-dark]';
     case 'A': return 'text-[--color-retro-green]';
     case 'B': return 'text-[--color-retro-blue]';
     case 'C': return 'text-[--color-retro-text-muted]';
@@ -20,7 +20,7 @@ function gradeColor(grade: string): string {
 
 function gradeBorderColor(grade: string): string {
   switch (grade) {
-    case 'S': return 'border-amber-600';
+    case 'S': return 'border-[--color-retro-orange-dark]';
     case 'A': return 'border-[--color-retro-green]';
     case 'B': return 'border-[--color-retro-blue]';
     case 'C': return 'border-[--color-retro-border-dark]';
@@ -206,11 +206,7 @@ export function GameOverScreen() {
         {/* Grade circle + total score */}
         <div className="flex flex-col items-center gap-3">
           <div
-            className={`flex h-32 w-32 items-center justify-center rounded-full border-4 ${gradeBorderColor(score.grade)}`}
-            style={{
-              background: 'linear-gradient(to bottom, #ffffff, #f0f0f0)',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)',
-            }}
+            className={`flex h-32 w-32 items-center justify-center rounded-full border-4 gameover-score ${gradeBorderColor(score.grade)}`}
           >
             <div className="text-center">
               <div className={`text-5xl font-black ${gradeColor(score.grade)}`}>

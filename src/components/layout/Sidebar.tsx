@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useGameStore } from '../../store/index.ts';
+import { useThemeContext } from '../../contexts/ThemeContext.tsx';
 
 interface NavItem {
   id: string;
@@ -96,11 +97,36 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'decisions', label: 'Decisions', icon: <IconDecisions /> },
 ];
 
+function IconMoon() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  );
+}
+
+function IconSun() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  );
+}
+
 export function Sidebar() {
   const currentScreen = useGameStore((s) => s.currentScreen);
   const setScreen = useGameStore((s) => s.setScreen);
   const saveGame = useGameStore((s) => s.saveGame);
   const gameState = useGameStore((s) => s.gameState);
+  const { theme, toggleTheme } = useThemeContext();
 
   const decisionsThisTurn = useGameStore((s) => s.decisionsThisTurn);
   const [saveState, setSaveState] = useState<'idle' | 'saved'>('idle');
@@ -143,21 +169,14 @@ export function Sidebar() {
                   {item.id === 'decisions' && pendingCount > 0 && (
                     <>
                       <span
-                        className="sidebar-label ml-auto inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
-                        style={{
-                          background: 'linear-gradient(to bottom, #ee8833, #cc6622)',
-                          color: '#fff',
-                          boxShadow: '0 1px 3px rgba(204,102,34,0.4), inset 0 1px 0 rgba(255,255,255,0.25)',
-                          textShadow: '0 -1px 0 rgba(0,0,0,0.2)',
-                          minWidth: 18,
-                          textAlign: 'center' as const,
-                        }}
+                        className="sidebar-label sidebar-notification-badge ml-auto inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
+                        style={{ minWidth: 18, textAlign: 'center' as const }}
                       >
                         {pendingCount}
                       </span>
                       <span
                         className="sidebar-badge-dot absolute top-1 right-1 h-2 w-2 rounded-full"
-                        style={{ background: '#ee8833' }}
+                        style={{ background: 'var(--theme-dot-orange)' }}
                       />
                     </>
                   )}
@@ -168,9 +187,7 @@ export function Sidebar() {
         </ul>
       </nav>
 
-      <div className="px-2 py-3 space-y-0.5"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.12)' }}
-      >
+      <div className="sidebar-bottom-section px-2 py-3 space-y-0.5">
         <button
           onClick={handleSave}
           title="Save Game"
@@ -180,6 +197,14 @@ export function Sidebar() {
         >
           <span className="shrink-0 opacity-75">{saveState === 'saved' ? <IconCheck /> : <IconSave />}</span>
           <span className="sidebar-label">{saveState === 'saved' ? 'Saved!' : 'Save'}</span>
+        </button>
+        <button
+          onClick={toggleTheme}
+          title={theme === 'light' ? 'Switch to night mode' : 'Switch to light mode'}
+          className="retro-sidebar-item group flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-sm font-medium whitespace-nowrap"
+        >
+          <span className="shrink-0 opacity-75">{theme === 'light' ? <IconMoon /> : <IconSun />}</span>
+          <span className="sidebar-label">{theme === 'light' ? 'Night Mode' : 'Light Mode'}</span>
         </button>
         <button
           onClick={() => setScreen('title')}

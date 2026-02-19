@@ -43,7 +43,7 @@ export function EventFeed() {
     });
 
   return (
-    <aside className="flex w-80 flex-col overflow-hidden bg-[--color-retro-card-alt]" style={{ boxShadow: 'inset 1px 0 0 rgba(0,0,0,0.06), inset 3px 0 8px rgba(0,0,0,0.03)' }}>
+    <aside className="event-feed-aside flex w-80 flex-col overflow-hidden bg-[--color-retro-card-alt]">
       <div className="px-4 pt-3 pb-1">
         <h2 className="retro-section-heading mb-0">Event Feed</h2>
       </div>
@@ -66,8 +66,7 @@ export function EventFeed() {
               return (
                 <li
                   key={event.id}
-                  className="rounded-lg bg-[--color-retro-card] p-3"
-                  style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04), inset 0 1px 0 rgba(255,255,255,0.6)' }}
+                  className="event-feed-card rounded-lg bg-[--color-retro-card] p-3"
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className={badgeStyle}>
