@@ -73,6 +73,8 @@ interface GameStoreActions {
   fireTeam: (count: number) => void;
   makeOffer: (candidateId: string, salary: number) => void;
   fireMember: (memberId: string) => void;
+  hireAIAgent: (agentType: string, provider: string, capability: number, costPerWeek: number, reliability: number) => void;
+  fireAIAgent: (agentId: string) => void;
   dismissWeekRecap: () => void;
   startTutorial: () => void;
   nextTutorialStep: () => void;
@@ -489,6 +491,55 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         meta: {
           ...gameState.meta,
           recentlyFiredNames: updatedFired,
+        },
+      },
+    });
+  },
+
+  hireAIAgent(agentType, provider, capability, costPerWeek, reliability) {
+    const { gameState } = get();
+    if (!gameState) return;
+
+    const setupCost = costPerWeek * 2;
+    if (gameState.finances.cash < setupCost) return;
+
+    const typeLabel = agentType.charAt(0).toUpperCase() + agentType.slice(1);
+    const newAgent = {
+      id: generateId(),
+      name: `${provider} ${typeLabel} Agent`,
+      type: agentType as 'coding' | 'design' | 'marketing' | 'analytics' | 'support',
+      provider,
+      capability,
+      costPerWeek,
+      reliability,
+      assignedTo: null,
+    };
+
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          aiAgents: [...gameState.team.aiAgents, newAgent],
+        },
+        finances: {
+          ...gameState.finances,
+          cash: gameState.finances.cash - setupCost,
+        },
+      },
+    });
+  },
+
+  fireAIAgent(agentId) {
+    const { gameState } = get();
+    if (!gameState) return;
+
+    set({
+      gameState: {
+        ...gameState,
+        team: {
+          ...gameState.team,
+          aiAgents: gameState.team.aiAgents.filter(a => a.id !== agentId),
         },
       },
     });

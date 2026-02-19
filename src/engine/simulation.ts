@@ -1,4 +1,4 @@
-import type { GameState, Feature, Competitor, EventLogEntry, PendingDecision, AIAgentType } from '../types/index.ts';
+import type { GameState, Feature, Competitor, EventLogEntry, PendingDecision } from '../types/index.ts';
 import { calculateWeeklyBurn, calculatePMF } from './derived.ts';
 import { generateId } from '../utils/id.ts';
 
@@ -1044,64 +1044,7 @@ function generateAutoDecisions(state: GameState): GameState {
     }
   }
 
-  // --- AI AGENT DECISIONS (every 5-6 weeks, after week 3) ---
-  if (week > 3 && (week % 5 === 0 || Math.random() < 0.15)) {
-    const providers = [
-      { name: 'OpenAI', cost: 500, capability: 75, reliability: 80 },
-      { name: 'Anthropic', cost: 600, capability: 80, reliability: 85 },
-      { name: 'Google DeepMind', cost: 450, capability: 70, reliability: 75 },
-      { name: 'Mistral', cost: 300, capability: 60, reliability: 70 },
-      { name: 'Cohere', cost: 250, capability: 55, reliability: 72 },
-    ];
-    const agentTypes: AIAgentType[] = [
-      'coding', 'design', 'marketing', 'analytics', 'support',
-    ];
-    const provider = providers[Math.floor(Math.random() * providers.length)];
-    const agentType = agentTypes[Math.floor(Math.random() * agentTypes.length)];
-    const typeLabel = agentType.charAt(0).toUpperCase() + agentType.slice(1);
-
-    const alreadyPending = state.pendingDecisions.some(
-      (d) => d.eventId === `auto-ai-agent-${provider.name}`,
-    );
-
-    if (!alreadyPending) {
-      const decisionId = generateId();
-
-      newDecisions.push({
-        id: decisionId,
-        eventId: `auto-ai-agent-${provider.name}`,
-        prompt: `${provider.name} is offering their ${typeLabel} AI agent. It promises to replace your entire team. (It won't.) $${provider.cost}/week. Capability: ${provider.capability}/100, Reliability: ${provider.reliability}/100.`,
-        options: [
-          {
-            id: `ai_${provider.name}_${agentType}_${provider.cost}_${provider.capability}_${provider.reliability}`,
-            label: `Deploy ${typeLabel} Agent`,
-            description: `Add ${provider.name} ${typeLabel} agent ($${provider.cost}/wk). Your engineers will love having another tool to babysit.`,
-            effects: [
-              { path: 'finances.cash', operation: 'add', value: -provider.cost * 2 },
-            ],
-          },
-          {
-            id: 'decline',
-            label: 'Decline',
-            description: 'You can always hire humans who also hallucinate, but at least they feel bad about it.',
-            effects: [],
-          },
-        ],
-        deadline: week + 3,
-        defaultOptionId: 'decline',
-      });
-
-      newLogEntries.push({
-        id: generateId(),
-        week,
-        eventId: `auto-ai-agent-${provider.name}`,
-        title: `AI Agent Offer: ${provider.name}`,
-        description: `${provider.name} pitches their ${typeLabel} agent. The demo was flawless, which means production will be interesting.`,
-        category: 'product',
-        decisionId,
-      });
-    }
-  }
+  // --- (Removed) AI agent decisions — agents are now hired directly from the Team Screen ---
 
   // --- Task 8: LAYOFF DECISIONS (when finances are critical) ---
   const weeklyBurn = state.finances.weeklyBurn > 0 ? state.finances.weeklyBurn : calculateWeeklyBurn(state);

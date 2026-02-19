@@ -3,24 +3,40 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { InfoTip } from '../shared/InfoTip.tsx';
 
+// ─── AI Agent Catalog ─────────────────────────────────────────────────
+
+const AI_PROVIDERS = [
+  { name: 'OpenAI', costPerWeek: 500, capability: 75, reliability: 80 },
+  { name: 'Anthropic', costPerWeek: 600, capability: 80, reliability: 85 },
+  { name: 'Google DeepMind', costPerWeek: 450, capability: 70, reliability: 75 },
+  { name: 'Mistral', costPerWeek: 300, capability: 60, reliability: 70 },
+  { name: 'Cohere', costPerWeek: 250, capability: 55, reliability: 72 },
+] as const;
+
+const AI_AGENT_TYPES = ['coding', 'design', 'marketing', 'analytics', 'support'] as const;
+
 export function TeamScreen() {
   const gameState = useGameStore((s) => s.gameState);
   const makeOffer = useGameStore((s) => s.makeOffer);
   const fireMember = useGameStore((s) => s.fireMember);
+  const hireAIAgent = useGameStore((s) => s.hireAIAgent);
+  const fireAIAgent = useGameStore((s) => s.fireAIAgent);
 
   const [offerSalaries, setOfferSalaries] = useState<Record<string, string>>({});
   const [confirmFire, setConfirmFire] = useState<string | null>(null);
+  const [selectedAgentType, setSelectedAgentType] = useState<string>('coding');
 
   if (!gameState) return null;
 
-  const { team, company } = gameState;
+  const { team, company, finances } = gameState;
+  const aiAgentCost = team.aiAgents.reduce((sum, a) => sum + a.costPerWeek, 0);
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto min-w-0">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-[--color-retro-text]" style={{ textShadow: '0 1px 0 rgba(255,255,255,0.7)' }}>Team</h1>
-        <p className="text-sm text-[--color-retro-text-light]">Manage your employees, hire candidates, and track team health</p>
+        <p className="text-sm text-[--color-retro-text-light]">Manage your employees, hire candidates, and deploy AI agents</p>
       </div>
 
       {/* Team Overview */}
@@ -57,7 +73,7 @@ export function TeamScreen() {
           </span>
           <span className="retro-stat-tag">
             <span className="retro-stat-tag-label">Payroll</span>
-            <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(team.teamSize * team.avgSalary)}/wk</span>
+            <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(team.teamSize * team.avgSalary + aiAgentCost)}/wk</span>
           </span>
         </div>
       </div>
@@ -66,7 +82,7 @@ export function TeamScreen() {
       <div className="retro-card">
         <h3 className="retro-section-heading">Roster ({team.members?.length ?? team.teamSize} members)</h3>
         {(!team.members || team.members.length === 0) ? (
-          <p className="text-sm text-[--color-retro-text-muted]">No team members yet. Hire from the candidate pool below or use quick hire.</p>
+          <p className="text-sm text-[--color-retro-text-muted]">No team members yet. Hire from the candidate pool below.</p>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto retro-scrollbar">
             {team.members.map(member => (
@@ -116,6 +132,54 @@ export function TeamScreen() {
           </div>
         )}
       </div>
+
+      {/* Active AI Agents */}
+      {team.aiAgents.length > 0 && (
+        <div className="retro-card">
+          <h3 className="retro-section-heading">Active AI Agents ({team.aiAgents.length})</h3>
+          <div className="space-y-2 max-h-60 overflow-y-auto retro-scrollbar">
+            {team.aiAgents.map(agent => (
+              <div key={agent.id} className="retro-inset p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-sm font-bold text-[--color-retro-text]">{agent.name}</span>
+                      <span className="retro-badge retro-badge-sm retro-badge-blue">{agent.type}</span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Capability</span>
+                        <span className="retro-stat-tag-value">{agent.capability}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Reliability</span>
+                        <span className="retro-stat-tag-value">{agent.reliability}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Cost</span>
+                        <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(agent.costPerWeek)}/wk</span>
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirmFire === agent.id) {
+                        fireAIAgent(agent.id);
+                        setConfirmFire(null);
+                      } else {
+                        setConfirmFire(agent.id);
+                      }
+                    }}
+                    className="btn-glossy btn-glossy-sm btn-red shrink-0"
+                  >
+                    {confirmFire === agent.id ? 'Confirm?' : 'Remove'}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Candidate Pool */}
       <div className="retro-card">
@@ -199,6 +263,75 @@ export function TeamScreen() {
             })}
           </div>
         )}
+      </div>
+
+      {/* AI Agent Catalog */}
+      <div className="retro-card">
+        <h3 className="retro-section-heading"><span className="retro-label-tip">AI Agent Catalog<InfoTip text="Deploy AI agents to augment your team. Cheaper than humans but lower capability. Setup fee is 2x weekly cost. Agents contribute to features, marketing, or support depending on type." /></span></h3>
+
+        {/* Type selector */}
+        <div className="flex gap-1.5 mb-4 flex-wrap">
+          {AI_AGENT_TYPES.map(type => (
+            <button
+              key={type}
+              onClick={() => setSelectedAgentType(type)}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-colors ${
+                selectedAgentType === type
+                  ? 'bg-[--color-retro-blue] text-white border-[--color-retro-blue]'
+                  : 'bg-white text-[--color-retro-text] border-black/10 hover:border-black/20'
+              }`}
+              style={selectedAgentType === type ? {} : { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.06)' }}
+            >
+              {type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Provider list for selected type */}
+        <div className="space-y-2">
+          {AI_PROVIDERS.map(provider => {
+            const setupCost = provider.costPerWeek * 2;
+            const canAfford = finances.cash >= setupCost;
+
+            return (
+              <div key={provider.name} className="retro-inset p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-sm font-bold text-[--color-retro-text]">{provider.name}</span>
+                      <span className="retro-badge retro-badge-sm retro-badge-blue">{selectedAgentType}</span>
+                    </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Capability</span>
+                        <span className="retro-stat-tag-value">{provider.capability}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Reliability</span>
+                        <span className="retro-stat-tag-value">{provider.reliability}</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Cost</span>
+                        <span className="retro-stat-tag-value">{formatCurrency(provider.costPerWeek)}/wk</span>
+                      </span>
+                      <span className="retro-stat-tag">
+                        <span className="retro-stat-tag-label">Setup</span>
+                        <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(setupCost)}</span>
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => hireAIAgent(selectedAgentType, provider.name, provider.capability, provider.costPerWeek, provider.reliability)}
+                    disabled={!canAfford}
+                    className={`btn-glossy btn-glossy-sm shrink-0 ${canAfford ? 'btn-green' : 'btn-glossy-disabled'}`}
+                  >
+                    Deploy
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

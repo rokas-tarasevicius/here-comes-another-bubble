@@ -362,7 +362,7 @@ function applyEventResponse(
     for (let i = 0; i < hireCount; i++) {
       newHireMembers.push({
         id: generateId(),
-        name: `New Hire`,
+        name: randomName(),
         role: 'engineer',
         skill: 50 + Math.floor(Math.random() * 30),
         salary: hireSalary,
@@ -395,7 +395,7 @@ function applyEventResponse(
     for (let i = 0; i < count; i++) {
       expandMembers.push({
         id: generateId(),
-        name: `New Hire`,
+        name: randomName(),
         role: optionId.startsWith('team-eng_') ? 'engineer' : 'marketer',
         skill: 45 + Math.floor(Math.random() * 25),
         salary,
