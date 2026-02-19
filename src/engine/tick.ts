@@ -1242,7 +1242,7 @@ export function advanceWeek(
     : 0;
   const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
     ? (next.meta.contentSeoWeeks ?? 0) + 1
-    : (next.meta.contentSeoWeeks ?? 0);
+    : 0;
   next = {
     ...next,
     meta: { ...next.meta, lowMoraleWeeks, contentSeoWeeks, fundingSoughtThisWeek: false },
