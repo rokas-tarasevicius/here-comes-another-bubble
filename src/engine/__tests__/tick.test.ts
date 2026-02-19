@@ -72,7 +72,8 @@ describe('advanceWeek', () => {
 
     const next = advanceWeek(state, []);
     expect(next.weekHistory).toHaveLength(1);
-    expect(next.weekHistory[0].week).toBe(next.meta.week);
+    // Week summary is recorded BEFORE calendar advance, so it captures the pre-advance week
+    expect(next.weekHistory[0].week).toBe(next.meta.week - 1);
   });
 
   it('triggers game over when cash reaches zero', () => {
@@ -1000,7 +1001,8 @@ describe('week history / summary', () => {
     const next = advanceWeek(state, []);
 
     expect(next.weekHistory).toHaveLength(1);
-    expect(next.weekHistory[0].week).toBe(next.meta.week);
+    // Week summary is recorded BEFORE calendar advance
+    expect(next.weekHistory[0].week).toBe(next.meta.week - 1);
   });
 
   it('week summary tracks cash, burn, revenue, and PMF', () => {
@@ -1027,10 +1029,10 @@ describe('week history / summary', () => {
     state = advanceWeek(state, []);
 
     expect(state.weekHistory).toHaveLength(3);
-    // Week numbers should be sequential
-    expect(state.weekHistory[0].week).toBe(2);
-    expect(state.weekHistory[1].week).toBe(3);
-    expect(state.weekHistory[2].week).toBe(4);
+    // Week numbers should be sequential (recorded BEFORE calendar advance)
+    expect(state.weekHistory[0].week).toBe(1);
+    expect(state.weekHistory[1].week).toBe(2);
+    expect(state.weekHistory[2].week).toBe(3);
   });
 });
 
@@ -1158,7 +1160,7 @@ describe('low morale counter', () => {
     expect(next.meta.lowMoraleWeeks).toBe(3);
   });
 
-  it('resets lowMoraleWeeks when morale is at or above 40', () => {
+  it('decrements lowMoraleWeeks gradually when morale is at or above 40', () => {
     const state = makeTestStateDeep({
       team: {
         members: [],
@@ -1191,7 +1193,8 @@ describe('low morale counter', () => {
 
     const next = advanceWeek(state, []);
 
-    expect(next.meta.lowMoraleWeeks).toBe(0);
+    // Gradual decay: decrements by 1 per week instead of instant reset
+    expect(next.meta.lowMoraleWeeks).toBe(4);
   });
 });
 

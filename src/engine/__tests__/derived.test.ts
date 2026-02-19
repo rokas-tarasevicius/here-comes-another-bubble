@@ -46,10 +46,10 @@ describe('calculateRunway', () => {
   it('returns finite runway when there are fixed costs and no revenue', () => {
     const state = makeTestState();
     // balanced archetype has no starting employees, so burn = just fixed costs
-    // Balanced founder starts with $75k cash and garage stage burn is $100 fixed.
+    // Balanced founder starts with $75k cash and garage stage burn is $500 fixed.
     const runway = calculateRunway(state);
-    // 75000 / 100 = 750 weeks
-    expect(runway).toBe(750);
+    // 75000 / 500 = 150 weeks
+    expect(runway).toBe(150);
   });
 
   it('calculates finite runway when burning cash', () => {
@@ -78,9 +78,9 @@ describe('calculateRunway', () => {
     });
 
     const runway = calculateRunway(state);
-    // burn = 2*5000 + 100 (garage base) + 2*50 = 10200
-    // 100000 / 10200 ≈ 9.80
-    expect(runway).toBeCloseTo(100_000 / 10_200, 1);
+    // burn = 2*5000 + 500 (garage base) + 2*50 = 10600
+    // 100000 / 10600 ≈ 9.43
+    expect(runway).toBeCloseTo(100_000 / 10_600, 1);
   });
 
   it('returns Infinity when revenue exceeds burn', () => {
@@ -119,8 +119,8 @@ describe('calculateWeeklyBurn', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // 4000 (salary) + 800 (AI) + 100 (garage base) + 50 (per-person) = 4950
-    expect(burn).toBe(4950);
+    // 4000 (salary) + 800 (AI) + 500 (garage base) + 50 (per-person) = 5350
+    expect(burn).toBe(5350);
   });
 
   it('returns only fixed costs when team is empty', () => {
@@ -134,7 +134,7 @@ describe('calculateWeeklyBurn', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    expect(burn).toBe(100); // just base fixed costs (garage stage = $100/wk)
+    expect(burn).toBe(500); // just base fixed costs (garage stage = $500/wk)
   });
 });
 
@@ -977,10 +977,10 @@ describe('calculateWeeklyBurn (extended)', () => {
 
     const burn = calculateWeeklyBurn(state);
     // salaries: 3000 + 4000 = 7000
-    // base: 100 (garage)
+    // base: 500 (garage)
     // per-person overhead: 2 * 50 = 100
-    // total: 7200
-    expect(burn).toBe(7200);
+    // total: 7600
+    expect(burn).toBe(7600);
   });
 
   it('falls back to teamSize * avgSalary when members is undefined', () => {
@@ -998,10 +998,10 @@ describe('calculateWeeklyBurn (extended)', () => {
 
     const burn = calculateWeeklyBurn(state);
     // salaries: 3 * 4000 = 12000
-    // base: 100 (garage)
+    // base: 500 (garage)
     // per-person overhead: 3 * 50 = 150
-    // total: 12250
-    expect(burn).toBe(12250);
+    // total: 12650
+    expect(burn).toBe(12650);
   });
 
   it('sums costs from multiple AI agents', () => {
@@ -1024,10 +1024,10 @@ describe('calculateWeeklyBurn (extended)', () => {
     const burn = calculateWeeklyBurn(state);
     // salaries: 0
     // AI: 200 + 300 + 500 = 1000
-    // base: 100 (garage)
+    // base: 500 (garage)
     // per-person overhead: 0 * 50 = 0
-    // total: 1100
-    expect(burn).toBe(1100);
+    // total: 1500
+    expect(burn).toBe(1500);
   });
 
   it('uses higher base cost for non-garage, non-pre-seed stages', () => {
@@ -1052,10 +1052,10 @@ describe('calculateWeeklyBurn (extended)', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // base: 500 (seed stage)
+    // base: 1200 (seed stage)
     // per-person: 0
-    // total: 500
-    expect(burn).toBe(500);
+    // total: 1200
+    expect(burn).toBe(1200);
   });
 
   it('uses low base cost for pre-seed stage', () => {
@@ -1080,8 +1080,8 @@ describe('calculateWeeklyBurn (extended)', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // base: 100 (pre-seed is treated like garage)
-    expect(burn).toBe(100);
+    // base: 700 (pre-seed stage)
+    expect(burn).toBe(700);
   });
 
   it('scales per-person overhead with team size', () => {
@@ -1111,10 +1111,10 @@ describe('calculateWeeklyBurn (extended)', () => {
 
     const burn = calculateWeeklyBurn(state);
     // salaries: 10 * 1000 = 10000
-    // base: 100 (garage)
+    // base: 500 (garage)
     // per-person: 10 * 50 = 500
-    // total: 10600
-    expect(burn).toBe(10600);
+    // total: 11000
+    expect(burn).toBe(11000);
   });
 
   it('includes marketingSpend in weekly burn', () => {
@@ -1143,8 +1143,8 @@ describe('calculateWeeklyBurn (extended)', () => {
     });
 
     const burn = calculateWeeklyBurn(state);
-    // base fixed cost: 100 + marketingSpend: 5000
-    expect(burn).toBe(5100);
+    // base fixed cost: 500 + marketingSpend: 5000
+    expect(burn).toBe(5500);
   });
 });
 

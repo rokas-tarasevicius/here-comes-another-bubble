@@ -1470,7 +1470,7 @@ describe('Low Morale Tracking', () => {
     expect(state.meta.lowMoraleWeeks).toBeGreaterThan(0);
   });
 
-  it('resets low morale counter when morale recovers above 40', () => {
+  it('decrements low morale counter gradually when morale recovers above 40', () => {
     const state = makeDeepState({
       meta: { lowMoraleWeeks: 5 },
       team: { teamSize: 3, avgSalary: 3000, morale: 60, aiAgents: [] }, // Above 40
@@ -1481,8 +1481,8 @@ describe('Low Morale Tracking', () => {
     const result = advanceWeek(state, []);
     vi.restoreAllMocks();
 
-    // Good morale + good culture, counter should reset
-    expect(result.meta.lowMoraleWeeks).toBe(0);
+    // Gradual decay: decrements by 1 per week instead of instant reset
+    expect(result.meta.lowMoraleWeeks).toBe(4);
   });
 });
 
