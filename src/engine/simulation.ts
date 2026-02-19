@@ -930,12 +930,14 @@ function simulateStageProgression(state: GameState): GameState {
       }
       break;
     case 'pre-seed':
-      if (valuation > 2_000_000 && teamSize > 5) {
+      // Require seed funding OR strong bootstrapped metrics
+      if (valuation > 2_000_000 && teamSize > 5 && (state.finances.fundingHistory.some(r => r.stage === 'seed') || revenue > 2000)) {
         newStage = 'seed';
       }
       break;
     case 'seed':
-      if (valuation > 10_000_000 && revenue > 0 && teamSize > 10) {
+      // Require series-a funding OR profitable with real traction
+      if (valuation > 10_000_000 && revenue > 0 && teamSize > 10 && (state.finances.fundingHistory.some(r => r.stage === 'series-a') || revenue > 5000)) {
         newStage = 'series-a';
       }
       break;
