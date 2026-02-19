@@ -1251,9 +1251,10 @@ export function advanceWeek(
   let next = applyDecisions(state, decisions);
 
   // 1.5 Update counters before simulation reads them
+  // Gradual decay instead of instant reset — recovery takes time
   const lowMoraleWeeks = next.team.morale < 40
     ? (next.meta.lowMoraleWeeks ?? 0) + 1
-    : 0;
+    : Math.max(0, (next.meta.lowMoraleWeeks ?? 0) - 1);
   const contentSeoWeeks = next.meta.acquisitionChannel === 'content-seo'
     ? (next.meta.contentSeoWeeks ?? 0) + 1
     : 0;
