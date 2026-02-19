@@ -1220,19 +1220,26 @@ function generateAutoDecisions(state: GameState): GameState {
     }
   }
 
-  // --- PARTNERSHIP OPPORTUNITIES (every 8-10 weeks after week 5) ---
-  if (week > 5 && (week % 8 === 0 || (week % 10 === 0 && Math.random() < 0.4))) {
+  // --- PARTNERSHIP OPPORTUNITIES (every 8-10 weeks after week 5, max 3 total) ---
+  const partnershipCount = state.eventLog.filter(e => e.eventId === 'auto-partnership').length;
+  if (week > 5 && partnershipCount < 3 && (week % 8 === 0 || (week % 10 === 0 && Math.random() < 0.4))) {
     const alreadyPending = state.pendingDecisions.some(
       (d) => d.eventId === 'auto-partnership',
     );
 
     if (!alreadyPending) {
-      const partners = [
+      const allPartners = [
         { name: 'AWS', benefit: 'cloud-credits', desc: '$50K in cloud credits. First taste is free — the addiction comes later. +5 reputation', cashBonus: 50000, repBonus: 5 },
         { name: 'Google Cloud', benefit: 'cloud-credits', desc: '$40K in GCP credits and a "startup partner" badge for your website. +4 reputation', cashBonus: 40000, repBonus: 4 },
         { name: 'Microsoft', benefit: 'enterprise-access', desc: 'Enterprise customer pipeline. Your product will be buried somewhere in Microsoft Teams where no one will find it. +3 reputation', cashBonus: 0, repBonus: 3 },
         { name: 'Stripe', benefit: 'payments', desc: 'Stripe takes 2.9% of your dreams, but at least the API is nice. +$20K credits', cashBonus: 20000, repBonus: 2 },
       ];
+      // Filter out partners already accepted
+      const acceptedPartners = state.eventLog
+        .filter(e => e.eventId === 'auto-partnership' && e.resolvedOptionId?.startsWith('partner_accept'))
+        .map(e => e.resolvedOptionId?.replace('partner_accept_', ''));
+      const partners = allPartners.filter(p => !acceptedPartners.includes(p.name));
+      if (partners.length === 0) return state;
       const partner = partners[Math.floor(Math.random() * partners.length)];
       const decisionId = generateId();
 
