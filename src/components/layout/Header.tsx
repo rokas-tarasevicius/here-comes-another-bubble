@@ -3,11 +3,6 @@ import { useGameStore } from '../../store/index.ts';
 import type { CompanyStage } from '../../types/game.ts';
 import { SparklineChart } from '../shared/SparklineChart.tsx';
 
-const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-];
-
 const STAGE_LABELS: Record<CompanyStage, string> = {
   'garage': 'Garage',
   'pre-seed': 'Pre-Seed',
@@ -179,8 +174,6 @@ export function Header() {
   );
   const pendingCount = unresolvedDecisions.length;
   const hasUrgentUnresolved = pendingCount > 0;
-  const monthName = MONTH_NAMES[meta.month - 1] ?? 'Jan';
-  const dateStr = `Week ${meta.week} \u2014 ${monthName} ${meta.day}, ${meta.year}`;
   const stageBadgeClass = STAGE_COLORS[company.stage] ?? 'bg-gray-700 text-gray-300';
   const stageLabel = STAGE_LABELS[company.stage] ?? company.stage;
 

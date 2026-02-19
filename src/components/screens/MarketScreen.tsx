@@ -46,12 +46,6 @@ export function MarketScreen() {
     return 'text-[--color-retro-green]';
   }
 
-  function intensityBarClass(value: number): string {
-    if (value >= 70) return 'retro-progress-bar retro-progress-bar-red';
-    if (value >= 40) return 'retro-progress-bar retro-progress-bar-orange';
-    return 'retro-progress-bar retro-progress-bar-green';
-  }
-
   return (
     <div className="space-y-6 min-w-0">
       {/* Header */}

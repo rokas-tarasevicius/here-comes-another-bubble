@@ -56,7 +56,7 @@ export function BackgroundMusic() {
   const [isDragging, setIsDragging] = useState(false);
   const hasStartedRef = useRef(false);
   const preMuteVolume = useRef(volume);
-  const hideTimer = useRef<ReturnType<typeof setTimeout>>();
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

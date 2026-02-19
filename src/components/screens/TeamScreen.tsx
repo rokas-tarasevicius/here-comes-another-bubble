@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { InfoTip } from '../shared/InfoTip.tsx';

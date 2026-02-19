@@ -38,12 +38,6 @@ function bubbleColor(index: number): string {
   return 'text-[--color-retro-red]';
 }
 
-function bubbleProgressBarClass(index: number): string {
-  if (index < 30) return 'retro-progress-bar retro-progress-bar-green';
-  if (index < 60) return 'retro-progress-bar retro-progress-bar-orange';
-  return 'retro-progress-bar retro-progress-bar-red';
-}
-
 // ─── OverviewScreen ──────────────────────────────────────────────────
 
 /**

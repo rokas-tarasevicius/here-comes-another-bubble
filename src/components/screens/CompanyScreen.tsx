@@ -45,7 +45,7 @@ export function CompanyScreen() {
 
   if (!gameState) return null;
 
-  const { team, company, product, finances, meta, founder } = gameState;
+  const { team, product, finances, meta, founder } = gameState;
 
   // Channel availability checks
   const channelAvailable = (id: AcquisitionChannel): boolean => {
