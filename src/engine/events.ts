@@ -60,8 +60,13 @@ function applyEffects(state: GameState, effects: { path: string; operation: 'add
   }
 
   next.finances.founderEquity = Math.max(0, Math.min(1, next.finances.founderEquity));
+  next.finances.cash = Math.max(0, next.finances.cash);
+  next.product.customers = Math.max(0, next.product.customers);
   next.product.bugs = Math.max(0, next.product.bugs);
-  next.product.techDebtTotal = Math.max(0, next.product.techDebtTotal);
+  next.product.techDebtTotal = Math.max(0, Math.min(100, next.product.techDebtTotal));
+  next.team.morale = Math.max(0, Math.min(100, next.team.morale));
+  next.company.reputation = Math.max(0, Math.min(100, next.company.reputation));
+  next.company.culture = Math.max(0, Math.min(100, next.company.culture));
 
   return next;
 }
