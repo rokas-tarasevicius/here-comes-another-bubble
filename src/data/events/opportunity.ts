@@ -930,8 +930,9 @@ export const OPPORTUNITY_EVENTS: GameEvent[] = [
         effects: [
           { path: 'finances.cash', operation: 'add', value: -20000 },
           { path: 'market.investorSentiment', operation: 'add', value: 15 },
-          { path: 'company.reputation', operation: 'add', value: 10 },
-          { path: 'meta.regulatoryHeat', operation: 'add', value: 10 },
+          { path: 'company.reputation', operation: 'add', value: -5 },
+          { path: 'company.culture', operation: 'add', value: -8 },
+          { path: 'meta.regulatoryHeat', operation: 'add', value: 15 },
         ],
       },
       {
