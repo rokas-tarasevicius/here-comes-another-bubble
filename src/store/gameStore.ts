@@ -486,6 +486,8 @@ export const useGameStore = create<GameStore>()((set, get) => ({
   seekFunding(targetStage) {
     const { gameState } = get();
     if (!gameState) return;
+    // Prevent seeking funding more than once per week
+    if (gameState.meta.fundingSoughtThisWeek) return;
     const nextState = applySeekFunding(gameState, targetStage);
     set({ gameState: { ...nextState, meta: { ...nextState.meta, fundingSoughtThisWeek: true } } });
   },

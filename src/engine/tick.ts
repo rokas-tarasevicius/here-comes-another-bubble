@@ -666,6 +666,19 @@ export function applySeekFunding(state: GameState, targetStage: string): GameSta
 
   const config = STAGE_TO_FUNDING[lookupStage];
 
+  // Prevent raising the same round twice
+  if (config && state.finances.fundingHistory.some(r => r.stage === config.fundingStage)) {
+    const logEntry: EventLogEntry = {
+      id: generateId(),
+      week: state.meta.week,
+      eventId: 'funding-already-raised',
+      title: 'Already Raised This Round',
+      description: `You've already closed your ${config.fundingStage} round. Focus on growing into the next stage.`,
+      category: 'funding',
+    };
+    return { ...state, eventLog: [...state.eventLog, logEntry] };
+  }
+
   if (!config) {
     const logEntry: EventLogEntry = {
       id: generateId(),
