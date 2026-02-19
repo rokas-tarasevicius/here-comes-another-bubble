@@ -3,15 +3,47 @@ import { useGameStore } from '../../store/index.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { InfoTip } from '../shared/InfoTip.tsx';
 
-// ─── AI Agent Catalog ─────────────────────────────────────────────────
+// ─── AI Agent Catalog (real startups, different per category) ─────────
 
-const AI_PROVIDERS = [
-  { name: 'OpenAI', costPerWeek: 500, capability: 75, reliability: 80 },
-  { name: 'Anthropic', costPerWeek: 600, capability: 80, reliability: 85 },
-  { name: 'Google DeepMind', costPerWeek: 450, capability: 70, reliability: 75 },
-  { name: 'Mistral', costPerWeek: 300, capability: 60, reliability: 70 },
-  { name: 'Cohere', costPerWeek: 250, capability: 55, reliability: 72 },
-] as const;
+interface AgentOption {
+  name: string;
+  costPerWeek: number;
+  capability: number;
+  reliability: number;
+}
+
+const AI_AGENT_CATALOG: Record<string, AgentOption[]> = {
+  coding: [
+    { name: 'Devin', costPerWeek: 400, capability: 75, reliability: 78 },
+    { name: 'Cursor', costPerWeek: 250, capability: 70, reliability: 85 },
+    { name: 'Windsurf', costPerWeek: 200, capability: 60, reliability: 80 },
+    { name: 'Replit Agent', costPerWeek: 150, capability: 55, reliability: 72 },
+  ],
+  design: [
+    { name: 'Galileo AI', costPerWeek: 350, capability: 70, reliability: 75 },
+    { name: 'v0', costPerWeek: 200, capability: 65, reliability: 82 },
+    { name: 'Uizard', costPerWeek: 150, capability: 55, reliability: 78 },
+    { name: 'Locofy', costPerWeek: 180, capability: 50, reliability: 70 },
+  ],
+  marketing: [
+    { name: 'Jasper', costPerWeek: 300, capability: 72, reliability: 80 },
+    { name: 'Copy.ai', costPerWeek: 200, capability: 65, reliability: 78 },
+    { name: 'Writer', costPerWeek: 250, capability: 68, reliability: 82 },
+    { name: 'Lately AI', costPerWeek: 150, capability: 55, reliability: 70 },
+  ],
+  analytics: [
+    { name: 'Julius AI', costPerWeek: 250, capability: 70, reliability: 80 },
+    { name: 'Hex', costPerWeek: 300, capability: 75, reliability: 82 },
+    { name: 'Seek AI', costPerWeek: 200, capability: 60, reliability: 75 },
+    { name: 'Obviously AI', costPerWeek: 180, capability: 55, reliability: 72 },
+  ],
+  support: [
+    { name: 'Sierra', costPerWeek: 350, capability: 75, reliability: 82 },
+    { name: 'Ada', costPerWeek: 250, capability: 68, reliability: 80 },
+    { name: 'Decagon', costPerWeek: 200, capability: 62, reliability: 78 },
+    { name: 'Intercom Fin', costPerWeek: 300, capability: 72, reliability: 85 },
+  ],
+};
 
 const AI_AGENT_TYPES = ['coding', 'design', 'marketing', 'analytics', 'support'] as const;
 
@@ -30,6 +62,18 @@ export function TeamScreen() {
 
   const { team, company, finances } = gameState;
   const aiAgentCost = team.aiAgents.reduce((sum, a) => sum + a.costPerWeek, 0);
+
+  // Group active AI agents by name+type for "x2" display
+  const groupedAgents = team.aiAgents.reduce<Record<string, { agent: typeof team.aiAgents[0]; count: number; ids: string[] }>>((acc, agent) => {
+    const key = `${agent.name}`;
+    if (acc[key]) {
+      acc[key].count++;
+      acc[key].ids.push(agent.id);
+    } else {
+      acc[key] = { agent, count: 1, ids: [agent.id] };
+    }
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto min-w-0">
@@ -133,17 +177,20 @@ export function TeamScreen() {
         )}
       </div>
 
-      {/* Active AI Agents */}
+      {/* Active AI Agents (grouped) */}
       {team.aiAgents.length > 0 && (
         <div className="retro-card">
           <h3 className="retro-section-heading">Active AI Agents ({team.aiAgents.length})</h3>
           <div className="space-y-2 max-h-60 overflow-y-auto retro-scrollbar">
-            {team.aiAgents.map(agent => (
-              <div key={agent.id} className="retro-inset p-3">
+            {Object.entries(groupedAgents).map(([key, { agent, count, ids }]) => (
+              <div key={key} className="retro-inset p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-sm font-bold text-[--color-retro-text]">{agent.name}</span>
+                      {count > 1 && (
+                        <span className="retro-badge retro-badge-sm retro-badge-orange">x{count}</span>
+                      )}
                       <span className="retro-badge retro-badge-sm retro-badge-blue">{agent.type}</span>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
@@ -157,22 +204,22 @@ export function TeamScreen() {
                       </span>
                       <span className="retro-stat-tag">
                         <span className="retro-stat-tag-label">Cost</span>
-                        <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(agent.costPerWeek)}/wk</span>
+                        <span className="retro-stat-tag-value text-[--color-retro-red]">{formatCurrency(agent.costPerWeek * count)}/wk</span>
                       </span>
                     </div>
                   </div>
                   <button
                     onClick={() => {
-                      if (confirmFire === agent.id) {
-                        fireAIAgent(agent.id);
+                      if (confirmFire === ids[0]) {
+                        fireAIAgent(ids[ids.length - 1]);
                         setConfirmFire(null);
                       } else {
-                        setConfirmFire(agent.id);
+                        setConfirmFire(ids[0]);
                       }
                     }}
                     className="btn-glossy btn-glossy-sm btn-red shrink-0"
                   >
-                    {confirmFire === agent.id ? 'Confirm?' : 'Remove'}
+                    {confirmFire === ids[0] ? 'Confirm?' : 'Remove'}
                   </button>
                 </div>
               </div>
@@ -269,50 +316,49 @@ export function TeamScreen() {
       <div className="retro-card">
         <h3 className="retro-section-heading"><span className="retro-label-tip">AI Agent Catalog<InfoTip text="Deploy AI agents to augment your team. Cheaper than humans but lower capability. Setup fee is 2x weekly cost. Agents contribute to features, marketing, or support depending on type." /></span></h3>
 
-        {/* Type selector */}
+        {/* Type selector — use inline styles to avoid Tailwind specificity issues */}
         <div className="flex gap-1.5 mb-4 flex-wrap">
           {AI_AGENT_TYPES.map(type => (
             <button
               key={type}
               onClick={() => setSelectedAgentType(type)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md border transition-colors ${
-                selectedAgentType === type
-                  ? 'bg-[--color-retro-blue] text-white border-[--color-retro-blue]'
-                  : 'bg-white text-[--color-retro-text] border-black/10 hover:border-black/20'
-              }`}
-              style={selectedAgentType === type ? {} : { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.06)' }}
+              style={selectedAgentType === type
+                ? { background: '#336699', color: '#ffffff', borderColor: '#336699' }
+                : { background: '#ffffff', color: '#374151', borderColor: 'rgba(0,0,0,0.1)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.06)' }
+              }
+              className="px-3 py-1.5 text-xs font-bold rounded-md border transition-colors"
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </button>
           ))}
         </div>
 
-        {/* Provider list for selected type */}
+        {/* Agent list for selected type */}
         <div className="space-y-2">
-          {AI_PROVIDERS.map(provider => {
-            const setupCost = provider.costPerWeek * 2;
+          {(AI_AGENT_CATALOG[selectedAgentType] ?? []).map(agent => {
+            const setupCost = agent.costPerWeek * 2;
             const canAfford = finances.cash >= setupCost;
 
             return (
-              <div key={provider.name} className="retro-inset p-3">
+              <div key={agent.name} className="retro-inset p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-sm font-bold text-[--color-retro-text]">{provider.name}</span>
+                      <span className="text-sm font-bold text-[--color-retro-text]">{agent.name}</span>
                       <span className="retro-badge retro-badge-sm retro-badge-blue">{selectedAgentType}</span>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="retro-stat-tag">
                         <span className="retro-stat-tag-label">Capability</span>
-                        <span className="retro-stat-tag-value">{provider.capability}</span>
+                        <span className="retro-stat-tag-value">{agent.capability}</span>
                       </span>
                       <span className="retro-stat-tag">
                         <span className="retro-stat-tag-label">Reliability</span>
-                        <span className="retro-stat-tag-value">{provider.reliability}</span>
+                        <span className="retro-stat-tag-value">{agent.reliability}</span>
                       </span>
                       <span className="retro-stat-tag">
                         <span className="retro-stat-tag-label">Cost</span>
-                        <span className="retro-stat-tag-value">{formatCurrency(provider.costPerWeek)}/wk</span>
+                        <span className="retro-stat-tag-value">{formatCurrency(agent.costPerWeek)}/wk</span>
                       </span>
                       <span className="retro-stat-tag">
                         <span className="retro-stat-tag-label">Setup</span>
@@ -321,9 +367,9 @@ export function TeamScreen() {
                     </div>
                   </div>
                   <button
-                    onClick={() => hireAIAgent(selectedAgentType, provider.name, provider.capability, provider.costPerWeek, provider.reliability)}
+                    onClick={() => hireAIAgent(selectedAgentType, agent.name, agent.capability, agent.costPerWeek, agent.reliability)}
                     disabled={!canAfford}
-                    className={`btn-glossy btn-glossy-sm shrink-0 ${canAfford ? 'btn-green' : 'btn-glossy-disabled'}`}
+                    className={`btn-glossy btn-glossy-sm shrink-0 ${canAfford ? 'btn-green' : 'opacity-40 cursor-not-allowed'}`}
                   >
                     Deploy
                   </button>
