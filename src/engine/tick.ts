@@ -1256,7 +1256,14 @@ export function advanceWeek(
     product: { ...next.product, pmfScore },
   };
 
-  // 5. Advance calendar
+  // 5. Record week history BEFORE advancing calendar (so week number is correct)
+  const summary = createWeekSummary(next);
+  next = {
+    ...next,
+    weekHistory: [...next.weekHistory, summary],
+  };
+
+  // 5.1 Advance calendar
   next = advanceCalendar(next);
 
   // 5.5 Generate candidates every 4 weeks
@@ -1463,13 +1470,6 @@ export function advanceWeek(
 
   // 11. Check milestones
   next = checkMilestones(next);
-
-  // 11. Record week history
-  const summary = createWeekSummary(next);
-  next = {
-    ...next,
-    weekHistory: [...next.weekHistory, summary],
-  };
 
   // 12. Check game over
   next = checkGameOver(next);
