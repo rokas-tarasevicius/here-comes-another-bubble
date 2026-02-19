@@ -683,7 +683,7 @@ export const CRISIS_EVENTS: GameEvent[] = [
         description:
           'Pivot everyone to sales and revenue. Ship anything customers will pay for right now.',
         effects: [
-          { path: 'finances.cash', operation: 'add', value: 80000 },
+          { path: 'finances.cash', operation: 'add', value: 30000 },
           { path: 'product.techDebtTotal', operation: 'add', value: 15 },
           { path: 'product.pmfScore', operation: 'add', value: -5 },
           { path: 'team.morale', operation: 'add', value: -10 },
