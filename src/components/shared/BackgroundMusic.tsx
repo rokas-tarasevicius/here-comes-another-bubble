@@ -179,7 +179,7 @@ export function BackgroundMusic() {
       {/* Music control */}
       <div
         ref={wrapperRef}
-        className="flex items-end gap-0"
+        className="fixed bottom-4 right-4 z-50 flex items-end gap-0"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
