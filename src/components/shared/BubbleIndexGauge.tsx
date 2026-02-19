@@ -5,28 +5,24 @@ export interface BubbleIndexGaugeProps {
   trend: number;   // positive = inflating, negative = deflating
 }
 
-function getZone(value: number): { label: string; color: string; arcColor: string } {
-  if (value < 30) return { label: 'Cool', color: 'text-[--color-retro-blue]', arcColor: 'var(--color-retro-blue)' };
-  if (value < 60) return { label: 'Warm', color: 'text-[--color-retro-orange]', arcColor: 'var(--color-retro-orange)' };
-  if (value < 80) return { label: 'Hot', color: 'text-[--color-retro-orange-dark]', arcColor: 'var(--color-retro-orange-dark)' };
-  return { label: 'BUBBLE!', color: 'text-[--color-retro-red]', arcColor: 'var(--color-retro-red)' };
+function getZone(value: number): { label: string; colorClass: string; barClass: string } {
+  if (value < 30) return { label: 'Cool', colorClass: 'retro-gauge-cool', barClass: 'retro-progress-bar retro-progress-bar-blue' };
+  if (value < 60) return { label: 'Warm', colorClass: 'retro-gauge-warm', barClass: 'retro-progress-bar retro-progress-bar-orange' };
+  if (value < 80) return { label: 'Hot', colorClass: 'retro-gauge-hot', barClass: 'retro-progress-bar retro-progress-bar-red' };
+  return { label: 'BUBBLE!', colorClass: 'retro-gauge-bubble', barClass: 'retro-progress-bar retro-progress-bar-red' };
 }
 
 /**
- * Semi-circular gauge showing the current bubble index (0-100).
- * Color zones indicate market temperature from Cool to BUBBLE!
- * Includes a trend arrow showing market direction.
+ * Skeuomorphic gauge card showing the current bubble index (0-100).
+ * Uses retro inset panels, glossy progress bar, and zone indicators.
  */
 export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
   const clamped = Math.max(0, Math.min(100, value));
   const zone = getZone(clamped);
 
-  // Semicircle gauge: rotation from -90deg (0) to +90deg (100)
-  const needleRotation = -90 + (clamped / 100) * 180;
-
-  const trendArrow = trend > 0 ? '\u2191' : trend < 0 ? '\u2193' : '\u2192';
-  const trendColor = trend > 0 ? 'text-[--color-retro-red]' : trend < 0 ? 'text-[--color-retro-blue]' : 'text-[--color-retro-text-muted]';
+  const trendArrow = trend > 0 ? '\u25B2' : trend < 0 ? '\u25BC' : '\u25C6';
   const trendLabel = trend > 0 ? 'Inflating' : trend < 0 ? 'Deflating' : 'Stable';
+  const trendClass = trend > 0 ? 'retro-gauge-trend-up' : trend < 0 ? 'retro-gauge-trend-down' : 'retro-gauge-trend-stable';
 
   return (
     <div className="retro-card">
@@ -34,83 +30,66 @@ export function BubbleIndexGauge({ value, trend }: BubbleIndexGaugeProps) {
         Bubble Index<InfoTip text="Market hype meter (0–100). When it pops (reaches critical levels), valuations crash, funding dries up, and customers flee. High bubble inflates your valuation — but the crash is brutal. Survive it to win." />
       </h3>
 
-      {/* Gauge */}
-      <div className="relative mx-auto flex flex-col items-center">
-        <svg viewBox="0 0 200 120" className="w-48 h-28">
-          {/* Background arc segments */}
-          {/* Cool zone: 0-30 (blue) */}
-          <path
-            d="M 20 100 A 80 80 0 0 1 47.15 34.34"
-            fill="none"
-            stroke="var(--color-retro-blue)"
-            strokeWidth="12"
-            strokeLinecap="round"
-            opacity="0.4"
-          />
-          {/* Warm zone: 30-60 (orange) */}
-          <path
-            d="M 47.15 34.34 A 80 80 0 0 1 100 20"
-            fill="none"
-            stroke="var(--color-retro-orange)"
-            strokeWidth="12"
-            strokeLinecap="round"
-            opacity="0.4"
-          />
-          {/* Hot zone: 60-80 (dark orange) */}
-          <path
-            d="M 100 20 A 80 80 0 0 1 146.63 30.72"
-            fill="none"
-            stroke="var(--color-retro-orange-dark)"
-            strokeWidth="12"
-            strokeLinecap="round"
-            opacity="0.4"
-          />
-          {/* Bubble zone: 80-100 (red) */}
-          <path
-            d="M 146.63 30.72 A 80 80 0 0 1 180 100"
-            fill="none"
-            stroke="var(--color-retro-red)"
-            strokeWidth="12"
-            strokeLinecap="round"
-            opacity="0.4"
-          />
-
-          {/* Needle */}
-          <g transform={`rotate(${needleRotation}, 100, 100)`}>
-            <line
-              x1="100"
-              y1="100"
-              x2="100"
-              y2="30"
-              stroke={zone.arcColor}
-              strokeWidth="2.5"
-            />
-            <circle cx="100" cy="100" r="5" fill={zone.arcColor} />
-          </g>
-
-          {/* Min/Max labels */}
-          <text x="15" y="115" fill="var(--theme-chart-axis)" fontSize="10">0</text>
-          <text x="175" y="115" fill="var(--theme-chart-axis)" fontSize="10">100</text>
-        </svg>
-
-        {/* Value display */}
-        <div className="mt-1 text-center">
-          <span className={`text-2xl font-bold font-retro-mono ${zone.color}`}>
-            {Math.round(clamped)}
-          </span>
-          <span className="text-sm text-[--color-retro-text-light]">/100</span>
+      {/* Main value readout — inset panel */}
+      <div className="retro-inset retro-gauge-readout mb-3">
+        <div className={`retro-gauge-value ${zone.colorClass}`}>
+          {Math.round(clamped)}
         </div>
+        <div className="retro-gauge-sublabel">/100</div>
+      </div>
 
-        {/* Zone label */}
-        <span className={`mt-1 text-sm font-bold ${zone.color}`}>
+      {/* Zone label badge */}
+      <div className="mb-3 flex justify-center">
+        <span className={`retro-badge ${zone.colorClass === 'retro-gauge-cool' ? 'retro-badge-blue' : zone.colorClass === 'retro-gauge-warm' ? 'retro-badge-orange' : 'retro-badge-red'}`}>
           {zone.label}
         </span>
+      </div>
 
-        {/* Trend */}
-        <div className="mt-2 flex items-center gap-1">
-          <span className={`text-lg font-bold ${trendColor}`}>{trendArrow}</span>
-          <span className={`text-xs ${trendColor}`}>{trendLabel}</span>
+      {/* Glossy progress bar */}
+      <div className="mb-2">
+        <div className="retro-progress" style={{ height: '14px' }}>
+          <div
+            className={zone.barClass}
+            style={{ width: `${clamped}%`, transition: 'width 0.5s ease' }}
+          />
         </div>
+        <div className="mt-1 flex justify-between text-[10px] text-[--color-retro-text-light]">
+          <span>Cool</span>
+          <span>Warm</span>
+          <span>Hot</span>
+          <span>Bubble</span>
+        </div>
+      </div>
+
+      {/* Zone markers — four segment dots */}
+      <div className="retro-gauge-zones mb-3">
+        <div className={`retro-gauge-zone-segment ${clamped < 30 ? 'retro-gauge-zone-active' : ''}`}>
+          <span className="retro-gauge-zone-dot retro-gauge-zone-dot-blue" />
+          <span className="retro-gauge-zone-range">0–29</span>
+        </div>
+        <div className={`retro-gauge-zone-segment ${clamped >= 30 && clamped < 60 ? 'retro-gauge-zone-active' : ''}`}>
+          <span className="retro-gauge-zone-dot retro-gauge-zone-dot-orange" />
+          <span className="retro-gauge-zone-range">30–59</span>
+        </div>
+        <div className={`retro-gauge-zone-segment ${clamped >= 60 && clamped < 80 ? 'retro-gauge-zone-active' : ''}`}>
+          <span className="retro-gauge-zone-dot retro-gauge-zone-dot-red" />
+          <span className="retro-gauge-zone-range">60–79</span>
+        </div>
+        <div className={`retro-gauge-zone-segment ${clamped >= 80 ? 'retro-gauge-zone-active' : ''}`}>
+          <span className="retro-gauge-zone-dot retro-gauge-zone-dot-red" />
+          <span className="retro-gauge-zone-range">80+</span>
+        </div>
+      </div>
+
+      {/* Trend indicator — inset strip */}
+      <div className="retro-inset retro-gauge-trend-strip">
+        <span className={`retro-gauge-trend-arrow ${trendClass}`}>{trendArrow}</span>
+        <span className={`retro-gauge-trend-label ${trendClass}`}>{trendLabel}</span>
+        {trend !== 0 && (
+          <span className="retro-gauge-trend-delta">
+            {trend > 0 ? '+' : ''}{trend.toFixed(1)}/wk
+          </span>
+        )}
       </div>
     </div>
   );

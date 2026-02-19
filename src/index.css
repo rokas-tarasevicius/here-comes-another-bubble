@@ -1499,6 +1499,106 @@ button.retro-card:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   BUBBLE INDEX GAUGE — skeuomorphic readout with zones
+   ═══════════════════════════════════════════════════════════════ */
+
+.retro-gauge-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px 16px 10px;
+}
+
+.retro-gauge-value {
+  font-family: var(--font-retro-mono);
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 0 var(--theme-text-shadow);
+}
+
+.retro-gauge-sublabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-retro-text-light);
+}
+
+/* Zone color classes */
+.retro-gauge-cool { color: var(--color-retro-blue); }
+.retro-gauge-warm { color: var(--color-retro-orange); }
+.retro-gauge-hot { color: var(--color-retro-red); }
+.retro-gauge-bubble {
+  color: var(--color-retro-red);
+  animation: gauge-pulse 1.2s ease-in-out infinite;
+}
+@keyframes gauge-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Zone segment indicators */
+.retro-gauge-zones {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+}
+.retro-gauge-zone-segment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.45;
+  transition: opacity 0.2s;
+}
+.retro-gauge-zone-active {
+  opacity: 1;
+}
+.retro-gauge-zone-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2), 0 1px 0 var(--theme-highlight-strong);
+}
+.retro-gauge-zone-dot-blue { background: linear-gradient(to bottom, var(--color-retro-blue), var(--color-retro-blue-dark)); }
+.retro-gauge-zone-dot-orange { background: linear-gradient(to bottom, var(--color-retro-orange), var(--color-retro-orange-dark)); }
+.retro-gauge-zone-dot-red { background: linear-gradient(to bottom, var(--color-retro-red), var(--color-retro-red-dark)); }
+.retro-gauge-zone-range {
+  font-size: 10px;
+  font-family: var(--font-retro-mono);
+  color: var(--color-retro-text-muted);
+}
+
+/* Trend indicator strip */
+.retro-gauge-trend-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+}
+.retro-gauge-trend-arrow { font-size: 12px; line-height: 1; }
+.retro-gauge-trend-label { font-size: 12px; font-weight: 600; }
+.retro-gauge-trend-delta {
+  font-size: 11px;
+  font-family: var(--font-retro-mono);
+  color: var(--color-retro-text-muted);
+  margin-left: 2px;
+}
+.retro-gauge-trend-up { color: var(--color-retro-red); }
+.retro-gauge-trend-down { color: var(--color-retro-blue); }
+.retro-gauge-trend-stable { color: var(--color-retro-text-muted); }
+
+/* Dark mode overrides */
+[data-theme="dark"] .retro-gauge-value {
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+[data-theme="dark"] .retro-gauge-zone-dot {
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.35), 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    MUSIC PLAYER — BackgroundMusic controls
    ═══════════════════════════════════════════════════════════════ */
 
