@@ -6,7 +6,7 @@ A satirical startup simulation game set during the AI bubble. You play as a foun
 
 Inspired by [the 2007 song of the same name](https://www.youtube.com/watch?v=I6IQ_FOCE6I) about the original Web 2.0 bubble.
 
-**[Play it now](https://here-comes-another-bubble.vercel.app)**
+**[Play it now](https://herecomesanotherbubble.com)**
 
 ![Gameplay Screenshot](screenshots/readme-gameplay.png)
 
@@ -103,7 +103,7 @@ Contributions are welcome! The game is built to be extensible — adding new eve
 
 - [Rokas Tarasevicius](https://github.com/rokas-tarasevicius) — creator
 - [Paulius Dovidaitis](https://github.com/Dovidaitis) — contributor
-- [Claude](https://claude.ai) — AI pair programmer
+- [Claude](https://claude.ai) — Essentially wrote all the code (including this README)
 
 ## License
 
