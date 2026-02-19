@@ -1140,8 +1140,10 @@ function generateAutoDecisions(state: GameState): GameState {
           {
             id: 'stay-the-course',
             label: 'Stay the Course',
-            description: 'Hope for a miracle. Revenue might pick up.',
-            effects: [],
+            description: 'Hope for a miracle. Team sees you ignoring the crisis. -5 morale.',
+            effects: [
+              { path: 'team.morale', operation: 'add', value: -5 },
+            ],
           },
         ],
         deadline: week + 2,
