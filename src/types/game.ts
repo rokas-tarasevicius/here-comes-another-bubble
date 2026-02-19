@@ -108,6 +108,7 @@ export interface GameMeta {
   regulatoryHeat: number;  // 0-100, accumulates in regulated segments
   lowMoraleWeeks: number;  // consecutive weeks with morale < 40 (for salary pressure)
   fundingSoughtThisWeek?: boolean;
+  recentlyFiredNames?: string[];  // track fired names to prevent fire-rehire exploit
 }
 
 export interface FounderProfile {

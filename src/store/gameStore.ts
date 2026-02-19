@@ -467,6 +467,9 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     const newSize = newMembers.length;
     const newAvg = newSize > 0 ? Math.round(newMembers.reduce((s, m) => s + m.salary, 0) / newSize) : 0;
     const moralePenalty = -4;
+    // Track recently fired names to prevent fire-and-rehire morale exploit
+    const recentlyFired = gameState.meta.recentlyFiredNames ?? [];
+    const updatedFired = [...recentlyFired, member.name].slice(-10);
 
     set({
       gameState: {
@@ -482,6 +485,10 @@ export const useGameStore = create<GameStore>()((set, get) => ({
           ...gameState.company,
           culture: Math.max(0, gameState.company.culture - 3),
           reputation: Math.max(0, gameState.company.reputation - 1),
+        },
+        meta: {
+          ...gameState.meta,
+          recentlyFiredNames: updatedFired,
         },
       },
     });

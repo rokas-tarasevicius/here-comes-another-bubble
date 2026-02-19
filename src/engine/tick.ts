@@ -1431,13 +1431,15 @@ export function advanceWeek(
       const accepted = Math.random() < acceptProb;
 
       if (accepted) {
+        // New hires start at team morale (not fixed 80) — can't reset morale by fire-and-rehire
+        const hireMorale = Math.min(80, Math.max(40, next.team.morale));
         const newMember: TeamMember = {
           id: `member-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           name: candidate.name,
           role: candidate.role,
           skill: candidate.skill,
           salary: offer.offeredSalary,
-          morale: 80,
+          morale: hireMorale,
           weekHired: next.meta.week,
           traits: candidate.traits,
           boosts: candidate.boosts,
