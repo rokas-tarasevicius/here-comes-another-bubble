@@ -517,6 +517,12 @@ function simulateMorale(state: GameState): GameState {
 
   const newMorale = clamp(Math.round(state.team.morale + moraleDelta), 0, 100);
 
+  // Sync individual member morale toward team morale (drift by 20% per week)
+  const updatedMembers = state.team.members?.map(m => ({
+    ...m,
+    morale: clamp(Math.round(m.morale + (newMorale - m.morale) * 0.2), 0, 100),
+  }));
+
   // Task 10: Culture drift
   let cultureDelta = 0;
   // Quality-first strategy drifts culture up (capped at 80)
@@ -549,6 +555,7 @@ function simulateMorale(state: GameState): GameState {
     ...state,
     team: {
       ...state.team,
+      members: updatedMembers ?? state.team.members,
       morale: newMorale,
     },
     company: {
