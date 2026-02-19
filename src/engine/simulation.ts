@@ -460,6 +460,18 @@ function simulateMarket(state: GameState): GameState {
     });
   }
 
+  // Normalize competitor market shares so they don't exceed 1.0 total
+  const aliveComps = updatedCompetitors.filter(c => c.alive);
+  const totalShare = aliveComps.reduce((s, c) => s + c.marketShare, 0);
+  if (totalShare > 0.95) {
+    const scaleFactor = 0.90 / totalShare;
+    for (const comp of updatedCompetitors) {
+      if (comp.alive) {
+        comp.marketShare = Math.round(comp.marketShare * scaleFactor * 1000) / 1000;
+      }
+    }
+  }
+
   return {
     ...state,
     company: {
