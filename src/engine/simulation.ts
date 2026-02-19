@@ -887,7 +887,8 @@ function simulateMarketingSpend(state: GameState): GameState {
 function simulateStageProgression(state: GameState): GameState {
   const { stage } = state.company;
   const valuation = state.company.valuation;
-  const teamSize = state.team.teamSize + state.team.aiAgents.length;
+  // AI agents count at 25% — you can't stage up with just bots
+  const teamSize = state.team.teamSize + Math.floor(state.team.aiAgents.length * 0.25);
   const revenue = state.finances.weeklyRevenue;
   const customers = state.product.customers;
   const hasFunding = state.finances.fundingHistory.length > 0;
