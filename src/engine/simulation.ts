@@ -340,11 +340,11 @@ function simulateMarket(state: GameState): GameState {
   };
 
   let bubbleShock = 0;
-  if (Math.random() < 0.02) {
-    bubbleShock = (Math.random() < 0.5 ? 1 : -1) * rand(15, 25);
+  if (Math.random() < 0.03) {
+    bubbleShock = (Math.random() < 0.5 ? 1 : -1) * rand(5, 12);
   }
 
-  const bubbleNoise = rand(-3, 3);
+  const bubbleNoise = rand(-2, 2);
   const newBubbleIndex = clamp(
     state.market.bubbleIndex + state.market.bubbleTrend + bubbleNoise + bubbleShock,
     0,
