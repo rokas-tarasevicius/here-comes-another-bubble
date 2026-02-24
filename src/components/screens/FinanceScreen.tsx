@@ -119,7 +119,12 @@ export function FinanceScreen() {
               </div>
               {finances.marketingSpend > 0 && (
                 <div className="retro-stat-row">
-                  <span className="text-xs text-[--color-retro-text-muted]">Marketing</span>
+                  <span className="text-xs text-[--color-retro-text-muted]">
+                    Marketing
+                    {finances.weeklyRevenue > 0 && (
+                      <span className="text-[--color-retro-text-muted] ml-1">({Math.round((finances.marketingSpend / finances.weeklyRevenue) * 100)}% of rev)</span>
+                    )}
+                  </span>
                   <span className="retro-value text-[--color-retro-red]">{formatCurrency(finances.marketingSpend)}</span>
                 </div>
               )}

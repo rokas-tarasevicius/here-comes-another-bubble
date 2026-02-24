@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useGameStore } from '../../store/index.ts';
-import { formatCurrency } from '../../utils/format.ts';
+import { formatCurrency, formatNumber } from '../../utils/format.ts';
 import { InfoTip } from '../shared/InfoTip.tsx';
 import type { ProductFocus, AcquisitionChannel } from '../../types/index.ts';
 
@@ -42,6 +42,8 @@ export function CompanyScreen() {
   const startFeature = useGameStore((s) => s.startFeature);
 
   const [featureName, setFeatureName] = useState('');
+  const [editingBudgetField, setEditingBudgetField] = useState<'dollar' | 'pct' | null>(null);
+  const [editingBudgetValue, setEditingBudgetValue] = useState('');
 
   if (!gameState) return null;
 
@@ -209,13 +211,23 @@ export function CompanyScreen() {
       {/* Marketing Budget */}
       {(() => {
         const spend = finances.marketingSpend;
+        const weeklyRevenue = finances.weeklyRevenue;
         const pctStep = Math.round(spend * 0.05);
         const magnitude = Math.pow(10, Math.max(0, Math.floor(Math.log10(pctStep || 1))));
         const step = Math.max(100, Math.round(pctStep / magnitude) * magnitude);
+        const pctOfRevenue = weeklyRevenue > 0 ? (spend / weeklyRevenue) * 100 : null;
+        const PCT_PRESETS = [0, 5, 10, 20, 50];
         return (
           <div className="retro-card">
             <h3 className="retro-section-heading"><span className="retro-label-tip">Marketing Budget<InfoTip text="Weekly spend on user acquisition. More budget = more customers, but with diminishing returns. Effectiveness depends on your acquisition channel and product quality." /></span></h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={() => setMarketingBudget(Math.max(0, Math.round(spend / 2)))}
+                disabled={spend <= 0}
+                className="btn-glossy btn-silver w-10 h-8 p-0! text-sm disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+              >
+                ÷2
+              </button>
               <button
                 onClick={() => setMarketingBudget(Math.max(0, spend - step))}
                 disabled={spend <= 0}
@@ -226,15 +238,22 @@ export function CompanyScreen() {
               <span className="inline-flex items-center justify-center min-w-[60px]">
                 <span className="font-retro-mono text-lg font-medium text-[--color-retro-text]">$</span>
                 <input
-                  type="number"
-                  min={0}
-                  value={spend}
+                  type="text"
+                  inputMode="numeric"
+                  value={editingBudgetField === 'dollar' ? editingBudgetValue : formatNumber(spend)}
                   onChange={(e) => {
-                    const val = parseInt(e.target.value);
+                    setEditingBudgetValue(e.target.value);
+                    const val = parseInt(e.target.value.replace(/,/g, ''));
                     if (!isNaN(val) && val >= 0) setMarketingBudget(val);
                   }}
-                  style={{ width: `${Math.max(1, String(spend).length)}ch` }}
-                  className="font-retro-mono text-lg font-medium text-[--color-retro-text] bg-transparent border-none outline-none p-0 text-left appearance-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  onFocus={(e) => {
+                    setEditingBudgetField('dollar');
+                    setEditingBudgetValue(String(spend));
+                    requestAnimationFrame(() => e.target.select());
+                  }}
+                  onBlur={() => setEditingBudgetField(null)}
+                  style={{ width: `${Math.max(1, (editingBudgetField === 'dollar' ? editingBudgetValue : formatNumber(spend)).length)}ch` }}
+                  className="font-retro-mono text-lg font-medium text-[--color-retro-text] bg-transparent border-none outline-none p-0 text-left"
                 />
               </span>
               <button
@@ -243,23 +262,67 @@ export function CompanyScreen() {
               >
                 +
               </button>
+              <button
+                onClick={() => setMarketingBudget(Math.round(spend * 2))}
+                disabled={spend <= 0}
+                className="btn-glossy btn-silver w-10 h-8 p-0! text-sm disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+              >
+                ×2
+              </button>
               <span className="text-xs text-[--color-retro-text-light]">per week <span className="text-[--color-retro-text-muted]">(±{formatCurrency(step)})</span></span>
+              <span className="ml-auto text-xs inline-flex items-center gap-1.5">
+                {pctOfRevenue !== null ? (
+                  <>
+                    <span className="inline-flex items-center">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={editingBudgetField === 'pct' ? editingBudgetValue : formatNumber(Math.round(pctOfRevenue))}
+                        onChange={(e) => {
+                          setEditingBudgetValue(e.target.value);
+                          const pct = parseInt(e.target.value.replace(/,/g, ''));
+                          if (!isNaN(pct) && pct >= 0) setMarketingBudget(Math.round((pct / 100) * weeklyRevenue));
+                        }}
+                        onFocus={(e) => {
+                          setEditingBudgetField('pct');
+                          setEditingBudgetValue(String(Math.round(pctOfRevenue)));
+                          requestAnimationFrame(() => e.target.select());
+                        }}
+                        onBlur={() => setEditingBudgetField(null)}
+                        style={{ width: `${Math.max(1, String(Math.round(pctOfRevenue)).length)}ch` }}
+                        className="font-retro-mono text-xs font-medium text-[--color-retro-text] bg-transparent border-none outline-none p-0 text-right"
+                      />
+                      <span className="text-[--color-retro-text]">%</span>
+                    </span>
+                    <span className="text-[--color-retro-text-muted]">of revenue</span>
+                  </>
+                ) : (
+                  <span className="text-[--color-retro-text-muted]">N/A % of revenue</span>
+                )}
+              </span>
             </div>
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {[0, 500, 1000, 2500, 5000, 10000, 25000, 50000].map(amt => (
-                <button
-                  key={amt}
-                  onClick={() => setMarketingBudget(amt)}
+              {PCT_PRESETS.map(pct => {
+                const amt = pct === 0 ? 0 : Math.round((pct / 100) * weeklyRevenue);
+                const isActive = spend === amt;
+                const isDisabled = pct !== 0 && weeklyRevenue <= 0;
+                return (
+                  <button
+                    key={pct}
+                    onClick={() => setMarketingBudget(amt)}
+                    disabled={isDisabled}
                     className={`text-xs px-2.5 py-1 rounded-full border transition-all cursor-pointer ${
-                    spend === amt
-                      ? 'bg-retro-green-pale text-retro-green-dark font-semibold border-retro-green/20'
-                      : 'bg-[--color-retro-bg-alt] text-[--color-retro-text-muted] border-transparent hover:border-[--color-retro-border] hover:text-[--color-retro-text]'
-                  }`}
-
-                >
-                  {amt === 0 ? '$0' : formatCurrency(amt)}
-                </button>
-              ))}
+                      isDisabled
+                        ? 'opacity-30 cursor-not-allowed bg-[--color-retro-bg-alt] text-[--color-retro-text-muted] border-transparent'
+                        : isActive
+                          ? 'bg-retro-green-pale text-retro-green-dark font-semibold border-retro-green/20'
+                          : 'bg-[--color-retro-bg-alt] text-[--color-retro-text-muted] border-transparent hover:border-[--color-retro-border] hover:text-[--color-retro-text]'
+                    }`}
+                  >
+                    {pct}%
+                  </button>
+                );
+              })}
             </div>
           </div>
         );
