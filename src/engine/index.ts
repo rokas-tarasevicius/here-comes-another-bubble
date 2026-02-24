@@ -9,4 +9,5 @@ export {
   calculatePMF,
   calculateAvgMorale,
   calculateValuation,
+  calculateRevenueGrowthMomentum,
 } from './derived.ts';

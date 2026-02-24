@@ -1,4 +1,5 @@
 import { useGameStore } from '../../store/index.ts';
+import { calculateRevenueGrowthMomentum } from '../../engine/derived.ts';
 import { formatCurrency } from '../../utils/format.ts';
 import { CashFlowChart } from '../shared/CashFlowChart.tsx';
 import { FundraisingPanel } from '../shared/FundraisingPanel.tsx';
@@ -32,24 +33,32 @@ export function FinanceScreen() {
   const totalExpenses = totalSalaries + totalAICosts + overheadEstimate + finances.marketingSpend;
   const netIncome = finances.weeklyRevenue - totalExpenses;
 
+  // Growth momentum (mirrors engine calculation)
+  const growthMomentum = calculateRevenueGrowthMomentum(gameState);
+
   // Raise probability (mirrors applySeekFunding formula in tick.ts)
   const raiseChance = (() => {
+    const momentumFactor = growthMomentum;
     const investorSentimentFactor = market.investorSentiment / 100;
-    const revenueFactor = Math.min(finances.weeklyRevenue / 5000, 1);
-    const teamSizeFactor = Math.min((team.teamSize + team.aiAgents.length) / 10, 1);
     const pmfFactor = product.pmfScore / 100;
+    const reputationFactor = company.reputation / 100;
     const founderBizFactor = founder.bizSkill / 100;
     const founderNetworkFactor = founder.network / 100;
-    const reputationFactor = company.reputation / 100;
+    const teamSizeFactor = Math.min((team.teamSize + team.aiAgents.length) / 10, 1);
     const rawProb =
-      investorSentimentFactor * 0.20 +
-      revenueFactor * 0.15 +
-      teamSizeFactor * 0.10 +
+      momentumFactor * 0.25 +
+      investorSentimentFactor * 0.15 +
       pmfFactor * 0.15 +
-      founderBizFactor * 0.15 +
+      reputationFactor * 0.15 +
+      founderBizFactor * 0.10 +
       founderNetworkFactor * 0.10 +
-      reputationFactor * 0.15;
-    return Math.max(10, Math.min(85, rawProb * 100));
+      teamSizeFactor * 0.10;
+    let prob = Math.max(5, Math.min(90, rawProb * 100));
+    // Hot company bonus
+    if (growthMomentum > 0.8) {
+      prob = Math.max(60, prob);
+    }
+    return prob;
   })();
 
   // Pricing model display
@@ -165,6 +174,7 @@ export function FinanceScreen() {
           fundingSoughtThisWeek={gameState.meta.fundingSoughtThisWeek}
           investorSentiment={market.investorSentiment}
           raiseChance={raiseChance}
+          growthMomentum={growthMomentum}
           onSeekFunding={(targetStage) => seekFunding(targetStage)}
           onChangePricing={(model, price) => setPricing(model, price)}
         />

@@ -17,6 +17,7 @@ import {
   calculateValuation,
   calculateAvgMorale,
   calculatePMF,
+  calculateRevenueGrowthMomentum,
 } from './derived.ts';
 import { calculateScore } from './scoring.ts';
 import { generateId } from '../utils/id.ts';
@@ -666,35 +667,42 @@ function applyFireAIAgent(state: GameState, agentId: string): GameState {
 
 // ─── Funding mechanics ────────────────────────────────────────────────
 
-const STAGE_TO_FUNDING: Record<string, { fundingStage: FundingStage; nextCompanyStage: CompanyStage; minAmount: number; maxAmount: number; minDilution: number; maxDilution: number }> = {
-  'garage':    { fundingStage: 'pre-seed',  nextCompanyStage: 'pre-seed',  minAmount: 250_000,    maxAmount: 500_000,     minDilution: 0.10, maxDilution: 0.15 },
-  'pre-seed':  { fundingStage: 'seed',      nextCompanyStage: 'seed',      minAmount: 1_000_000,  maxAmount: 3_000_000,   minDilution: 0.15, maxDilution: 0.20 },
-  'seed':      { fundingStage: 'series-a',  nextCompanyStage: 'series-a',  minAmount: 5_000_000,  maxAmount: 15_000_000,  minDilution: 0.20, maxDilution: 0.25 },
-  'series-a':  { fundingStage: 'series-b',  nextCompanyStage: 'series-b',  minAmount: 20_000_000, maxAmount: 50_000_000,  minDilution: 0.15, maxDilution: 0.20 },
-  'series-b':  { fundingStage: 'series-c',  nextCompanyStage: 'series-c',  minAmount: 50_000_000, maxAmount: 150_000_000, minDilution: 0.10, maxDilution: 0.15 },
+// Stage → next funding stage mapping (no hardcoded amounts)
+const FUNDING_PROGRESSION: Record<string, { fundingStage: FundingStage; nextCompanyStage: CompanyStage }> = {
+  'garage':    { fundingStage: 'pre-seed',  nextCompanyStage: 'pre-seed' },
+  'pre-seed':  { fundingStage: 'seed',      nextCompanyStage: 'seed' },
+  'seed':      { fundingStage: 'series-a',  nextCompanyStage: 'series-a' },
+  'series-a':  { fundingStage: 'series-b',  nextCompanyStage: 'series-b' },
+  'series-b':  { fundingStage: 'series-c',  nextCompanyStage: 'series-c' },
+  'series-c':  { fundingStage: 'series-d',  nextCompanyStage: 'series-d' },
+  'series-d':  { fundingStage: 'series-e',  nextCompanyStage: 'series-e' },
+  'series-e':  { fundingStage: 'series-f',  nextCompanyStage: 'series-f' },
+  'series-f':  { fundingStage: 'ipo',       nextCompanyStage: 'growth' },
 };
 
-const INVESTOR_NAMES = [
-  'Andreessen Horowitz', 'Sequoia Capital', 'Lightspeed Ventures',
-  'Greylock Partners', 'Benchmark', 'Accel', 'Index Ventures',
-  'Tiger Global', 'Founders Fund', 'Y Combinator', 'General Catalyst',
-  'Khosla Ventures', 'Bessemer Venture Partners', 'NEA', 'Spark Capital',
-];
+// Dilution ranges by funding stage (realistic US VC norms)
+const STAGE_DILUTION_RANGE: Record<string, { min: number; max: number }> = {
+  'pre-seed':  { min: 0.08, max: 0.15 },
+  'seed':      { min: 0.10, max: 0.20 },
+  'series-a':  { min: 0.15, max: 0.25 },
+  'series-b':  { min: 0.12, max: 0.22 },
+  'series-c':  { min: 0.08, max: 0.18 },
+  'series-d':  { min: 0.05, max: 0.15 },
+  'series-e':  { min: 0.03, max: 0.12 },
+  'series-f':  { min: 0.02, max: 0.10 },
+};
 
-const STAGE_ORDER: CompanyStage[] = ['garage', 'pre-seed', 'seed', 'series-a', 'series-b', 'series-c', 'growth', 'public'];
+// Tiered investor names by quality
+const TIER1_INVESTORS = ['Sequoia Capital', 'Andreessen Horowitz', 'Benchmark', 'Founders Fund'];
+const TIER2_INVESTORS = ['Lightspeed Ventures', 'Greylock Partners', 'Accel', 'General Catalyst'];
+const TIER3_INVESTORS = ['Tiger Global', 'Unnamed Growth Fund', 'Crossover Capital', 'Late Stage Partners'];
+const MEGA_INVESTORS = ['SoftBank Vision Fund', 'T. Rowe Price', 'Fidelity Investments', 'BlackRock'];
 
-export function applySeekFunding(state: GameState, targetStage: string): GameState {
+export function applySeekFunding(state: GameState, _targetStage: string): GameState {
   const currentStage = state.company.stage;
-  const currentIdx = STAGE_ORDER.indexOf(currentStage);
-  const targetIdx = STAGE_ORDER.indexOf(targetStage as CompanyStage);
 
-  // Use targetStage if it's a valid stage ahead of current, and has funding config
-  let lookupStage = currentStage;
-  if (targetIdx > currentIdx && STAGE_TO_FUNDING[targetStage]) {
-    lookupStage = targetStage as CompanyStage;
-  }
-
-  const config = STAGE_TO_FUNDING[lookupStage];
+  // FUNDING_PROGRESSION is keyed by current stage — always look up from where we are
+  const config = FUNDING_PROGRESSION[currentStage];
 
   // Prevent raising the same round twice
   if (config && state.finances.fundingHistory.some(r => r.stage === config.fundingStage)) {
@@ -724,25 +732,33 @@ export function applySeekFunding(state: GameState, targetStage: string): GameSta
     };
   }
 
-  // Calculate fundraising success probability
+  // Calculate growth momentum — the biggest factor in the new formula
+  const momentum = calculateRevenueGrowthMomentum(state);
+
+  // Calculate fundraising success probability — growth momentum is king
+  const momentumFactor = momentum;
   const investorSentimentFactor = state.market.investorSentiment / 100;
-  const revenueFactor = Math.min(state.finances.weeklyRevenue / 5000, 1);
-  const teamSizeFactor = Math.min((state.team.teamSize + state.team.aiAgents.length) / 10, 1);
   const pmfFactor = state.product.pmfScore / 100;
+  const reputationFactor = state.company.reputation / 100;
   const founderBizFactor = state.founder.bizSkill / 100;
   const founderNetworkFactor = state.founder.network / 100;
-  const reputationFactor = state.company.reputation / 100;
+  const teamSizeFactor = Math.min((state.team.teamSize + state.team.aiAgents.length) / 10, 1);
 
   const rawProb =
-    investorSentimentFactor * 0.20 +
-    revenueFactor * 0.15 +
-    teamSizeFactor * 0.10 +
+    momentumFactor * 0.25 +
+    investorSentimentFactor * 0.15 +
     pmfFactor * 0.15 +
-    founderBizFactor * 0.15 +
+    reputationFactor * 0.15 +
+    founderBizFactor * 0.10 +
     founderNetworkFactor * 0.10 +
-    reputationFactor * 0.15;
+    teamSizeFactor * 0.10;
 
-  const successProb = Math.max(0.10, Math.min(0.85, rawProb));
+  // Clamp to 5%–90%, with hot company bonus
+  let successProb = Math.max(0.05, Math.min(0.90, rawProb));
+  // Hot company bonus: if momentum > 0.8, floor at 60% (VCs chase hockey sticks)
+  if (momentum > 0.8) {
+    successProb = Math.max(0.60, successProb);
+  }
 
   const roll = Math.random();
   if (roll > successProb) {
@@ -768,11 +784,42 @@ export function applySeekFunding(state: GameState, targetStage: string): GameSta
     };
   }
 
-  const dilution = config.minDilution + Math.random() * (config.maxDilution - config.minDilution);
-  const amount = Math.round(config.minAmount + Math.random() * (config.maxAmount - config.minAmount));
-  const investorName = INVESTOR_NAMES[Math.floor(Math.random() * INVESTOR_NAMES.length)];
+  // Valuation-based terms: use actual calculated valuation as pre-money
+  const preMoneyValuation = calculateValuation(state);
 
-  const roundValuation = Math.round(amount / dilution);
+  // Dilution: modulated by growth momentum within stage-appropriate range
+  const dilutionRange = STAGE_DILUTION_RANGE[config.fundingStage] ?? { min: 0.05, max: 0.15 };
+  let dilution: number;
+  if (momentum < 0.2) {
+    // Extra punishment: low momentum pushes toward upper bound
+    dilution = dilutionRange.max + Math.random() * 0.05;
+    dilution = Math.min(dilution, 0.35); // hard cap at 35%
+  } else {
+    // High momentum → min dilution (founder-friendly), low → max (sharky)
+    const t = 1 - momentum; // invert: high momentum = low t = low dilution
+    dilution = dilutionRange.min + t * (dilutionRange.max - dilutionRange.min);
+    // Add small random variance
+    dilution += (Math.random() - 0.5) * 0.02;
+    dilution = Math.max(dilutionRange.min, Math.min(dilutionRange.max, dilution));
+  }
+
+  // Amount = valuation * dilution (real VC math)
+  const amount = Math.round(preMoneyValuation * dilution);
+  const roundValuation = preMoneyValuation;
+
+  // Tiered investors based on growth momentum
+  let investorPool: string[];
+  const isLateStageFunding = ['series-d', 'series-e', 'series-f', 'ipo'].includes(config.fundingStage);
+  if (isLateStageFunding && momentum >= 0.7) {
+    investorPool = MEGA_INVESTORS;
+  } else if (momentum >= 0.7) {
+    investorPool = TIER1_INVESTORS;
+  } else if (momentum >= 0.35) {
+    investorPool = TIER2_INVESTORS;
+  } else {
+    investorPool = TIER3_INVESTORS;
+  }
+  const investorName = investorPool[Math.floor(Math.random() * investorPool.length)];
 
   const fundingRound: FundingRound = {
     stage: config.fundingStage,
@@ -1148,16 +1195,22 @@ function checkWinCondition(state: GameState): GameState {
     };
   }
 
+  // Unicorn milestone celebration (log entry only — no longer auto-wins)
   if (state.company.valuation > 1_000_000_000 && state.company.stage !== 'public') {
-    return {
-      ...state,
-      meta: {
-        ...state.meta,
-        gameWon: true,
-        gameWonReason: `Unicorn status achieved! Your company is valued at ${formatDollars(state.company.valuation)}. You're on the cover of TechCrunch and your parents finally understand what you do. Kind of.`,
-        score: calculateFinalScore(state),
-      },
-    };
+    const alreadyCelebrated = state.eventLog.some(e => e.eventId === 'milestone-unicorn');
+    if (!alreadyCelebrated) {
+      return {
+        ...state,
+        eventLog: [...state.eventLog, {
+          id: generateId(),
+          week: state.meta.week,
+          eventId: 'milestone-unicorn',
+          title: 'Unicorn Status!',
+          description: `Your company is valued at ${formatDollars(state.company.valuation)}! You're on the cover of TechCrunch. But the journey isn't over — keep building toward IPO.`,
+          category: 'funding',
+        }],
+      };
+    }
   }
 
   return state;

@@ -1,6 +1,73 @@
 import type { GameState } from '../types/index.ts';
 
 /**
+ * Calculate revenue growth momentum (0–1).
+ * Looks at last 8 weeks of revenue history, computes weighted WoW growth rates
+ * (recent weeks weighted more heavily via exponential decay), and factors in
+ * absolute revenue increase. Maps through a curve to produce a 0–1 score.
+ */
+export function calculateRevenueGrowthMomentum(state: GameState): number {
+  const history = state.weekHistory;
+  if (history.length < 2) return 0;
+
+  // Take last 8 weeks (or whatever is available)
+  const recent = history.slice(-8);
+  if (recent.length < 2) return 0;
+
+  // Compute week-over-week growth rates with exponential decay weighting
+  let weightedGrowthSum = 0;
+  let weightSum = 0;
+  const decayFactor = 0.7; // older weeks decay by 30% each step back
+
+  for (let i = 1; i < recent.length; i++) {
+    const prev = recent[i - 1].revenue;
+    const curr = recent[i].revenue;
+    // Weight: most recent pair gets highest weight
+    const weight = Math.pow(decayFactor, recent.length - 1 - i);
+
+    let growthRate: number;
+    if (prev <= 0) {
+      // Going from $0 to something positive counts as strong growth
+      growthRate = curr > 0 ? 0.5 : 0;
+    } else {
+      growthRate = (curr - prev) / prev;
+    }
+
+    weightedGrowthSum += growthRate * weight;
+    weightSum += weight;
+  }
+
+  const avgGrowthRate = weightSum > 0 ? weightedGrowthSum / weightSum : 0;
+
+  // Also factor absolute revenue increase (going $0→$5K matters)
+  const oldestRevenue = recent[0].revenue;
+  const newestRevenue = recent[recent.length - 1].revenue;
+  const absoluteIncrease = newestRevenue - oldestRevenue;
+  // Normalize: $10K increase over the window → 0.5 bonus
+  const absoluteFactor = Math.min(0.3, Math.max(0, absoluteIncrease / 30_000));
+
+  // Map growth rate through a curve:
+  // flat/declining → ~0, 10% WoW → ~0.4, 25% WoW → ~0.65, 50%+ WoW → ~0.9+
+  let momentum: number;
+  if (avgGrowthRate <= 0) {
+    momentum = Math.max(0, 0.05 + avgGrowthRate); // declining → near 0
+  } else if (avgGrowthRate <= 0.10) {
+    momentum = avgGrowthRate * 4; // 0–10% → 0–0.4
+  } else if (avgGrowthRate <= 0.25) {
+    momentum = 0.4 + (avgGrowthRate - 0.10) * (0.25 / 0.15); // 10–25% → 0.4–0.65
+  } else if (avgGrowthRate <= 0.50) {
+    momentum = 0.65 + (avgGrowthRate - 0.25) * (0.25 / 0.25); // 25–50% → 0.65–0.9
+  } else {
+    momentum = 0.9 + Math.min(0.1, (avgGrowthRate - 0.50) * 0.2); // 50%+ → 0.9–1.0
+  }
+
+  // Add absolute factor
+  momentum = Math.min(1, momentum + absoluteFactor);
+
+  return Math.max(0, Math.min(1, momentum));
+}
+
+/**
  * Calculate how many weeks of runway remain.
  * Returns Infinity if burn is zero or negative (i.e. profitable).
  */
@@ -31,8 +98,11 @@ export function calculateWeeklyBurn(state: GameState): number {
     'series-a': 2500,
     'series-b': 5000,
     'series-c': 8000,
-    'growth': 15000,
-    'public': 25000,
+    'series-d': 15_000,
+    'series-e': 25_000,
+    'series-f': 40_000,
+    'growth': 60_000,
+    'public': 100_000,
   };
   const baseCost = stageCosts[state.company.stage] ?? 500;
   const fixedCosts = baseCost + state.team.teamSize * 50;
@@ -106,8 +176,11 @@ export function calculateValuation(state: GameState): number {
     'series-a': 15_000_000,
     'series-b': 50_000_000,
     'series-c': 150_000_000,
-    'growth': 500_000_000,
-    'public': 1_000_000_000,
+    'series-d': 400_000_000,
+    'series-e': 1_000_000_000,
+    'series-f': 3_000_000_000,
+    'growth': 5_000_000_000,
+    'public': 10_000_000_000,
     'dead': 0,
   };
   const stageBase = stageBaseValuation[state.company.stage] ?? 100_000;

@@ -954,12 +954,27 @@ function simulateStageProgression(state: GameState): GameState {
       }
       break;
     case 'series-c':
-      if (valuation > 500_000_000) {
+      if (valuation > 300_000_000) {
+        newStage = 'series-d';
+      }
+      break;
+    case 'series-d':
+      if (valuation > 800_000_000) {
+        newStage = 'series-e';
+      }
+      break;
+    case 'series-e':
+      if (valuation > 2_000_000_000) {
+        newStage = 'series-f';
+      }
+      break;
+    case 'series-f':
+      if (valuation > 5_000_000_000) {
         newStage = 'growth';
       }
       break;
     case 'growth':
-      if (valuation > 1_000_000_000) {
+      if (valuation > 10_000_000_000) {
         newStage = 'public';
       }
       break;

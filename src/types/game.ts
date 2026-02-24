@@ -18,6 +18,9 @@ export type CompanyStage =
   | 'series-a'
   | 'series-b'
   | 'series-c'
+  | 'series-d'
+  | 'series-e'
+  | 'series-f'
   | 'growth'
   | 'public'
   | 'dead';
@@ -49,6 +52,9 @@ export type FundingStage =
   | 'series-a'
   | 'series-b'
   | 'series-c'
+  | 'series-d'
+  | 'series-e'
+  | 'series-f'
   | 'ipo';
 
 export type MarketSegment =

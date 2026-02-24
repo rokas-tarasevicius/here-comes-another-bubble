@@ -14,6 +14,7 @@ export interface FundraisingPanelProps {
   fundingSoughtThisWeek?: boolean;
   investorSentiment: number;
   raiseChance: number;
+  growthMomentum: number;
   onSeekFunding: (targetStage: string) => void;
   onChangePricing: (model: PricingModel, price: number) => void;
 }
@@ -25,6 +26,9 @@ const STAGE_LABELS: Record<CompanyStage, string> = {
   'series-a': 'Series A',
   'series-b': 'Series B',
   'series-c': 'Series C',
+  'series-d': 'Series D',
+  'series-e': 'Series E',
+  'series-f': 'Series F',
   growth: 'Growth',
   public: 'Public',
   dead: 'Dead',
@@ -36,7 +40,10 @@ const NEXT_FUNDING_STAGE: Partial<Record<CompanyStage, string>> = {
   seed: 'series-a',
   'series-a': 'series-b',
   'series-b': 'series-c',
-  'series-c': 'ipo',
+  'series-c': 'series-d',
+  'series-d': 'series-e',
+  'series-e': 'series-f',
+  'series-f': 'ipo',
   growth: 'ipo',
 };
 
@@ -60,6 +67,7 @@ export function FundraisingPanel({
   fundingSoughtThisWeek,
   investorSentiment,
   raiseChance,
+  growthMomentum,
   onSeekFunding,
   onChangePricing,
 }: FundraisingPanelProps) {
@@ -126,9 +134,15 @@ export function FundraisingPanel({
               investorSentiment >= 60 ? 'text-[--color-retro-green]' : investorSentiment >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
             }`}>{Math.round(investorSentiment)}</span>
           </span>
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Momentum<InfoTip text="Revenue growth momentum (0–100). Based on recent week-over-week revenue growth. The single biggest factor in fundraising success. Above 80 = 'hot company' bonus (60% floor on raise chance)." /></span>
+            <span className={`retro-stat-tag-value ${
+              growthMomentum >= 0.7 ? 'text-[--color-retro-green]' : growthMomentum >= 0.35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
+            }`}>{Math.round(growthMomentum * 100)}</span>
+          </span>
           {nextStage && stage !== 'dead' && stage !== 'public' && (
             <span className="retro-stat-tag">
-              <span className="retro-stat-tag-label">Raise %<InfoTip text="Your estimated chance of closing a round. Based on investor sentiment (20%), revenue (15%), PMF (15%), founder biz skill (15%), reputation (15%), team size (10%), and network (10%)." /></span>
+              <span className="retro-stat-tag-label">Raise %<InfoTip text="Your estimated chance of closing a round. Based on growth momentum (25%), investor sentiment (15%), PMF (15%), reputation (15%), founder biz skill (10%), network (10%), and team size (10%). Hot company bonus: momentum >80 floors raise chance at 60%." /></span>
               <span className={`retro-stat-tag-value ${
                 raiseChance >= 60 ? 'text-[--color-retro-green]' : raiseChance >= 35 ? 'text-[--color-retro-orange]' : 'text-[--color-retro-red]'
               }`}>{Math.round(raiseChance)}%</span>
@@ -145,7 +159,9 @@ export function FundraisingPanel({
           >
             {fundingSoughtThisWeek
               ? 'Funding Sought This Week'
-              : `Seek Funding (${nextStage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())})`}
+              : (stage === 'series-f' || stage === 'growth')
+                ? 'Go Public (IPO)'
+                : `Seek Funding (${nextStage.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())})`}
           </button>
         )}
       </div>
