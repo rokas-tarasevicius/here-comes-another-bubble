@@ -1008,6 +1008,11 @@ function createWeekSummary(state: GameState): WeekSummary {
     pmfScore: state.product.pmfScore,
     bubbleIndex: state.market.bubbleIndex,
     eventsCount: state.eventLog.filter((e) => e.week === state.meta.week).length,
+    complianceCost: state.compliance
+      ? state.compliance.certifications
+          .filter((c) => c.status === 'in-progress')
+          .reduce((sum, c) => sum + c.weeklySpend, 0)
+      : 0,
   };
 }
 

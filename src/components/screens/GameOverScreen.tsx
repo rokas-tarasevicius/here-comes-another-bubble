@@ -171,7 +171,7 @@ export function GameOverScreen() {
   const reason = isWin
     ? (gameState.meta.gameWonReason ?? 'You won! Your startup journey was a success.')
     : (gameState.meta.gameOverReason ?? 'Your startup journey has ended.');
-  const categories = ['valuation', 'revenue', 'team', 'product', 'survival'] as const;
+  const categories = ['valuation', 'revenue', 'team', 'product', 'survival', 'compliance'] as const;
 
   return (
     <div className="relative flex min-h-screen flex-col items-center bg-[--color-retro-bg] px-4 py-12">

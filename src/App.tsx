@@ -11,6 +11,7 @@ import { FinanceScreen } from './components/screens/FinanceScreen.tsx';
 import { MarketScreen } from './components/screens/MarketScreen.tsx';
 import { CompanyScreen } from './components/screens/CompanyScreen.tsx';
 import { TeamScreen } from './components/screens/TeamScreen.tsx';
+import { ComplianceScreen } from './components/screens/ComplianceScreen.tsx';
 import { DecisionScreen } from './components/screens/DecisionScreen.tsx';
 import { GameOverScreen } from './components/screens/GameOverScreen.tsx';
 import { LeaderboardScreen } from './components/screens/LeaderboardScreen.tsx';
@@ -27,6 +28,7 @@ const GAMEPLAY_SCREENS = [
   { id: 'team', Component: TeamScreen },
   { id: 'finance', Component: FinanceScreen },
   { id: 'market', Component: MarketScreen },
+  { id: 'compliance', Component: ComplianceScreen },
   { id: 'decisions', Component: DecisionScreen },
 ] as const;
 
@@ -108,7 +110,7 @@ function App() {
 
       // Number keys 1-6 for screen navigation
       if (gameState && !gameState.meta.gameOver && !gameState.meta.gameWon) {
-        const screens = ['overview', 'company', 'team', 'finance', 'market', 'decisions'];
+        const screens = ['overview', 'company', 'team', 'finance', 'market', 'compliance', 'decisions'];
         const num = parseInt(e.key, 10);
         if (num >= 1 && num <= screens.length) {
           e.preventDefault();

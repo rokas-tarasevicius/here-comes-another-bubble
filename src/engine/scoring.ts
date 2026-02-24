@@ -8,6 +8,7 @@ export interface GameScore {
     team: number;
     product: number;
     survival: number;
+    compliance: number;
   };
   difficultyMultiplier: number;
   grade: string; // S, A, B, C, D, F
@@ -34,6 +35,12 @@ export function calculateScore(state: GameState): GameScore {
   // Survival score: max ~10 points
   const survival = Math.min(10, state.meta.week * 0.1);
 
+  // Compliance bonus: max 5 points
+  const completedCerts = state.compliance
+    ? state.compliance.certifications.filter(c => c.status === 'completed').length
+    : 0;
+  const compliance = Math.min(5, completedCerts * 0.75);
+
   // Difficulty multiplier
   const difficultyMultiplier =
     state.meta.difficulty === 'nightmare' ? 2.0 :
@@ -41,7 +48,7 @@ export function calculateScore(state: GameState): GameScore {
     state.meta.difficulty === 'normal' ? 1.0 :
     0.7; // easy
 
-  const rawTotal = valuation + revenue + team + product + survival;
+  const rawTotal = valuation + revenue + team + product + survival + compliance;
   const total = Math.round(rawTotal * difficultyMultiplier);
 
   // Grade thresholds
@@ -60,6 +67,7 @@ export function calculateScore(state: GameState): GameScore {
       team: Math.round(team),
       product: Math.round(product),
       survival: Math.round(survival),
+      compliance: Math.round(compliance),
     },
     difficultyMultiplier,
     grade,

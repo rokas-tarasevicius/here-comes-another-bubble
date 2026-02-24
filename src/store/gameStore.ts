@@ -10,12 +10,14 @@ import type {
   PricingModel,
   EventLogEntry,
   TeamMember,
+  CertificationId,
 } from '../types/index.ts';
 import type { PlayerDecision } from '../types/decisions.ts';
 import type { Feature } from '../types/index.ts';
-import { createInitialState, advanceWeek, applySeekFunding } from '../engine/index.ts';
+import { createInitialState, advanceWeek, applySeekFunding, calculateMaxPrice } from '../engine/index.ts';
 import { generateId } from '../utils/id.ts';
 import { randomName } from '../data/names.ts';
+import { CERTIFICATION_DEFS, getScaledCertCost, getAvailableCertifications } from '../data/compliance.ts';
 
 // ─── Save slot metadata ──────────────────────────────────────────────
 
@@ -80,6 +82,9 @@ interface GameStoreActions {
   nextTutorialStep: () => void;
   skipTutorial: () => void;
   seekFunding: (targetStage: string) => void;
+  startCertification: (certId: CertificationId, weeklyBudget: number) => void;
+  adjustCertificationBudget: (certId: CertificationId, newWeeklyBudget: number) => void;
+  pauseCertification: (certId: CertificationId) => void;
   continueInfiniteMode: () => void;
   saveGame: (slot?: number) => void;
   loadGame: (slot: number) => void;
@@ -278,6 +283,10 @@ export const useGameStore = create<GameStore>()((set, get) => ({
       return; // Too soon to switch models
     }
 
+    // Enforce tier-based max price
+    const maxPrice = calculateMaxPrice(gameState);
+    const clampedPrice = Math.min(price, maxPrice);
+
     let newState = { ...gameState };
     const newLogEntries: EventLogEntry[] = [];
     const currentPrice = gameState.finances.pricePerUnit;
@@ -347,7 +356,7 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         finances: {
           ...newState.finances,
           pricingModel: model,
-          pricePerUnit: price,
+          pricePerUnit: clampedPrice,
           lastPricingChangeWeek: currentModel !== model ? week : newState.finances.lastPricingChangeWeek,
         },
         eventLog: [...newState.eventLog, ...newLogEntries],
@@ -571,6 +580,98 @@ export const useGameStore = create<GameStore>()((set, get) => ({
     });
   },
 
+  startCertification(certId, weeklyBudget) {
+    const { gameState } = get();
+    if (!gameState || !gameState.compliance) return;
+
+    const cert = gameState.compliance.certifications.find((c) => c.id === certId);
+    if (!cert || cert.status !== 'available') return;
+
+    const def = CERTIFICATION_DEFS[certId];
+    const scaled = getScaledCertCost(def, gameState.meta.difficulty);
+
+    // Check affordability of init cost
+    if (gameState.finances.cash < scaled.initCost) return;
+
+    // Clamp weekly budget to 1x–3x base
+    const clampedBudget = Math.max(scaled.weeklyCost, Math.min(scaled.weeklyCost * 3, weeklyBudget));
+
+    const updatedCerts = gameState.compliance.certifications.map((c) =>
+      c.id === certId
+        ? {
+            ...c,
+            status: 'in-progress' as const,
+            weeksRemaining: scaled.baseDuration,
+            weeksTotal: scaled.baseDuration,
+            weeklySpend: clampedBudget,
+            weekStarted: gameState.meta.week,
+          }
+        : c
+    );
+
+    set({
+      gameState: {
+        ...gameState,
+        compliance: {
+          ...gameState.compliance,
+          certifications: updatedCerts,
+        },
+        finances: {
+          ...gameState.finances,
+          cash: gameState.finances.cash - scaled.initCost,
+        },
+      },
+    });
+  },
+
+  adjustCertificationBudget(certId, newWeeklyBudget) {
+    const { gameState } = get();
+    if (!gameState || !gameState.compliance) return;
+
+    const cert = gameState.compliance.certifications.find((c) => c.id === certId);
+    if (!cert || cert.status !== 'in-progress') return;
+
+    const def = CERTIFICATION_DEFS[certId];
+    const scaled = getScaledCertCost(def, gameState.meta.difficulty);
+    const clampedBudget = Math.max(scaled.weeklyCost, Math.min(scaled.weeklyCost * 3, newWeeklyBudget));
+
+    const updatedCerts = gameState.compliance.certifications.map((c) =>
+      c.id === certId ? { ...c, weeklySpend: clampedBudget } : c
+    );
+
+    set({
+      gameState: {
+        ...gameState,
+        compliance: {
+          ...gameState.compliance,
+          certifications: updatedCerts,
+        },
+      },
+    });
+  },
+
+  pauseCertification(certId) {
+    const { gameState } = get();
+    if (!gameState || !gameState.compliance) return;
+
+    const cert = gameState.compliance.certifications.find((c) => c.id === certId);
+    if (!cert || cert.status !== 'in-progress') return;
+
+    const updatedCerts = gameState.compliance.certifications.map((c) =>
+      c.id === certId ? { ...c, status: 'available' as const, weeklySpend: 0 } : c
+    );
+
+    set({
+      gameState: {
+        ...gameState,
+        compliance: {
+          ...gameState.compliance,
+          certifications: updatedCerts,
+        },
+      },
+    });
+  },
+
   saveGame(slot = 0) {
     if (slot < 0 || slot >= MAX_SLOTS) return;
     const { gameState } = get();
@@ -607,6 +708,25 @@ export const useGameStore = create<GameStore>()((set, get) => ({
         if (payload.gameState.finances.pricePerUnit === 0) {
           payload.gameState.finances.pricePerUnit = payload.gameState.market?.segmentData?.defaultPrice ?? 25;
         }
+      }
+
+      // Migrate saves without compliance state
+      if (!payload.gameState.compliance) {
+        const allCertIds = Object.keys(CERTIFICATION_DEFS) as (keyof typeof CERTIFICATION_DEFS)[];
+        const availableCerts = getAvailableCertifications([]);
+        payload.gameState.compliance = {
+          certifications: allCertIds.map((id) => ({
+            id,
+            status: availableCerts.includes(id) ? 'available' as const : 'locked' as const,
+            weeksRemaining: 0,
+            weeksTotal: 0,
+            weeklySpend: 0,
+            totalSpent: 0,
+            weekStarted: null,
+            weekCompleted: null,
+          })),
+          totalComplianceCost: 0,
+        };
       }
 
       set({

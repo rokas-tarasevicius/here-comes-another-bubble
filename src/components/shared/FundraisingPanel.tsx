@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import type { CompanyStage, FundingRound, PricingModel } from '../../types/game.ts';
+import type { CompanyStage, FundingRound, PricingModel, PricingTier } from '../../types/game.ts';
 import { formatCurrency, formatPercent } from '../../utils/format.ts';
 import { InfoTip } from './InfoTip.tsx';
+import { PRICING_TIERS, getScaledTierRequirements, checkTierCertsRequirement, CERTIFICATION_DEFS } from '../../data/compliance.ts';
+import type { CertificationId, Difficulty, MarketSegment } from '../../types/game.ts';
 
 export interface FundraisingPanelProps {
   stage: CompanyStage;
@@ -17,6 +19,15 @@ export interface FundraisingPanelProps {
   growthMomentum: number;
   onSeekFunding: (targetStage: string) => void;
   onChangePricing: (model: PricingModel, price: number) => void;
+  currentTier: PricingTier;
+  maxPrice: number;
+  minPrice: number;
+  engineers: number;
+  shippedFeatures: number;
+  quality: number;
+  completedCertIds: CertificationId[];
+  difficulty: Difficulty;
+  segment: MarketSegment;
 }
 
 const STAGE_LABELS: Record<CompanyStage, string> = {
@@ -70,6 +81,15 @@ export function FundraisingPanel({
   growthMomentum,
   onSeekFunding,
   onChangePricing,
+  currentTier,
+  maxPrice,
+  minPrice,
+  engineers,
+  shippedFeatures,
+  quality,
+  completedCertIds,
+  difficulty,
+  segment,
 }: FundraisingPanelProps) {
   const [selectedModel, setSelectedModel] = useState<PricingModel>(pricingModel);
   const [priceInput, setPriceInput] = useState<string>(String(pricePerUnit));
@@ -86,11 +106,13 @@ export function FundraisingPanel({
   function handleChangePricing() {
     const price = parseFloat(priceInput);
     if (isNaN(price) || price < 1) return;
-    // Cap at 10x segment default — beyond that is just silly
-    const maxPrice = (pricePerUnit > 0 ? pricePerUnit : 100) * 10;
-    const clampedPrice = Math.min(price, maxPrice);
+    const clampedPrice = Math.max(minPrice, Math.min(price, maxPrice));
     onChangePricing(selectedModel, Math.round(clampedPrice));
   }
+
+  const tierDef = PRICING_TIERS.find((t) => t.tier === currentTier);
+  const nextTierDef = PRICING_TIERS.find((t) => t.tier === (currentTier + 1) as PricingTier);
+  const nextTierScaled = nextTierDef ? getScaledTierRequirements(nextTierDef, difficulty) : null;
 
   return (
     <div className="space-y-4">
@@ -218,6 +240,14 @@ export function FundraisingPanel({
             <span className="retro-stat-tag-label">Unit Price</span>
             <span className="retro-stat-tag-value text-[--color-retro-blue]">{formatCurrency(pricePerUnit)}</span>
           </span>
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Tier</span>
+            <span className="retro-stat-tag-value text-[--color-retro-blue]">{currentTier}: {tierDef?.name}</span>
+          </span>
+          <span className="retro-stat-tag">
+            <span className="retro-stat-tag-label">Range</span>
+            <span className="retro-stat-tag-value">{formatCurrency(minPrice)}–{formatCurrency(maxPrice)}</span>
+          </span>
         </div>
 
         {/* Change Pricing Controls */}
@@ -243,13 +273,24 @@ export function FundraisingPanel({
               </select>
             </div>
             <div>
-              <label className="retro-label block mb-1.5">Price ($)</label>
+              <label className="retro-label block mb-1.5">Price (${minPrice}–${maxPrice})</label>
               <input
                 type="number"
-                min="1"
+                min={minPrice}
+                max={maxPrice}
                 step="1"
                 value={priceInput}
-                onChange={(e) => setPriceInput(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Allow typing freely but clamp on blur
+                  setPriceInput(val);
+                }}
+                onBlur={() => {
+                  const num = parseInt(priceInput, 10);
+                  if (!isNaN(num)) {
+                    setPriceInput(String(Math.max(minPrice, Math.min(maxPrice, num))));
+                  }
+                }}
                 className="retro-input w-full"
               />
             </div>
@@ -260,6 +301,36 @@ export function FundraisingPanel({
           >
             Update Pricing
           </button>
+
+          {/* Next Tier Requirements */}
+          {nextTierDef && nextTierScaled && (
+            <div className="retro-stat-footer pt-2 mt-2 border-t border-black/4">
+              <span className="text-xs font-bold text-[--color-retro-text-muted] mr-2">Next: Tier {nextTierDef.tier}</span>
+              <span className={`retro-stat-tag ${engineers >= nextTierScaled.requiredEngineers ? '' : 'opacity-70'}`}>
+                <span className="retro-stat-tag-label">Eng</span>
+                <span className="retro-stat-tag-value">{engineers}/{nextTierScaled.requiredEngineers} {engineers >= nextTierScaled.requiredEngineers ? '\u2713' : '\u2717'}</span>
+              </span>
+              <span className={`retro-stat-tag ${shippedFeatures >= nextTierDef.requiredShippedFeatures ? '' : 'opacity-70'}`}>
+                <span className="retro-stat-tag-label">Features</span>
+                <span className="retro-stat-tag-value">{shippedFeatures}/{nextTierDef.requiredShippedFeatures} {shippedFeatures >= nextTierDef.requiredShippedFeatures ? '\u2713' : '\u2717'}</span>
+              </span>
+              <span className={`retro-stat-tag ${quality >= nextTierScaled.requiredQuality ? '' : 'opacity-70'}`}>
+                <span className="retro-stat-tag-label">Quality</span>
+                <span className="retro-stat-tag-value">{quality}/{nextTierScaled.requiredQuality} {quality >= nextTierScaled.requiredQuality ? '\u2713' : '\u2717'}</span>
+              </span>
+              {nextTierDef.requiredCerts.length > 0 && (
+                <span className={`retro-stat-tag ${checkTierCertsRequirement(nextTierDef, completedCertIds, segment) ? '' : 'opacity-70'}`}>
+                  <span className="retro-stat-tag-label">Certs</span>
+                  <span className="retro-stat-tag-value">
+                    {nextTierDef.tier === 3
+                      ? 'SOC2-I/ISO'
+                      : nextTierDef.requiredCerts.map((c) => CERTIFICATION_DEFS[c].name).join(', ')
+                    } {checkTierCertsRequirement(nextTierDef, completedCertIds, segment) ? '\u2713' : '\u2717'}
+                  </span>
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -10,4 +10,7 @@ export {
   calculateAvgMorale,
   calculateValuation,
   calculateRevenueGrowthMomentum,
+  calculateCurrentPricingTier,
+  calculateMaxPrice,
+  calculateMinPrice,
 } from './derived.ts';

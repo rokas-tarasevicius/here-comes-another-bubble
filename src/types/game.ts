@@ -77,6 +77,38 @@ export type EventCategory =
   | 'personal'
   | 'random';
 
+// ─── Compliance & Pricing Tiers ──────────────────────────────────────
+
+export type CertificationId =
+  | 'soc2-type1'
+  | 'soc2-type2'
+  | 'iso-27001'
+  | 'gdpr'
+  | 'hipaa'
+  | 'fedramp'
+  | 'pci-dss'
+  | 'ai-safety-audit';
+
+export type CertificationStatus = 'locked' | 'available' | 'in-progress' | 'completed';
+
+export interface CertificationProgress {
+  id: CertificationId;
+  status: CertificationStatus;
+  weeksRemaining: number;
+  weeksTotal: number;
+  weeklySpend: number;
+  totalSpent: number;
+  weekStarted: number | null;
+  weekCompleted: number | null;
+}
+
+export interface ComplianceState {
+  certifications: CertificationProgress[];
+  totalComplianceCost: number;
+}
+
+export type PricingTier = 1 | 2 | 3 | 4 | 5;
+
 // ─── Core interfaces ──────────────────────────────────────────────────
 
 export type ProductFocus =
@@ -321,6 +353,7 @@ export interface WeekSummary {
   pmfScore: number;
   bubbleIndex: number;
   eventsCount: number;
+  complianceCost: number;
 }
 
 // ─── Top-level game state ─────────────────────────────────────────────
@@ -333,6 +366,7 @@ export interface GameState {
   product: ProductState;
   finances: FinancialState;
   market: MarketState;
+  compliance: ComplianceState;
   eventLog: EventLogEntry[];
   pendingDecisions: PendingDecision[];
   weekHistory: WeekSummary[];

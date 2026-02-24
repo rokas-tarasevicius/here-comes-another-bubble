@@ -33,6 +33,11 @@ export type {
   GameState,
   ProductFocus,
   AcquisitionChannel,
+  CertificationId,
+  CertificationStatus,
+  CertificationProgress,
+  ComplianceState,
+  PricingTier,
 } from './game.ts';
 
 export type { GameEvent } from './events.ts';

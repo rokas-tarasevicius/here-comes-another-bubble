@@ -5,11 +5,14 @@ import type {
   Difficulty,
   Tone,
   TeamMember,
+  CertificationProgress,
+  CertificationId,
 } from '../types/index.ts';
 import { randomName } from '../data/names.ts';
 import { FOUNDER_CONFIGS } from '../data/founders.ts';
 import { MARKET_SEGMENTS } from '../data/markets.ts';
 import { COMPETITORS_BY_SEGMENT } from '../data/competitors.ts';
+import { CERTIFICATION_DEFS, getAvailableCertifications } from '../data/compliance.ts';
 import { calculateWeeklyBurn } from './derived.ts';
 
 /**
@@ -65,6 +68,20 @@ export function createInitialState(
 
   // Use founder-specific starting cash from FOUNDER_CONFIGS
   const startingCash = founderConfig.startingCash;
+
+  // Initialize compliance certifications
+  const availableCerts = getAvailableCertifications([]);
+  const allCertIds = Object.keys(CERTIFICATION_DEFS) as CertificationId[];
+  const initialCertifications: CertificationProgress[] = allCertIds.map((id) => ({
+    id,
+    status: availableCerts.includes(id) ? 'available' as const : 'locked' as const,
+    weeksRemaining: 0,
+    weeksTotal: 0,
+    weeklySpend: 0,
+    totalSpent: 0,
+    weekStarted: null,
+    weekCompleted: null,
+  }));
 
   // Build a partial state to calculate initial burn
   const partialState: GameState = {
@@ -137,6 +154,10 @@ export function createInitialState(
       bubbleTrend: 2,
       talentMarketHeat: 70,
       investorSentiment: 65,
+    },
+    compliance: {
+      certifications: initialCertifications,
+      totalComplianceCost: 0,
     },
     eventLog: [],
     pendingDecisions: [],

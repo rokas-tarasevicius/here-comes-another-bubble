@@ -1,4 +1,5 @@
-import type { GameState } from '../types/index.ts';
+import type { GameState, PricingTier } from '../types/index.ts';
+import { PRICING_TIERS, getScaledTierRequirements, checkTierCertsRequirement } from '../data/compliance.ts';
 
 /**
  * Calculate revenue growth momentum (0–1).
@@ -106,7 +107,12 @@ export function calculateWeeklyBurn(state: GameState): number {
   };
   const baseCost = stageCosts[state.company.stage] ?? 500;
   const fixedCosts = baseCost + state.team.teamSize * 50;
-  return salaries + aiCosts + fixedCosts + (state.finances.marketingSpend ?? 0);
+  const complianceCosts = state.compliance
+    ? state.compliance.certifications
+        .filter((c) => c.status === 'in-progress')
+        .reduce((sum, c) => sum + c.weeklySpend, 0)
+    : 0;
+  return salaries + aiCosts + fixedCosts + (state.finances.marketingSpend ?? 0) + complianceCosts;
 }
 
 /**
@@ -224,4 +230,58 @@ export function calculateValuation(state: GameState): number {
 
   // Always at least the stage base (can't be worth less than your funding implies)
   return Math.max(Math.round(valuation), stageBase);
+}
+
+/**
+ * Calculate the current pricing tier the player qualifies for.
+ * Checks engineers, shipped features, quality, and certifications against tier requirements.
+ */
+export function calculateCurrentPricingTier(state: GameState): PricingTier {
+  const engineers = state.team.members.filter((m) => m.role === 'engineer').length;
+  const shippedFeatures = state.product.features.filter((f) => f.status === 'shipped').length;
+  const quality = state.product.overallQuality;
+  const completedCerts = state.compliance
+    ? state.compliance.certifications.filter((c) => c.status === 'completed').map((c) => c.id)
+    : [];
+  const difficulty = state.meta.difficulty;
+  const segment = state.market.segment;
+
+  let currentTier: PricingTier = 1;
+
+  for (const tierDef of PRICING_TIERS) {
+    if (tierDef.tier === 1) continue;
+    const scaled = getScaledTierRequirements(tierDef, difficulty);
+    const meetsEngineers = engineers >= scaled.requiredEngineers;
+    const meetsFeatures = shippedFeatures >= tierDef.requiredShippedFeatures;
+    const meetsQuality = quality >= scaled.requiredQuality;
+    const meetsCerts = checkTierCertsRequirement(tierDef, completedCerts, segment);
+
+    if (meetsEngineers && meetsFeatures && meetsQuality && meetsCerts) {
+      currentTier = tierDef.tier;
+    } else {
+      break;
+    }
+  }
+
+  return currentTier;
+}
+
+/**
+ * Calculate the maximum price allowed by the current pricing tier.
+ */
+export function calculateMaxPrice(state: GameState): number {
+  const tier = calculateCurrentPricingTier(state);
+  const tierDef = PRICING_TIERS.find((t) => t.tier === tier)!;
+  const defaultPrice = state.market.segmentData.defaultPrice;
+  return Math.round(defaultPrice * tierDef.priceMultiplierMax);
+}
+
+/**
+ * Calculate the minimum price allowed by the current pricing tier.
+ */
+export function calculateMinPrice(state: GameState): number {
+  const tier = calculateCurrentPricingTier(state);
+  const tierDef = PRICING_TIERS.find((t) => t.tier === tier)!;
+  const defaultPrice = state.market.segmentData.defaultPrice;
+  return Math.max(1, Math.round(defaultPrice * tierDef.priceMultiplierMin));
 }

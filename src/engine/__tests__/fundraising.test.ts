@@ -52,6 +52,7 @@ function makeGrowingRevenueHistory(weeks: number, startRevenue: number, growthRa
       pmfScore: 50,
       bubbleIndex: 50,
       eventsCount: 1,
+      complianceCost: 0,
     });
     revenue = Math.round(revenue * (1 + growthRate));
   }
@@ -73,6 +74,7 @@ function makeFlatRevenueHistory(weeks: number, revenue: number): WeekSummary[] {
     pmfScore: 50,
     bubbleIndex: 50,
     eventsCount: 1,
+    complianceCost: 0,
   }));
 }
 
@@ -86,7 +88,7 @@ describe('calculateRevenueGrowthMomentum', () => {
 
   it('returns 0 with only 1 week of history', () => {
     const state = makeDeepState({
-      weekHistory: [{ week: 1, cash: 100000, revenue: 1000, burn: 500, customers: 10, churnRate: 0.05, valuation: 100000, teamSize: 1, avgMorale: 70, pmfScore: 20, bubbleIndex: 50, eventsCount: 0 }],
+      weekHistory: [{ week: 1, cash: 100000, revenue: 1000, burn: 500, customers: 10, churnRate: 0.05, valuation: 100000, teamSize: 1, avgMorale: 70, pmfScore: 20, bubbleIndex: 50, eventsCount: 0, complianceCost: 0 }],
     });
     expect(calculateRevenueGrowthMomentum(state)).toBe(0);
   });

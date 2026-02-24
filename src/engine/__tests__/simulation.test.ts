@@ -1035,7 +1035,7 @@ describe('Escalating Game Over (Soft Landing)', () => {
         ...createInitialState('X', 'balanced', 'ai-devtools', 'normal', 'realistic').finances,
         cash: 500_000,
       },
-      weekHistory: [{ week: 4, cash: 500_000, revenue: 0, burn: 3500, customers: 0, churnRate: 0, valuation: 100_000, teamSize: 2, avgMorale: 5, pmfScore: 0, bubbleIndex: 60, eventsCount: 0 }],
+      weekHistory: [{ week: 4, cash: 500_000, revenue: 0, burn: 3500, customers: 0, churnRate: 0, valuation: 100_000, teamSize: 2, avgMorale: 5, pmfScore: 0, bubbleIndex: 60, eventsCount: 0, complianceCost: 0 }],
     });
 
     // Force the mass walkout (morale < 10, random < 0.60)

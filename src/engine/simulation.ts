@@ -1,6 +1,7 @@
-import type { GameState, Feature, Competitor, EventLogEntry, PendingDecision } from '../types/index.ts';
-import { calculateWeeklyBurn, calculatePMF } from './derived.ts';
+import type { GameState, Feature, Competitor, EventLogEntry, PendingDecision, CertificationProgress } from '../types/index.ts';
+import { calculateWeeklyBurn, calculatePMF, calculateCurrentPricingTier } from './derived.ts';
 import { generateId } from '../utils/id.ts';
+import { CERTIFICATION_DEFS, PRICING_TIERS, getAvailableCertifications, getScaledCertCost } from '../data/compliance.ts';
 
 /**
  * Clamp a number between min and max.
@@ -781,6 +782,19 @@ function simulateCustomers(state: GameState): GameState {
   const priceGrowthPenalty = state.finances.pricePerUnit > state.market.segmentData.defaultPrice
     ? 1 / (1 + Math.log(state.finances.pricePerUnit / state.market.segmentData.defaultPrice) * state.market.segmentData.priceSensitivity * 0.5)
     : 1 + (1 - state.finances.pricePerUnit / Math.max(1, state.market.segmentData.defaultPrice)) * state.market.segmentData.priceSensitivity * 0.3;
+  // Tier-relative pricing: pricing at the low end of your tier boosts growth,
+  // pricing at the high end slightly penalizes it. Range: 0.85 (top) to 1.20 (bottom).
+  const currentTier = calculateCurrentPricingTier(state);
+  const currentTierDef = PRICING_TIERS.find((t) => t.tier === currentTier)!;
+  const tierMin = state.market.segmentData.defaultPrice * currentTierDef.priceMultiplierMin;
+  const tierMax = state.market.segmentData.defaultPrice * currentTierDef.priceMultiplierMax;
+  const tierRange = tierMax - tierMin;
+  const tierPosition = tierRange > 0
+    ? clamp((state.finances.pricePerUnit - tierMin) / tierRange, 0, 1)
+    : 0.5; // middle if range is 0
+  // 0 (bottom of tier) → 1.20 growth boost, 1 (top of tier) → 0.85 growth penalty
+  const tierPriceGrowthMultiplier = 1.20 - tierPosition * 0.35;
+
   const pricingGrowthBonus = state.finances.pricingModel === 'subscription' ? 0.8
     : state.finances.pricingModel === 'usage-based' ? 1.2
     : 1.0;
@@ -856,7 +870,7 @@ function simulateCustomers(state: GameState): GameState {
     // Full growth engine: PMF, market, reputation, marketing, word-of-mouth, etc.
     growth = (pmfGrowth + marketGrowth + reputationGrowth + marketingEffect + founderBizGrowth + baseMinGrowth) *
       customerGrowthMultiplier * bubbleCustomerModifier * wordOfMouthMultiplier * pricingGrowthBonus * competitorPressure *
-      userGrowthBonus * channelGrowthMultiplier * segmentGrowthBase * Math.max(0.2, priceGrowthPenalty) + channelExtraCustomers;
+      userGrowthBonus * channelGrowthMultiplier * segmentGrowthBase * Math.max(0.2, priceGrowthPenalty) * tierPriceGrowthMultiplier + channelExtraCustomers;
 
     // First-ship bonus: initial users discover you (decays as you grow)
     if (currentCustomers < 50) {
@@ -1549,6 +1563,120 @@ function generateAutoDecisions(state: GameState): GameState {
 
 // ─── Main simulation entry point ──────────────────────────────────────
 
+// ─── Compliance Certification Progress ────────────────────────────────
+
+function simulateCompliance(state: GameState): GameState {
+  if (!state.compliance) return state;
+
+  const difficulty = state.meta.difficulty;
+  let certs = state.compliance.certifications.map((c) => ({ ...c }));
+  const newLogEntries: EventLogEntry[] = [];
+  let totalWeeklyCost = 0;
+
+  for (let i = 0; i < certs.length; i++) {
+    const cert = certs[i];
+    if (cert.status !== 'in-progress') continue;
+
+    const def = CERTIFICATION_DEFS[cert.id];
+    const scaled = getScaledCertCost(def, difficulty);
+
+    // Auto-pause if cash would go negative
+    if (state.finances.cash - cert.weeklySpend < 0) {
+      certs[i] = { ...cert, status: 'available', weeklySpend: 0 };
+      newLogEntries.push({
+        id: generateId(),
+        week: state.meta.week,
+        eventId: 'cert-paused-no-cash',
+        title: `${def.name} Paused`,
+        description: `${def.name} certification paused due to insufficient funds.`,
+        category: 'product',
+      });
+      continue;
+    }
+
+    // Calculate progress based on expedite spending
+    // effectiveWeeksPerTick = 1 + (extraSpend / baseWeeklyCost) * 0.5, capped at 2.0
+    const baseWeekly = scaled.weeklyCost;
+    const extraSpend = Math.max(0, cert.weeklySpend - baseWeekly);
+    const effectiveWeeks = Math.min(2.0, 1 + (extraSpend / baseWeekly) * 0.5);
+
+    const newWeeksRemaining = Math.max(0, cert.weeksRemaining - effectiveWeeks);
+    const newTotalSpent = cert.totalSpent + cert.weeklySpend;
+    totalWeeklyCost += cert.weeklySpend;
+
+    if (newWeeksRemaining <= 0) {
+      // Certification completed
+      certs[i] = {
+        ...cert,
+        status: 'completed',
+        weeksRemaining: 0,
+        totalSpent: newTotalSpent,
+        weekCompleted: state.meta.week,
+        weeklySpend: 0,
+      };
+
+      newLogEntries.push({
+        id: generateId(),
+        week: state.meta.week,
+        eventId: 'cert-completed',
+        title: `${def.name} Certified!`,
+        description: `${def.name} certification completed. ${def.flavorText}`,
+        category: 'product',
+      });
+
+      // Reputation bonus for GDPR and AI Safety
+      let reputationBonus = 0;
+      if (cert.id === 'gdpr') reputationBonus = 3;
+      if (cert.id === 'ai-safety-audit') reputationBonus = 2;
+      if (reputationBonus > 0) {
+        state = {
+          ...state,
+          company: {
+            ...state.company,
+            reputation: Math.min(100, state.company.reputation + reputationBonus),
+          },
+        };
+      }
+
+      // Regulatory heat reduction for AI Safety
+      if (cert.id === 'ai-safety-audit') {
+        state = {
+          ...state,
+          meta: {
+            ...state.meta,
+            regulatoryHeat: Math.max(0, state.meta.regulatoryHeat - 10),
+          },
+        };
+      }
+    } else {
+      certs[i] = {
+        ...cert,
+        weeksRemaining: newWeeksRemaining,
+        totalSpent: newTotalSpent,
+      };
+    }
+  }
+
+  // Unlock certs whose prerequisites are now met
+  const completedIds = certs.filter((c) => c.status === 'completed').map((c) => c.id);
+  const newlyAvailable = getAvailableCertifications(completedIds);
+  certs = certs.map((c) => {
+    if (c.status === 'locked' && newlyAvailable.includes(c.id)) {
+      return { ...c, status: 'available' as CertificationProgress['status'] };
+    }
+    return c;
+  });
+
+  return {
+    ...state,
+    compliance: {
+      certifications: certs,
+      totalComplianceCost: state.compliance.totalComplianceCost + totalWeeklyCost,
+    },
+    eventLog: [...state.eventLog, ...newLogEntries],
+  };
+}
+
 export function simulateWeek(state: GameState): GameState {
   let next = state;
   next = simulateProductDevelopment(next);
@@ -1560,6 +1688,7 @@ export function simulateWeek(state: GameState): GameState {
   next = simulateMarket(next);
   next = simulateMorale(next);
   next = simulateTeamAttrition(next);
+  next = simulateCompliance(next);
   next = simulateStageProgression(next);
   next = generateAutoDecisions(next);
   return next;
